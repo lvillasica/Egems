@@ -1,5 +1,5 @@
-step 'I go to the :path' do |path|
-  visit path
+step 'I go to the :path page' do |path|
+  visit send("#{path}_path")
 end
 
 step 'I fill in the following:' do |table|
@@ -9,7 +9,7 @@ step 'I fill in the following:' do |table|
 end
 
 step 'I press :button' do |button|
- click_button button
+  click_button button
 end
 
 
@@ -18,7 +18,7 @@ step 'I should be on the :path page' do |path|
 end
 
 step 'I should not be on the :path page' do | path|
-  current_path.should != send("#{path}_path")
+  current_path.should_not == send("#{path}_path")
 end
 
 

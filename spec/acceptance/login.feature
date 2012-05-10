@@ -3,21 +3,21 @@ Feature: Login
   As a user
   I want to login
 
-  Scenario: Login Successfully
-    Given I go to the "login_page"
+  Scenario: With Correct Password and Email
+    Given I go to the "signin" page
     When I fill in the following:
-      | field             | value |
-      | session[login]    | hello |
-      | session[password] | hello |
-    And I press "Login"
+      | field          | value |
+      | user[email]    | hello |
+      | user[password] | hello |
+    And I press "Sign in"
     Then I should not be on the "timesheets" page
 
-  Scenario: Login Failure
-    Given I go to the "login_page"
+  Scenario: With Wrong Password and Email
+    Given I go to the "signin" page
     When I fill in the following:
-      | field             | value          |
-      | session[login]    | wrong password |
-      | session[password] | wrong password |
-    And I press "Login"
-    Then I should be on the "timesheets" page
+      | field          | value          |
+      | user[email]    | wrong password |
+      | user[password] | wrong password |
+    And I press "Sign in"
+    Then I should be on the "signin" page
 

@@ -34,4 +34,5 @@ RSpec.configure do |config|
 
   Turnip::Config.step_dirs = 'spec/acceptance/steps'
   Capybara.default_driver = :webkit
+  Capybara.javascript_driver = :webkit
 end
