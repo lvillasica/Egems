@@ -42,6 +42,41 @@ class OldSchema < ActiveRecord::Migration
     end
 
     add_index "shift_schedules", ["name"], :name => "shift_schedules_name_index"
+
+
+    create_table "employee_timesheets", :force => true do |t|
+      t.column "employee_id", :integer, :default => 0, :null => false
+      t.column "date", :datetime, :null => false
+      t.column "time_in", :datetime
+      t.column "time_out", :datetime
+      t.column "duration", :integer, :default => 0
+      t.column "remarks", :string
+      t.column "is_late", :integer, :default => 0
+      t.column "minutes_late", :integer, :default => 0
+      t.column "is_undertime", :integer, :default => 0
+      t.column "minutes_undertime", :integer, :default => 0
+      t.column "created_on", :datetime
+      t.column "created_by", :integer
+      t.column "updated_on", :datetime
+      t.column "updated_by", :integer
+      t.column "is_valid", :integer, :default => 0
+      t.column "is_day_awol", :integer, :default => 0
+      t.column "is_am_awol", :integer, :default => 0
+      t.column "is_pm_awol", :integer, :default => 0
+      t.column "minutes_excess", :integer, :default => 0
+      t.column "is_excess_minutes_applied", :integer, :default => 0
+      t.column "allowance_minutes_applied", :integer, :default => 0
+      t.column "overtime_minutes_applied", :integer, :default => 0
+      t.column "shift_schedule_id", :integer, :default => 0, :null => false
+      t.column "shift_schedule_detail_id", :integer, :default => 0, :null => false
+      t.column "next_day_shift_schedule_id", :integer, :default => 0, :null => false
+      t.column "next_day_shift_schedule_detail_id", :integer, :default => 0, :null => false
+    end
+
+    add_index "employee_timesheets", ["employee_id", "date"], :name => "employee_timesheets_employee_id_index"
+    add_index "employee_timesheets", ["is_late", "employee_id", "date"], :name => "employee_timesheets_is_late_index"
+    add_index "employee_timesheets", ["is_undertime", "employee_id", "date"], :name => "employee_timesheets_is_undertime_index"
+    add_index "employee_timesheets", ["is_valid", "employee_id", "date"], :name => "employee_timesheets_is_valid_index"
   end
 
   def down
