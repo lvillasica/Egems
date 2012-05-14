@@ -5,10 +5,11 @@ Egems::Application.routes.draw do
     root   :to => 'devise/sessions#new',:as => 'signin', :via => :get
     get    '/signin'  => 'devise/sessions#new'
     post   '/signin'  => 'devise/sessions#create'
-    delete '/signout' => 'devise/sessions#destroy'
+    get    '/signout' => 'devise/sessions#destroy'
   end
 
   resources :timesheets
+  root :to => 'timesheets#index'
 
   # See how all your routes lay out with "rake routes"
 
