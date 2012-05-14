@@ -4,7 +4,7 @@ Egems::Application.routes.draw do
   devise_scope :user do
     get    '/signin'  => 'devise/sessions#new'
     post   '/signin'  => 'devise/sessions#create'
-    get    '/signout' => 'devise/sessions#destroy'
+    delete '/signout' => 'devise/sessions#destroy'
   end
 
   resources :timesheets
