@@ -1,5 +1,5 @@
 class Timesheet < ActiveRecord::Base
-  set_table_name 'employee_timesheets'
+  self.table_name = 'employee_timesheets'
 
   # -------------------------------------------------------
   # Associations
