@@ -4,10 +4,11 @@ Egems::Application.routes.draw do
   devise_scope :user do
     get    '/signin'  => 'devise/sessions#new'
     post   '/signin'  => 'devise/sessions#create'
-    delete '/signout' => 'devise/sessions#destroy'
+    get    '/signout' => 'devise/sessions#destroy'
   end
 
   resources :timesheets
+  root :to => 'timesheets#index'
 
   # See how all your routes lay out with "rake routes"
 

@@ -1,0 +1,34 @@
+## Authorizations
+# Uncomment out the merging for each enviornment that you'd like to include.
+# You can also just copy and paste the tree (do not include the "authorizations") to each
+# enviornment if you need something different per enviornment.
+authorizations: &AUTHORIZATIONS
+  group_base: cn=users,cn=clients,dc=ldap,dc=exist,dc=com
+  ## Requires config.ldap_check_group_membership in devise.rb be true
+  # Can have multiple values, must match all to be authorized
+
+## Enviornments
+
+development:
+  host: 108.170.19.158
+  port: 389
+  attribute: uid
+  base: dc=ldap,dc=exist,dc=com
+  ssl: false
+  # <<: *AUTHORIZATIONS
+
+test:
+  host: 108.170.19.158
+  port: 389
+  attribute: uid
+  base: dc=ldap,dc=exist,dc=com
+  ssl: false
+  # <<: *AUTHORIZATIONS
+
+production:
+  host: 108.170.19.158
+  port: 389
+  attribute: uid
+  base: dc=ldap,dc=exist,dc=com
+  ssl: false
+  # <<: *AUTHORIZATIONS
