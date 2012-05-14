@@ -1,7 +1,7 @@
 Feature: Login
   In order to access account
   As a user
-  I want to login
+  I want to login using my LDAP account
 
   Scenario: With Correct Password and Email
     Given I go to the "signin" page
@@ -10,7 +10,7 @@ Feature: Login
       | user[login]    | ldaplogin      |
       | user[password] | ldappassword   |
     And I press "Sign in"
-    Then I should not be on the "timesheets" page
+    Then I should be on the "timesheets" page
 
   Scenario: With Wrong Password and Email
     Given I go to the "signin" page
