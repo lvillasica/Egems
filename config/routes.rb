@@ -1,7 +1,8 @@
 Egems::Application.routes.draw do
   # we need to skip routes not needed
-  devise_for :users
+  devise_for :users, :skip => [:registration, :password]
   devise_scope :user do
+    root   :to => 'devise/sessions#new',:as => 'signin', :via => :get
     get    '/signin'  => 'devise/sessions#new'
     post   '/signin'  => 'devise/sessions#create'
     delete '/signout' => 'devise/sessions#destroy'

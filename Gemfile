@@ -18,6 +18,8 @@ group :assets do
   # gem 'therubyracer', :platform => :ruby
 
   gem 'uglifier', '>= 1.0.3'
+  gem 'twitter-bootstrap-rails'
+  # gem 'backbone-rails'
 end
 
 gem 'jquery-rails'
@@ -46,4 +48,7 @@ group :test do
   gem 'capybara'
   gem 'capybara-webkit'
   gem 'launchy'
+end
+
+group :development do
 end

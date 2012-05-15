@@ -1,20 +1,40 @@
-<h2>Sign in</h2>
-<% flash.each do |name, msg| %>
-  <%= content_tag :div, msg, :id => "flash_#{name}" %>
-<% end %>
-<br />
-<%= form_for(resource, :as => resource_name, :url => session_path(resource_name)) do |f| %>
-  <div><%= f.label :login %><br />
-  <%= f.text_field :login %></div>
-  
-  <div><%= f.label :password %><br />
-  <%= f.password_field :password %></div>
+<div class="row">
+  <div class="span5 offset4">
+  <h2>Sign in</h2>
 
-  <% if devise_mapping.rememberable? -%>
-    <div><%= f.check_box :remember_me %> <%= f.label :remember_me %></div>
-  <% end -%>
+  <%= form_for(resource, :as => resource_name, :url => session_path(resource_name), :html => { :class => 'well form-horizontal' }) do |f| %>
+    <fieldset>
+      <% flash.each do |name, msg| %>
+        <%= content_tag(:div, msg, :id => "flash_#{name}", :class => "alert alert-error") if name.eql?(:alert) %>
+      <% end %>
+      
+      <div class="control-group">
+        <%= f.label :login, :class => 'control-label' %>
+        <div class="controls">
+          <%= f.text_field :login %>
+        </div>
+      </div>
 
-  <div><%= f.submit "Sign in" %></div>
-<% end %>
+      <div class="control-group">
+        <%= f.label :password, :class => 'control-label' %>
+        <div class="controls">
+          <%= f.password_field :password %>
+        </div>
+      </div>
 
-<%#= render "links" %>
+      <% if devise_mapping.rememberable? -%>
+        <div class="control-group">
+          <div class="controls">
+            <%= f.label :remember_me %>
+            <%= f.check_box :remember_me %>
+          </div>
+        </div>
+      <% end -%>
+      <div class="form-actions">
+        <%= f.submit "Sign in", :class => 'btn btn-primary btn-large' %>
+      </div>
+      
+    </fieldset>
+  <% end %>
+  </div>
+</div>‌
