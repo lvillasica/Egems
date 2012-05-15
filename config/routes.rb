@@ -5,7 +5,7 @@ Egems::Application.routes.draw do
     root   :to => 'devise/sessions#new',:as => 'signin', :via => :get
     get    '/signin'  => 'devise/sessions#new'
     post   '/signin'  => 'devise/sessions#create'
-    get    '/signout' => 'devise/sessions#destroy'
+    delete '/signout' => 'devise/sessions#destroy'
   end
 
   resources :timesheets
