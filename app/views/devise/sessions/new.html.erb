@@ -1,14 +1,17 @@
-<<<<<<< HEAD
 <div class="row">
   <div class="span5 offset4">
   <h2>Sign in</h2>
 
   <%= form_for(resource, :as => resource_name, :url => session_path(resource_name), :html => { :class => 'well form-horizontal' }) do |f| %>
     <fieldset>
+      <% flash.each do |name, msg| %>
+        <%= content_tag(:div, msg, :id => "flash_#{name}", :class => "alert alert-error") if name.eql?(:alert) %>
+      <% end %>
+      
       <div class="control-group">
-        <%= f.label :email, :class => 'control-label' %>
+        <%= f.label :login, :class => 'control-label' %>
         <div class="controls">
-          <%= f.email_field :email %>
+          <%= f.text_field :login %>
         </div>
       </div>
 
@@ -18,22 +21,7 @@
           <%= f.password_field :password %>
         </div>
       </div>
-=======
-<h2>Sign in</h2>
-<% flash.each do |name, msg| %>
-  <%= content_tag :div, msg, :id => "flash_#{name}" %>
-<% end %>
-<br />
-<%= form_for(resource, :as => resource_name, :url => session_path(resource_name)) do |f| %>
-  <div><%= f.label :login %><br />
-  <%= f.text_field :login %></div>
-  
-  <div><%= f.label :password %><br />
-  <%= f.password_field :password %></div>
->>>>>>> 9e0578a... devise Ldap authentication configuration.
 
-
-<<<<<<< HEAD
       <% if devise_mapping.rememberable? -%>
         <div class="control-group">
           <div class="controls">
@@ -45,13 +33,8 @@
       <div class="form-actions">
         <%= f.submit "Sign in", :class => 'btn btn-primary btn-large' %>
       </div>
+      
     </fieldset>
   <% end %>
   </div>
-</div>
-=======
-  <div><%= f.submit "Sign in" %></div>
-<% end %>
-
-<%= render "links" %>
->>>>>>> 9e0578a... devise Ldap authentication configuration.
+</div>‌
