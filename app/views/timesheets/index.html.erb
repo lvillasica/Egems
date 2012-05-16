@@ -1,0 +1,24 @@
+<h1>Timesheet</h1>
+
+<%= form_tag(timein_path) do-%>
+  <%= submit_tag 'Time in' %>
+<% end -%>
+
+<%= form_tag(timeout_path) do-%>
+  <%= submit_tag 'Time out' %>
+<% end -%>
+
+<table>
+  <tr>
+    <th>Date</th>
+    <th>Time in</th>
+    <th>Time out</th>
+  </tr>
+  <% @employee_timesheets.each do |timesheet| %>
+  <tr>
+    <td><%= timesheet.date %></td>
+    <td><%= timesheet.time_in %></td>
+    <td><%= timesheet.time_out %></td>
+  </tr>
+  <% end %>
+</table>

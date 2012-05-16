@@ -20,17 +20,17 @@ Feature: Login
       | user[password] | wrong password |
     And I press "Sign in"
     Then I should be on the "signin" page
-    
+
   Scenario: Root page without Authorization
     Given I am not authorized
     When I go to the "root" page
     Then I should be on the "signin" page
-    
+
   Scenario: Root page with Authorization
     Given I am authorized
     When I go to the "root" page
     Then I should be on the "timesheets" page
-    
+
   Scenario: Cannot connect to LDAP
     Given I go to the "signin" page
     When I fill in the following:
@@ -40,3 +40,4 @@ Feature: Login
     And I press "Sign in"
     Then I should get a response of status 500
 
+  Scenario: LDAP is down

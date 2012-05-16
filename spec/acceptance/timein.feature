@@ -4,26 +4,22 @@ Feature: Timein
   I want to timein with the current time
 
   Background:
-    Given Im logged in as "Tudor"
-    And Im on the "timesheet" page
+    Given I am logged in
+    And I am on the "timesheets" page
 
-  Scenario: Before considered late
+  Scenario: With complete timesheet entry for previous day of shift
+    Then I should see "Time in" button
     When I press "Time in"
     Then I should see my timesheet entry for the day
 
-  Scenario: As late timesheet entry
-    Given "Tudor" is late with regards to this shif schedule
-    When I press "Time in"
-    Then I should see my timesheet entry with late status
-
-  Scenario: With no timeout of the previous day
-    Given "Tudor" has no logged out entry of yesterday
+  Scenario: Late timesheet timein entry
+    Given I am late for my shift schedule
     When I press "Time in"
     Then I should see my timesheet entry for the day
-    And  I should see my yesterday timesheet marked as for validation
+    And I should see in field minutes late with value greater than 0
 
-  Scenario: With no timesheet entry of yesterday
-    Given "Tudor" has no timesheet entry of yesterdy
+  Scenario: With no timesheet entry for previous day of shift
+    Given I have no timesheet entry for previous day of shift
     When I press "Time in"
     Then I should see my timesheet entry for the day
-    And  I should see my yesterday timesheet marked as AWOL
+    And  I should see my previous day of shift timesheet marked as AWOL
