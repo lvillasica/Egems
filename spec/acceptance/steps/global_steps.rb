@@ -31,10 +31,14 @@ end
 
 step 'I am authorized' do
   visit '/'
-  fill_in "user_login", :with=>"lvillasica"
-  fill_in "user_password", :with=>"ldap123"
+  fill_in "user_login", :with=>"ldaplogin"
+  fill_in "user_password", :with=>"ldappassword"
   step "I press 'Sign in'"
   step "I should be on the 'timesheets' page"
+end
+
+step "I should get a response of status :status" do |status|
+  page.driver.status_code.should == status.to_i
 end
 
 
