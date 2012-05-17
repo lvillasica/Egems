@@ -116,7 +116,7 @@ Devise.setup do |config|
 
   # ==> Configuration for :rememberable
   # The time the user will be remembered without asking for credentials again.
-  config.remember_for = 2.weeks
+  config.remember_for = 1.day
 
   # If true, extends the user's remember period when remembered via cookie.
   # config.extend_remember_period = false
@@ -141,7 +141,7 @@ Devise.setup do |config|
   # ==> Configuration for :timeoutable
   # The time you want to timeout the user session without activity. After this
   # time the user will be asked for credentials again. Default is 30 minutes.
-  config.timeout_in = 1440.minutes
+  config.timeout_in = 360.minutes
 
   # ==> Configuration for :lockable
   # Defines which strategy will be used to lock an account.
@@ -233,4 +233,5 @@ Devise.setup do |config|
   config.warden do |manager|
     manager.failure_app = CustomAuthenticationFailure
   end
+
 end

@@ -21,33 +21,8 @@
   <body>
 
     <div class="container-fluid">
-      <div class="navbar navbar-fixed-top">
-        <div class="navbar-inner">
-          <div class="container">
-            <a class="brand" href="#">Egems</a>
-            <ul class="nav">
-              <li class="active">
-                <a href="#">Timesheets</a>
-              </li>
-              <li><a href="#">Link</a></li>
-              <li><a href="#">Link</a></li>
-            </ul>
-            <ul class="nav pull-right">
-              <li><a href="#"><%= current_user.login %></a></li>
-              <li class="divider-vertical"></li>
-              <li>
-              <%= link_to "<i class=\"icon-off\"></i> Signout".html_safe,
-                signout_path, :method => :delete %>
-              </li>
-            </ul>
-          </div>
-        </div>
-      </div> 
-      <div class="row">
-        <div class="span8 offset3">
-          <%= yield %>
-        </div>
-      </div>
+        <%= yield %>
+
       <footer>
         <p>&copy; Company 2012</p>
       </footer>
