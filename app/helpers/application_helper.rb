@@ -3,12 +3,13 @@ module ApplicationHelper
     flashes = ""
     flash.map do |name, msg|
       str = %Q{
-        <div class="alert alert-error" id='flash_#{name}'>
-           <button class="close" data-dismiss="alert">x</button>
+        <div class='alert alert-error' id='flash_#{name}'>
+           #{msg}
+           <button class='close' data-dismiss='alert'>x</button>
         </div>
       }
-      flashes<< str.html_safe if name.eql?(:alert)
+      flashes << str.html_safe if name.eql?(:alert)
     end
-    flashes
+    flashes.html_safe
   end
 end

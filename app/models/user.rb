@@ -13,6 +13,13 @@ class User < ActiveRecord::Base
                                           :primary_key => 'employee_id'
 
   before_save :set_user_email
+  
+  def time_in_automatable?
+    today = Date.today.beginning_of_day
+    entries_today = timesheets.where(:date => today)
+    latest_entry = entries_today.last
+    return entries_today.empty? || (latest_entry && !latest_entry.time_out.blank?)
+  end
 
   def set_user_email
     self.email = "#{ self.login }@exist.com" if self.email.blank?

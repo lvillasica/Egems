@@ -40,4 +40,3 @@ Feature: Login
     And I press "Sign in"
     Then I should get a response of status 500
 
-  Scenario: LDAP is down
