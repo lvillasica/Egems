@@ -1,3 +1,15 @@
 // Place all the styles related to the timesheets controller here.
 // They will automatically be included in application.css.
 // You can use Sass (SCSS) here: http://sass-lang.com/
+
+input[type="text"].time {
+  text-align: center;
+  padding: 4px 1px;
+  width: 24px;
+}
+
+select.time {
+  text-align: center;
+  padding: 1px;
+  width: 52px;
+}

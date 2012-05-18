@@ -23,14 +23,16 @@ end
 step 'I should see :name :element' do |name, element|
   case element
   when 'button'
-    page.should have_css "input[value='#{name}']"
+    page.should have_button("#{name}")
+  when 'text'
+    page.should have_content("#{name}")
   end
 end
 
 step 'I am logged in' do
   visit signin_path
-  fill_in 'user_login', :with => 'ldap_username'
-  fill_in 'user_password', :with => 'ldap_password'
+  fill_in 'user_login', :with => 'ldaplogin'
+  fill_in 'user_password', :with => 'ldappassword'
   click_button 'Sign in'
 end
 
@@ -57,5 +59,3 @@ end
 step "I should get a response of status :status" do |status|
   page.driver.status_code.should == status.to_i
 end
-
-

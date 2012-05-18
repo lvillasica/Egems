@@ -16,6 +16,7 @@ Egems::Application.routes.draw do
     resources :timesheets, :only => [:index, :timein, :timeout]
     match '/timein', to: 'timesheets#timein'
     match '/timeout', to: 'timesheets#timeout'
+    match '/timeout/manual/:id', to: 'timesheets#manual_timeout'
     root :to => 'timesheets#index'
   end
 end
