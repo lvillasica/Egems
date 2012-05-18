@@ -21,6 +21,7 @@
   <body>
 
     <div class="container-fluid">
+      <!-- ========== MAIN TOP NAV ========== -->
       <div class="navbar navbar-fixed-top">
         <div class="navbar-inner">
           <div class="container">
@@ -42,14 +43,21 @@
             </ul>
           </div>
         </div>
+        <!-- ========== SUB NAV ========== -->
+        <div class="navbar-sub">
+          <div class="container">
+            <h2 class="nav pull-right" href="#">00:00:00 am</h2>
+          </div>
+        </div>
       </div> 
+      
       <div class="row">
         <div class="span8 offset3">
           <%= yield %>
         </div>
       </div>
-      <footer>
-        <p>&copy; Company 2012</p>
+      <footer class="footer">
+          <p>&copy; Company 2012</p>
       </footer>
 
     </div> <!-- /container -->
