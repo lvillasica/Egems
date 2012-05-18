@@ -1,13 +1,21 @@
 
-<% if @invalid_timesheets.present? %>
-  <%= render :partial => 'invalid_timesheets' %>
-<% else %>
+<ul class="nav nav-tabs" id="myTab">
+  <li class="pull-right"><a href="#week">Week</a></li>
+  <li class="pull-right"><a href="#friday">Fri</a></li>
+  <li class="pull-right"><a href="#thursday">Thurs</a></li>
+  <li class="pull-right"><a href="#wednesday">Wed</a></li>
+  <li class="pull-right"><a href="#tuesday">Tues</a></li>
+  <li class="active pull-right"><a href="#monday">Mon</a></li>
+</ul>
 
 <div class="tab-content">
   <div class="tab-pane active" id="monday">
+  <% if @invalid_timesheets.present? %>
+    <%= render :partial => 'invalid_timesheets' %>
+  <% else %>
     <p>
-    <%= link_to "Time in", timein_path, :method => :post, :class => 'btn btn-large' %>
-    <%= link_to "Time out", timeout_path, :method => :post, :class => 'btn btn-large' %>
+      <%= link_to "Time in", timein_path, :method => :post, :class => 'btn btn-large' %>
+      <%= link_to "Time out", timeout_path, :method => :post, :class => 'btn btn-large' %>
     </p>
     <table class="table">
       <thead>
@@ -20,13 +28,14 @@
       <tbody>
       <% @employee_timesheets.each do |timesheet| %>
       <tr>
-        <td><%= format_date timesheet.date %></td>
-        <td><%= format_time timesheet.time_in %></td>
-        <td><%= format_time timesheet.time_out %></td>
+        <td><%= timesheet.date %></td>
+        <td><%= timesheet.time_in %></td>
+        <td><%= timesheet.time_out %></td>
       </tr>
       <% end %>
-    </tbody>
+      </tbody>
     </table>
+  <% end %>
   </div>
 </div>
-<% end %>
+

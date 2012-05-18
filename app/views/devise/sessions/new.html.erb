@@ -1,8 +1,7 @@
 <div class="row">
   <div class="span5 offset4">
-  <h2>Sign in</h2>
-
   <%= form_for(resource, :as => resource_name, :url => session_path(resource_name), :html => { :class => 'well form-horizontal' }) do |f| %>
+    <h2>Sign in</h2>
     <fieldset>
       <%= flash_message %> 
       <div class="control-group">
