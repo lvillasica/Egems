@@ -17,14 +17,9 @@ step 'I have timein, timeout entry for previous timesheet' do
   timesheet_yesterday.save
 end
 
-step 'I have no time entries for today' do
-
-end
-
-step 'I have entries for today with latest timeout' do
-
-end
-
-step 'I should have time in with the current time' do
-
+step 'I should have time in value for the current time' do
+  user = User.find_by_login("ldaplogin")
+  today = Date.today.beginning_of_day
+  timein_val = user.timesheets.last(:conditions => ["date = ?", today]).time_in
+  page.should have_content("#{timein_val}")
 end

@@ -14,11 +14,10 @@ class User < ActiveRecord::Base
 
   before_save :set_user_email
   
-  def time_in_automatable?
+  def with_time_entries_today?
     today = Date.today.beginning_of_day
     entries_today = timesheets.where(:date => today)
-    latest_entry = entries_today.last
-    return entries_today.empty? || (latest_entry && !latest_entry.time_out.blank?)
+    return entries_today.empty?
   end
 
   def set_user_email
