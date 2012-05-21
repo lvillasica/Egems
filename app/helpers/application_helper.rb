@@ -12,4 +12,8 @@ module ApplicationHelper
     end
     flashes.html_safe
   end
+
+  def email_logo
+    '/public/images/logo.png'
+  end
 end
