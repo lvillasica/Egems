@@ -49,9 +49,7 @@ step 'I am not authorized' do
 end
 
 step 'I am authorized' do
-  visit '/'
-  fill_in "user_login", :with=>"ldaplogin"
-  fill_in "user_password", :with=>"ldappassword"
+  step "I am logged in"
   step "I press 'Sign in'"
   step "I should be on the 'timesheets' page"
 end
