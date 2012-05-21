@@ -48,7 +48,9 @@ group :test do
   gem 'capybara'
   gem 'capybara-webkit'
   gem 'launchy'
+  gem 'pry'
 end
 
 group :development do
+  gem 'pry'
 end
