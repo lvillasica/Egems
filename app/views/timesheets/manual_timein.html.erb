@@ -1,0 +1,26 @@
+<p>Please input missing timein</p>
+<table class="table">
+  <thead>
+    <tr>
+      <th>Date</th>
+      <th>Time in</th>
+      <th>Time out</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><%= format_date @invalid_timesheet.date %></td>
+      <td>
+      <%= form_for(@invalid_timesheet, :url => { :action => 'manual_timein', :id => @invalid_timesheet.id }) do |f| %>
+        <%= text_field 'timein', 'hour', :placeholder => 'hh', :size => 2, :maxlength => 2, :class => 'time' %>
+        <%= text_field 'timein', 'min', :placeholder => 'mm', :size => 2, :maxlength => 2, :class => 'time' %>
+        <%= select 'timein', 'meridian', ['AM', 'PM'], {}, { :class => 'time' } %>
+      <%= text_field 'timein', 'date', :value => format_date(@invalid_timesheet.date), :class => 'time', :style => 'width: 100px;' %>
+        <%= f.submit 'Time in' %>
+      <% end -%>
+      </td>
+      <td><%= format_time @invalid_timesheet.time_out %></td>
+    </tr>
+  </tbody>
+</table>

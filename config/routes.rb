@@ -13,10 +13,11 @@ Egems::Application.routes.draw do
     devise_scope :user do
       delete '/signout' => 'devise/sessions#destroy'
     end
-    resources :timesheets, :only => [:index, :timein, :timeout]
+    resources :timesheets, :only => [:index]
     match '/timein', to: 'timesheets#timein'
     match '/timeout', to: 'timesheets#timeout'
-    match '/timeout/manual/:id', to: 'timesheets#manual_timeout'
+    match '/timeout/manual/', to: 'timesheets#manual_timeout', as: 'manual_timeout', via: 'post'
+    match '/timein/manual/', to: 'timesheets#manual_timein', as:  'manual_timein', via: 'post'
     root :to => 'timesheets#index'
   end
 end

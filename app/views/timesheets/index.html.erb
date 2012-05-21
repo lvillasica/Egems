@@ -3,30 +3,30 @@
   <%= render :partial => 'invalid_timesheets' %>
 <% else %>
 
-  <%= form_tag(timein_path) do-%>
-    <%= submit_tag 'Time in' %>
-  <% end -%>
-
-  <%= form_tag(timeout_path) do-%>
-    <%= submit_tag 'Time out' %>
-  <% end -%>
-
-  <table class="table">
-    <thead>
-    <tr>
-      <th>Date</th>
-      <th>Time in</th>
-      <th>Time out</th>
-    </tr>
-    </thead>
-    <tbody>
-    <% @employee_timesheets.each do |timesheet| %>
-    <tr>
-      <td><%= format_date timesheet.date %></td>
-      <td><%= format_time timesheet.time_in %></td>
-      <td><%= format_time timesheet.time_out %></td>
-    </tr>
-    <% end %>
-  </tbody>
-  </table>
+<div class="tab-content">
+  <div class="tab-pane active" id="monday">
+    <p>
+    <%= link_to "Time in", timein_path, :method => :post, :class => 'btn btn-large' %>
+    <%= link_to "Time out", timeout_path, :method => :post, :class => 'btn btn-large' %>
+    </p>
+    <table class="table">
+      <thead>
+      <tr>
+        <th>Date</th>
+        <th>Time in</th>
+        <th>Time out</th>
+      </tr>
+      </thead>
+      <tbody>
+      <% @employee_timesheets.each do |timesheet| %>
+      <tr>
+        <td><%= format_date timesheet.date %></td>
+        <td><%= format_time timesheet.time_in %></td>
+        <td><%= format_time timesheet.time_out %></td>
+      </tr>
+      <% end %>
+    </tbody>
+    </table>
+  </div>
+</div>
 <% end %>
