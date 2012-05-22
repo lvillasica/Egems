@@ -31,12 +31,3 @@ Feature: Login
     When I go to the "root" page
     Then I should be on the "timesheets" page
 
-  Scenario: Cannot connect to LDAP
-    Given I go to the "signin" page
-    When I fill in the following:
-      | field          | value          |
-      | user[login]    | ldaplogin      |
-      | user[password] | ldappassword   |
-    And I press "Sign in"
-    Then I should get a response of status 500
-

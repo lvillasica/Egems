@@ -5,7 +5,7 @@ module ApplicationHelper
       str = %Q{
         <div class='alert alert-error' id='flash_#{name}'>
            #{msg}
-           <button class='close' data-dismiss='alert'>x</button>
+           <button class='close' data-dismiss='alert'>&times;</button>
         </div>
       }
       flashes << str.html_safe if name.eql?(:alert)

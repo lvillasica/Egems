@@ -50,10 +50,6 @@ end
 
 step 'I am authorized' do
   step "I am logged in"
-  step "I press 'Sign in'"
   step "I should be on the 'timesheets' page"
 end
 
-step "I should get a response of status :status" do |status|
-  page.driver.status_code.should == status.to_i
-end
