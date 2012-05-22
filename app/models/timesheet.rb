@@ -1,10 +1,9 @@
-# -------------------------------------------------------
-# Timesheet Errors
-# -------------------------------------------------------
-class NoTimeoutError < StandardError; end
-class NoTimeinError < StandardError; end
-
 class Timesheet < ActiveRecord::Base
+  # -------------------------------------------------------
+  # Errors
+  # -------------------------------------------------------
+  class NoTimeoutError < StandardError; end
+  class NoTimeinError < StandardError; end
 
   self.table_name = 'employee_timesheets'
   attr_accessible :date, :time_in, :time_out
@@ -24,11 +23,11 @@ class Timesheet < ActiveRecord::Base
   # -------------------------------------------------------
   # Class Methods
   # -------------------------------------------------------
-  def self.time_in!(user)
+  def self.time_in!(user, force=false)
     raise NoTimeoutError if user.timesheets.latest.where("time_in is not null and time_out is null").present?
+    raise NoTimeoutError if user.timesheets.invalid.present? and !force
     timesheet = user.timesheets.new(:date => Time.now.utc, :time_in => Time.now.utc)
     timesheet.save!
-    raise NoTimeoutError if user.timesheets.invalid.present?
   end
 
   def self.time_out!(user)
