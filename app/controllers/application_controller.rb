@@ -6,10 +6,15 @@ class ApplicationController < ActionController::Base
   
   def after_sign_in_path_for(resource)
     begin
-      Timesheet.time_in!(user)
+      Timesheet.time_in!(resource)
     rescue NoTimeoutError
-      @invalid_timesheet = resource.timesheets.latest
+      @invalid_timesheets = resource.timesheets.invalid
     end
     return request.env['omniauth.origin'] || stored_location_for(resource) || timesheets_path
+  end
+
+ def render_404
+    #temporary 404 action
+    redirect_to root_path
   end
 end
