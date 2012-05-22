@@ -25,10 +25,10 @@ class Timesheet < ActiveRecord::Base
   # Class Methods
   # -------------------------------------------------------
   def self.time_in!(user)
-    raise NoTimeoutError if user.timesheets.invalid.present?
     raise NoTimeoutError if user.timesheets.latest.where("time_in is not null and time_out is null").present?
     timesheet = user.timesheets.new(:date => Time.now.utc, :time_in => Time.now.utc)
     timesheet.save!
+    raise NoTimeoutError if user.timesheets.invalid.present?
   end
 
   def self.time_out!(user)

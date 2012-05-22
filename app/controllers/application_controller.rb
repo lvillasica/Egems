@@ -9,7 +9,7 @@ class ApplicationController < ActionController::Base
       Timesheet.time_in!(resource)
     rescue NoTimeoutError
       @invalid_timesheets = resource.timesheets.invalid
-    end
+    end if params[:commit].eql?('Time in')
     return request.env['omniauth.origin'] || stored_location_for(resource) || timesheets_path
   end
 
