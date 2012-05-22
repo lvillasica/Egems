@@ -12,20 +12,13 @@ class TimesheetsController < ApplicationController
 
   def timein
     if request.post?
-      time_now = Time.now
-      date_today = time_now.beginning_of_day
-      user = current_user
-
-      timesheet_latest = Timesheet.first(:order => 'date desc, created_on desc',
-                                                                 :conditions => ["employee_id=? and date=?",
-                                                                                          user.employee_id, date_today.utc])
-      if timesheet_latest and timesheet_latest.time_out.nil?
+      begin
+        if Timesheet.time_in!(user)
+          redirect_to :timesheets
+        end
+      rescue NoTimeoutError
         @invalid_timesheet = timesheet_latest
         render :template => 'timesheets/manual_timeout'
-      else
-        timesheet = user.timesheets.new(:date => date_today, :time_in => time_now)
-        timesheet.save
-        redirect_to :timesheets
       end
     end
   end
