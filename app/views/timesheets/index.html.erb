@@ -1,12 +1,5 @@
 
-<ul class="nav nav-tabs" id="myTab">
-  <li class="pull-right"><a href="#week">Week</a></li>
-  <li class="pull-right"><a href="#friday">Fri</a></li>
-  <li class="pull-right"><a href="#thursday">Thurs</a></li>
-  <li class="pull-right"><a href="#wednesday">Wed</a></li>
-  <li class="pull-right"><a href="#tuesday">Tues</a></li>
-  <li class="active pull-right"><a href="#monday">Mon</a></li>
-</ul>
+<%= timesheet_navs(@active_date) %>
 
 <div class="tab-content">
   <div class="tab-pane active" id="monday">
@@ -23,7 +16,7 @@
       </tr>
       </thead>
       <tbody>
-      <% @employee_timesheets.each do |timesheet| %>
+      <% @employee_timesheets_latest.each do |timesheet| %>
       <tr>
         <td><%= format_date timesheet.date %></td>
         <td><%= format_time timesheet.time_in %></td>

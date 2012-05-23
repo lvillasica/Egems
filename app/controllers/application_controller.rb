@@ -16,7 +16,7 @@ class ApplicationController < ActionController::Base
 
   def render_404
     #temporary 404 action
-    redirect_to root_path
+    redirect_to timesheets_path
   end
 
 protected
