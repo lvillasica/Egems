@@ -9,12 +9,20 @@ class ApplicationController < ActionController::Base
       Timesheet.time_in!(resource, true)
     rescue Timesheet::NoTimeoutError
       @invalid_timesheets = resource.timesheets.no_timeout
+      flash[:alert] = error_message(:no_timeout)
     end if params[:commit].eql?('Time in')
     return request.env['omniauth.origin'] || stored_location_for(resource) || timesheets_path
   end
 
- def render_404
+  def render_404
     #temporary 404 action
     redirect_to root_path
   end
+  
+protected
+
+  def error_message(symbol)
+    I18n.t "errors.#{symbol}" if symbol.is_a?(Symbol)
+  end
+
 end

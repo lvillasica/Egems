@@ -4,7 +4,7 @@ class TimesheetsController < ApplicationController
   def index
     if user_signed_in?
       @employee_timesheets = current_user.timesheets
-      @invalid_timesheets = @employee_timesheets.no_timeout
+      @invalid_timesheets = @employee_timesheets.previous.no_timeout
       if @invalid_timesheets.present?
         render :template => 'timesheets/manual_timeout'
       else
@@ -19,8 +19,9 @@ class TimesheetsController < ApplicationController
   def timein
     begin
       redirect_to :timesheets if Timesheet.time_in!(current_user)
-    rescue NoTimeoutError
+    rescue Timesheet::NoTimeoutError
       @invalid_timesheets = current_user.timesheets.latest.where("time_out is null")
+      flash[:alert] = error_message(:no_timeout)
       render :template => 'timesheets/manual_timeout'
     end
   end
@@ -28,7 +29,7 @@ class TimesheetsController < ApplicationController
   def timeout
     begin
       redirect_to :timesheets if Timesheet.time_out!(current_user)
-    rescue NoTimeinError
+    rescue Timesheet::NoTimeinError
       @invalid_timesheet = current_user.timesheets.new(:date => Time.now.utc)
       render :template => 'timesheets/manual_timein'
     end

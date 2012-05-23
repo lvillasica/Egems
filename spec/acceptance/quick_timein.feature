@@ -5,6 +5,7 @@ Feature: Quick Timein
   
   Scenario: Successful time in after signin
     Given I go to the "signin" page
+    And I have no invalid entries for the past days
     When I fill in the following:
       | field          | value          |
       | user[login]    | ldaplogin      |
@@ -21,4 +22,16 @@ Feature: Quick Timein
       | user[password] | wrong password |
     And I press "Time in"
     Then I should be on the "signin" page
+    
+  Scenario: With no timesheet entry for previous day of shift
+    Given I go to the "signin" page
+    And I have no timeout entry for previous timesheet
+    When I fill in the following:
+      | field          | value          |
+      | user[login]    | ldaplogin      |
+      | user[password] | ldappassword   |
+    And I press "Time in"
+    Then I should be on the "timesheets" page
+    And I should see my timesheet entry for the day
+    And I should see my previous timesheet marked as AWOL
 

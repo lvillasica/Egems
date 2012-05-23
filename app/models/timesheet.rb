@@ -27,10 +27,10 @@ class Timesheet < ActiveRecord::Base
   def self.time_in!(user, force=false)
     latest_invalid_timesheets = user.timesheets.latest.no_timeout
     if latest_invalid_timesheets.present?
-      TimesheetMailer.invalid_timesheet(user,latest_invalid_timesheets.first)
+      # TimesheetMailer.invalid_timesheet(user,latest_invalid_timesheets.first)
       raise NoTimeoutError
     end
-    raise NoTimeoutError if user.timesheets.invalid.present? and !force
+    raise NoTimeoutError if user.timesheets.previous.no_timeout.present? and !force
     timesheet = user.timesheets.new(:date => Time.now.utc, :time_in => Time.now.utc)
     timesheet.save!
   end
