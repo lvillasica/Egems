@@ -1,29 +1,74 @@
-step 'I should see my timesheet entry for the day' do
-  current_path.should == send("timein_path")
-  follow_redirect!
-  date_today = Time.now.beginning_of_day.localtime.strftime("%Y-%m-%d")
-  save_and_open_page
-  find("td", :visible => true).text.should == date_today
+# givens
+step 'I have valid time entries' do
+  @user.timesheets.each(&:destroy)
+  today = Time.now
+  yesterday = today.yesterday
+  Timecop.freeze(today)
+  @user.timesheets.create(:date => today, :time_in => today, :time_out => today)
+  @user.timesheets.create(:date => yesterday, :time_in => yesterday, :time_out => yesterday)
 end
 
-step 'I have timein, timeout entry for previous timesheet' do
-  user = User.find_by_login("ldaplogin")
-  user.timesheets.each {|t| t.destroy}
-  date_yesterday = Time.now.beginning_of_day.yesterday
-  time_yesterday = Time.now.yesterday
-  timesheet_yesterday = user.timesheets.new(:date => date_yesterday,
-                                            :time_in => time_yesterday,
-                                            :time_out => time_yesterday)
-  timesheet_yesterday.save
+step 'I have no invalid time entries' do
+  @user.timesheets.each(&:destroy)
 end
 
-step 'I should have time in value for the current time' do
-  user = User.find_by_login("ldaplogin")
-  timein_val = user.timesheets.latest.last.time_in
-  page.should have_content("#{timein_val.localtime.strftime("%Y-%m-%d")}")
+step 'I have not timeout yesterday' do
+  Timecop.return
+  @user.timesheets.each(&:destroy)
+  yesterday = Time.now.yesterday
+  @previous = yesterday
+  @user.timesheets.create(:date => yesterday, :time_in => yesterday, :time_out => nil)
 end
 
-step 'I have no invalid entries for the past days' do
-  user = User.find_by_login("ldaplogin")
-  user.timesheets.each(&:destroy)
+step 'I have timein today but no timeout' do
+  @user.timesheets.each(&:destroy)
+  today = Time.now
+  Timecop.freeze(today)
+  @user.timesheets.create(:date => today, :time_in => today, :time_out => nil)
+end
+
+# whens
+step 'I submit missing timeout' do |day|
+  timesheet = @user.timesheets.first(:select => :date, :order => 'date desc, created_on desc')
+  date = timesheet.date.localtime
+  now = Time.now
+  time = Time.local(date.year, date.month, date.day, now.hour, now.min, 0)
+  Timecop.travel(time) do
+    fill_in 'timeout_hour', :with => time.strftime("%l")
+    fill_in 'timeout_min', :with => time.min
+    select time.strftime("%p"), :from => 'timeout_meridian'
+    fill_in 'timeout_date', :with => date.strftime("%Y-%m-%d")
+  end
+  Timecop.freeze(time)
+  step "I press 'Time out'"
+end
+
+# thens
+step 'I should see my time entry today' do
+  step "I go to the 'timesheets' page"
+  Timecop.travel(Time.now) do
+    page.should have_content(Time.now.strftime("%Y-%m-%d"))
+    page.should have_content(Time.now.strftime("%I:%M:%S %p %Y-%m-%d"))
+  end
+  Timecop.return
+end
+
+step 'I should be prompted to timeout' do
+  date = @previous || Time.now
+  page.should have_content(date.strftime("%Y-%m-%d"))
+  page.should have_field("timeout_date")
+  page.should have_field("timeout_hour")
+  page.should have_field("timeout_min")
+  page.should have_select("timeout_meridian")
+end
+
+step 'I should see my timeout' do
+  step "I go to the 'timesheets' page"
+  # frozen time from step 'I submit missing timeout'
+  date = Time.now
+  Timecop.return
+  Timecop.travel(date) do
+    page.should have_content(date.strftime("%Y-%m-%d"))
+    page.should have_content(date.strftime("%I:%M:%S %p %Y-%m-%d"))
+  end
 end

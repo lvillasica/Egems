@@ -9,7 +9,28 @@ step 'I fill in the following:' do |table|
 end
 
 step 'I press :button' do |button|
-  click_button button
+  click_on button
+end
+
+step 'I am on the :path page' do |path|
+  current_path.should == send("#{path}_path")
+end
+
+step 'I sign in as :username with password :password' do |name, pass|
+  @user = User.find_by_login(name) || User.create(login: name)
+  visit "/"
+  fill_in "user_login", :with => name
+  fill_in "user_password", :with => pass
+  step "I press 'Sign in'"
+end
+
+step 'I time in as :username with password :password' do |name, pass|
+  @user = User.find_by_login(name) || User.create(login: name)
+  visit "/"
+  fill_in "user_login", :with => name
+  fill_in "user_password", :with => pass
+  Timecop.freeze(Time.now)
+  step "I press 'Time in'"
 end
 
 step 'I should be on the :path page' do |path|
@@ -20,36 +41,24 @@ step 'I should not be on the :path page' do | path|
   current_path.should_not == send("#{path}_path")
 end
 
-step 'I should see :name :element' do |name, element|
+step 'I should see the :name :element' do |name, element|
   case element
   when 'button'
-    page.should have_button("#{name}")
+    page.should have_button(name)
   when 'text'
-    page.should have_content("#{name}")
+    page.should have_content(name)
+  when 'link'
+    page.should have_link(name)
   end
 end
 
-step 'I am logged in' do
-  visit signin_path
-  fill_in 'user_login', :with => 'ldaplogin'
-  fill_in 'user_password', :with => 'ldappassword'
-  click_button 'Sign in'
+step 'I should not see :name :element' do |name, element|
+  case element
+  when 'button'
+    page.should have_no_button(name)
+  when 'text'
+    page.should have_no_content(name)
+  when 'link'
+    page.should have_no_link(name)
+  end
 end
-
-step 'I am on the :path page' do |path|
-  current_path.should == send("#{path}_path")
-end
-
-step 'I am not authorized' do
-  visit '/'
-  fill_in "user_login", :with=>"invalid_login"
-  fill_in "user_password", :with=>"invalid_pass"
-  step "I press 'Sign in'"
-  step "I should be on the 'signin' page"
-end
-
-step 'I am authorized' do
-  step "I am logged in"
-  step "I should be on the 'timesheets' page"
-end
-

@@ -4,14 +4,33 @@ Feature: Timein
   I want to timein with the current time
 
   Background:
-    Given I am logged in
+    Given I sign in as "ldaplogin" with password "ldappassword"
     And I am on the "timesheets" page
 
-  Scenario: With complete timesheet entry for previous day of shift
-    Given I have timein, timeout entry for previous timesheet
-    Then I should see "Time in" button
+  Scenario: with complete and valid timesheet entries
+    Given I have valid time entries
+    When I go to the "timesheets" page
+    Then I should see the "Time in" link
     When I press "Time in"
-    Then I should see my timesheet entry for the day
+    Then I should see my time entry today
+
+  Scenario: with no timeout entry for yesterday
+    Given I have not timeout yesterday
+    When I go to the "timesheets" page
+    Then I should not see "Time in" link
+    And I should be prompted to timeout
+    When I submit missing timeout
+    Then I should see my timeout
+
+  Scenario: with timein for today but no timeout
+    Given I have timein today but no timeout
+    When I go to the "timesheets" page
+    Then I should see my time entry today
+    And I should see the "Time in" link
+    When I press "Time in"
+    And I should be prompted to timeout
+    When I submit missing timeout
+    Then I should see my timeout
 
   Scenario: Late timesheet timein entry
     Given I am late for my shift schedule
@@ -25,8 +44,3 @@ Feature: Timein
     When I press "Time in"
     Then I should see my timesheet entry for the day
     And  I should see my previous timesheet marked as AWOL
-
-  Scenario: No timeout entry for previous day of shirt
-    Given I have no timeout entry for previous timesheet
-    Then I should be prompted to timeout
-    And I should not see "Time in" button

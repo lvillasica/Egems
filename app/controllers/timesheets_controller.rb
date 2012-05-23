@@ -20,7 +20,7 @@ class TimesheetsController < ApplicationController
     begin
       redirect_to :timesheets if Timesheet.time_in!(current_user)
     rescue Timesheet::NoTimeoutError
-      @invalid_timesheets = current_user.timesheets.latest.where("time_out is null")
+      @invalid_timesheets = current_user.timesheets.latest.no_timeout
       flash[:alert] = error_message(:no_timeout)
       render :template => 'timesheets/manual_timeout'
     end

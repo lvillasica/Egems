@@ -4,30 +4,19 @@ Feature: Login
   I want to login using my LDAP account
 
   Scenario: With Correct Password and Username
-    Given I go to the "signin" page
-    When I fill in the following:
-      | field          | value          |
-      | user[login]    | ldaplogin      |
-      | user[password] | ldappassword   |
-    And I press "Sign in"
+    Given I sign in as "ldaplogin" with password "ldappassword"
     Then I should be on the "timesheets" page
 
   Scenario: With Wrong Password and Username
-    Given I go to the "signin" page
-    When I fill in the following:
-      | field          | value          |
-      | user[login]    | wrong login    |
-      | user[password] | wrong password |
-    And I press "Sign in"
+    Given I sign in as "ldaplogin" with password "wrong"
     Then I should be on the "signin" page
 
   Scenario: Root page without Authorization
-    Given I am not authorized
+    Given I sign in as "ldaplogin" with password "wrong"
     When I go to the "root" page
     Then I should be on the "signin" page
 
   Scenario: Root page with Authorization
-    Given I am authorized
+    Given I sign in as "ldaplogin" with password "ldappassword"
     When I go to the "root" page
     Then I should be on the "timesheets" page
-
