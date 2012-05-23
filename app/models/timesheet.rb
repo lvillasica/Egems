@@ -16,22 +16,27 @@ class Timesheet < ActiveRecord::Base
   # -------------------------------------------------------
   # Namescopes
   # -------------------------------------------------------
-  scope :latest, :conditions => ["Date(date) = Date(?)", Time.now.utc]
-  scope :invalid, :conditions => ["Date(date) < Date(?) and time_in is not null and time_out is null", Time.now.utc]
+  scope :latest,   :conditions => ["Date(date) = Date(?)", Time.now.utc]
+  scope :previous, :conditions => ["Date(date) < Date(?)", Time.now.utc]
+  scope :no_timeout,  :conditions => ["time_in is not null and time_out is null"]
   scope :desc, :order => 'date desc, created_on desc'
 
   # -------------------------------------------------------
   # Class Methods
   # -------------------------------------------------------
   def self.time_in!(user, force=false)
-    raise NoTimeoutError if user.timesheets.latest.where("time_in is not null and time_out is null").present?
+    latest_invalid_timesheets = user.timesheets.latest.no_timeout
+    if latest_invalid_timesheets.present?
+      TimesheetMailer.invalid_timesheet(user,latest_invalid_timesheets.first)
+      raise NoTimeoutError
+    end
     raise NoTimeoutError if user.timesheets.invalid.present? and !force
     timesheet = user.timesheets.new(:date => Time.now.utc, :time_in => Time.now.utc)
     timesheet.save!
   end
 
   def self.time_out!(user)
-    latest = user.timesheets.latest.where("time_in is not null and time_out is null")
+    latest = user.timesheets.latest.no_timeout
     raise NoTimeinError if latest.empty?
     timesheet = latest.desc.first
     timesheet.time_out = Time.now.utc

@@ -4,6 +4,6 @@ class TimesheetMailer < BaseMailer
     @user = user
     @timesheet = timesheet
     mail(:to       => user.email,
-         :subsject => 'Invalid Timesheet that needs approval')
+         :subject => 'Invalid Timesheet that needs approval')
   end
 end
