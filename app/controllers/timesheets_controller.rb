@@ -30,14 +30,14 @@ class TimesheetsController < ApplicationController
     begin
       redirect_to :timesheets if Timesheet.time_out!(current_user)
     rescue Timesheet::NoTimeinError
-      @invalid_timesheet = current_user.timesheets.new(:date => Time.now.utc)
+      @invalid_timesheet = current_user.timesheets.new(:date => Time.now.beginning_of_day)
       flash[:alert] = error_message(:no_timein)
       render :template => 'timesheets/manual_timein'
     end
   end
 
   def manual_timein
-    timesheet = current_user.timesheets.new(:time_out => Time.now.utc)
+    timesheet = current_user.timesheets.new(:time_out => Time.now)
     timesheet.manual_update(params[:timein]) if params[:timein]
     redirect_to :timesheets
   end
