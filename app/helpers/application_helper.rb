@@ -1,4 +1,9 @@
 module ApplicationHelper
+
+  def email_logo
+    '/public/images/logo.png'
+  end
+
   def flash_message
     flashes = ""
     flash.map do |name, msg|
@@ -13,7 +18,16 @@ module ApplicationHelper
     flashes.html_safe
   end
 
-  def email_logo
-    '/public/images/logo.png'
+  def format_date(date)
+    date ? date.localtime.strftime("%Y-%m-%d") : "yyyy-mm-dd"
   end
+
+  def format_short_time(time)
+    time ? time.localtime.strftime("%I:%M %p") : "--:--"
+  end
+
+  def format_long_time(time)
+    time ? time.localtime.strftime("%I:%M:%S %p %Y-%m-%d") : "--:--"
+  end
+
 end

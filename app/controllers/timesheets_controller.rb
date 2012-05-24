@@ -4,7 +4,7 @@ class TimesheetsController < ApplicationController
   def index
     if user_signed_in?
       @employee_timesheets_latest = current_user.timesheets.latest
-      @invalid_timesheets = @employee_timesheets_latest.previous.no_timeout
+      @invalid_timesheets = current_user.timesheets.previous.no_timeout
       if @invalid_timesheets.present?
         render :template => 'timesheets/manual_timeout'
       else

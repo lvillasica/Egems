@@ -26,10 +26,7 @@ class Timesheet < ActiveRecord::Base
   # -------------------------------------------------------
   def self.time_in!(user, force=false)
     latest_invalid_timesheets = user.timesheets.latest.no_timeout
-    if latest_invalid_timesheets.present?
-      # TimesheetMailer.invalid_timesheet(user, latest_invalid_timesheets.first)
-      raise NoTimeoutError
-    end
+    raise NoTimeoutError if latest_invalid_timesheets.present?
     raise NoTimeoutError if user.timesheets.previous.no_timeout.present? and !force
     timesheet = user.timesheets.new(:date => Time.now.utc, :time_in => Time.now.utc)
     timesheet.save!
@@ -52,8 +49,11 @@ class Timesheet < ActiveRecord::Base
     t_hour = attrs[:meridian].casecmp('AM').eql?(0) ? attrs[:hour] : (attrs[:hour].to_i + 12).to_s
     t_min = attrs[:min]
     time = Time.local(t_date.year, t_date.month, t_date.day, t_hour, t_min)
-    self.time_out = time unless time_out
-    self.time_in = time unless time_in
-    self.save!
+    type = time_out ? "time_in" : "time_out"
+    self.attributes = {"#{type}" => time}
+    if self.save!
+      user = User.find_by_employee_id(employee_id)
+      TimesheetMailer.invalid_timesheet(user, self, type).deliver
+    end
   end
 end

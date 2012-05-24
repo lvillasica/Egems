@@ -1,9 +1,13 @@
 class TimesheetMailer < BaseMailer
 
-  def invalid_timesheet(user, timesheet)
+  def invalid_timesheet(user, timesheet, type)
     @user = user
-    @timesheet = timesheet
-    mail(:to       => user.email,
-         :subject => 'Invalid Timesheet that needs approval')
+    @type = type.capitalize.dasherize
+    @timein = timesheet.time_in
+    @timeout = timesheet.time_out
+
+    #TODO: send mail to approver
+    mail(:to      => @user.email,
+         :subject => "[eGEMS]You Have Sent #{@type} Request for Approval")
   end
 end

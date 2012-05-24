@@ -19,12 +19,11 @@
       <% @employee_timesheets_latest.each do |timesheet| %>
       <tr>
         <td><%= format_date timesheet.date %></td>
-        <td><%= format_time timesheet.time_in %></td>
-        <td><%= format_time timesheet.time_out %></td>
+        <td><%= format_long_time timesheet.time_in %></td>
+        <td><%= format_long_time timesheet.time_out %></td>
       </tr>
       <% end %>
       </tbody>
     </table>
   </div>
 </div>
-
