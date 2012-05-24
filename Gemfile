@@ -5,7 +5,11 @@ gem 'rails', '3.2.3'
 # Bundle edge Rails instead:
 # gem 'rails', :git => 'git://github.com/rails/rails.git'
 
-gem 'pg'
+group :production do
+  gem 'pg'
+  # Use unicorn as the app server
+  gem 'unicorn'
+end
 
 
 # Gems used only for assets and not required
@@ -32,12 +36,6 @@ gem "devise_ldap_authenticatable", :git => "git://github.com/cschiewek/devise_ld
 # To use Jbuilder templates for JSON
 # gem 'jbuilder'
 
-# Use unicorn as the app server
-# gem 'unicorn'
-
-# Deploy with Capistrano
-# gem 'capistrano'
-
 # To use debugger
 # gem 'ruby-debug19', :require => 'ruby-debug'
 group :test do
@@ -55,5 +53,6 @@ end
 group :development do
   gem 'sqlite3'
   gem 'pry'
+  # Deploy with Capistrano
   gem 'capistrano'
 end
