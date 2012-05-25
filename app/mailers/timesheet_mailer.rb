@@ -3,7 +3,7 @@ class TimesheetMailer < BaseMailer
   def invalid_timesheet(user, timesheet, type)
     @user = user
     @type = type.capitalize.dasherize
-    @timein = timesheet.time_in
+    @date = timesheet.date
     @timeout = timesheet.time_out
 
     #TODO: send mail to approver

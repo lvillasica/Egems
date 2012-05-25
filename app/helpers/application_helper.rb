@@ -18,6 +18,10 @@ module ApplicationHelper
     flashes.html_safe
   end
 
+  def format_date_slash(date)
+    date ?  date.localtime.strftime("%m/%d/%Y") : "mm/dd/yyyy"
+  end
+
   def format_date(date)
     date ? date.localtime.strftime("%Y-%m-%d") : "yyyy-mm-dd"
   end
