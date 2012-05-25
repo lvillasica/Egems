@@ -29,6 +29,7 @@ tags
 
 ## PROJECT::SPECIFIC
 /config/database.yml
+/db/seed/employee_list.csv
 
 # Ignore bundler config
 /.bundle
