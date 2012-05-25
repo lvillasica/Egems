@@ -1,0 +1,1 @@
+DEFAULT_EMAIL_DOMAIN = 'exist.com'
