@@ -47,7 +47,7 @@ class Timesheet < ActiveRecord::Base
   def manual_update(attrs={})
     #TODO: invalid date & time format
     t_date = attrs[:date] ? Time.parse(attrs[:date]) : date.localtime
-    t_hour = attrs[:meridian].casecmp('AM').eql?(0) ? attrs[:hour] : (attrs[:hour].to_i + 12).to_s
+    t_hour = Time.parse(attrs[:hour] + attrs[:meridian]).strftime("%H")
     t_min = attrs[:min]
     time = Time.local(t_date.year, t_date.month, t_date.day, t_hour, t_min)
     type = time_out ? "time_in" : "time_out"
