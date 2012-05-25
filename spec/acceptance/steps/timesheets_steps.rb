@@ -62,13 +62,15 @@ step 'I should be prompted to timeout' do
   page.should have_select("timeout_meridian")
 end
 
-step 'I should see my timeout' do
+step 'I should see my timeout from the previous day' do
   step "I go to the 'timesheets' page"
   # frozen time from step 'I submit missing timeout'
   date = Time.now
   Timecop.return
   Timecop.travel(date) do
+    prev_link = date.yesterday.strftime("%a")
     page.should have_content(date.strftime("%Y-%m-%d"))
+    step "I press '#{prev_link}'"
     page.should have_content(date.strftime("%I:%M:%S %p %Y-%m-%d"))
   end
 end

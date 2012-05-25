@@ -1,10 +1,10 @@
 class TimesheetsController < ApplicationController
   before_filter :authenticate_user!, :except => [:index]
+  before_filter :active_timesheet, :only => [:index]
+  before_filter :invalid_timesheet_prev, :only => [:index, :timesheets_nav]
 
   def index
     if user_signed_in?
-      @employee_timesheets_latest = current_user.timesheets.latest
-      @invalid_timesheets = current_user.timesheets.previous.no_timeout
       if @invalid_timesheets.present?
         render :template => 'timesheets/manual_timeout'
       else
@@ -47,4 +47,20 @@ class TimesheetsController < ApplicationController
     timesheet.manual_update(params[:timeout]) if params[:timeout]
     redirect_to :timesheets
   end
+  
+  def timesheets_nav
+    @active_time = (params[:time].blank? ? Time.now.beginning_of_day : Time.parse(params[:time]))
+    active_timesheet(@active_time)
+    render :action => :index
+  end
+  
+private
+  def active_timesheet(active_time = Time.now.beginning_of_day)
+    @employee_timesheets_active = current_user.timesheets.latest(active_time)
+  end
+  
+  def invalid_timesheet_prev
+    @invalid_timesheets = current_user.timesheets.previous.no_timeout
+  end
+  
 end

@@ -16,7 +16,9 @@ class Timesheet < ActiveRecord::Base
   # -------------------------------------------------------
   # Namescopes
   # -------------------------------------------------------
-  scope :latest,   :conditions => ["Date(date) = Date(?)", Time.now.beginning_of_day.utc]
+  scope :latest, lambda{ |time = Time.now.beginning_of_day|
+    { :conditions => ["Date(date) = Date(?)", time.utc] }
+  }
   scope :previous, :conditions => ["Date(date) < Date(?)", Time.now.beginning_of_day.utc]
   scope :no_timeout,  :conditions => ["time_in is not null and time_out is null"]
   scope :desc, :order => 'date desc, created_on desc'

@@ -20,7 +20,7 @@ Feature: Timein
     Then I should not see "Time in" link
     And I should be prompted to timeout
     When I submit missing timeout
-    Then I should see my timeout
+    Then I should see my timeout from the previous day
 
   Scenario: with timein for today but no timeout
     Given I have timein today but no timeout
@@ -30,7 +30,7 @@ Feature: Timein
     When I press "Time in"
     And I should be prompted to timeout
     When I submit missing timeout
-    Then I should see my timeout
+    Then I should see my timeout from the previous day
 
   Scenario: Late timesheet timein entry
     Given I am late for my shift schedule

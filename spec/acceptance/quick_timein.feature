@@ -19,4 +19,4 @@ Feature: Quick Timein
     When I go to the "timesheets" page
     Then I should be prompted to timeout
     When I submit missing timeout
-    Then I should see my timeout
+    Then I should see my timeout from the previous day

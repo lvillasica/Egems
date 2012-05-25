@@ -12,7 +12,7 @@ Feature: Timeout
     When I go to the "timesheets" page
     Then I should see the "Time out" link
     When I press "Time out"
-    Then I should see my timeout
+    Then I should see my timeout from the previous day
 
   Scenario: Latest timesheet entry has no value for time in
     Given I have not timein

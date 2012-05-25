@@ -1,24 +1,26 @@
 module TimesheetsHelper
 
-  def timesheet_navs(active_date)
-    active_date ||= Date.today
+  def timesheet_navs(active_time)
+    active_time ||= Time.now.beginning_of_day
     nav = %Q{
       <ul class="nav nav-tabs" id="myTab">
       <li class="pull-right"><a href="#week">Week</a></li>
     }
-    week_start = active_date.monday
-    week_end = (week_start + 4.days)
-    (week_start .. week_end).reverse_each do |date|
-      day_full = date.strftime("%A")
-      day_abbr = date.strftime("%a")
-      active = (active_date.eql?(date) ? "active" : "")
-      nav += %Q{
+    tabs = []
+    current = active_time.localtime.monday
+    week_end = (current + 4.days)
+    until current > week_end do
+      day_full = current.strftime("%A")
+      day_abbr = current.strftime("%a")
+      active = (active_time.to_date.eql?(current.to_date) ? "active" : nil)
+      tabs.prepend(%Q{
         <li class="#{active} pull-right">
-          <a href="##{day_full.downcase}">#{day_abbr}</a>
+          <a href="#{timesheets_nav_path(:time => current)}" data-method="post">#{day_abbr}</a>
         </li>
-      }
+      })
+      current += 1.day
     end
-    nav += "</ul>"
+    nav += (tabs.join(" ") << "</ul>")
     nav.html_safe
   end
 end
