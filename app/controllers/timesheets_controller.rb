@@ -37,15 +37,13 @@ class TimesheetsController < ApplicationController
   end
 
   def manual_timein
-    timesheet = current_user.timesheets.new(:time_out => Time.now)
-    timesheet.manual_update(params[:timein]) if params[:timein]
-    redirect_to :timesheets
+    @timesheet = current_user.timesheets.new(:time_out => Time.now)
+    save_manual_timeentry('timein', params[:timein])
   end
 
   def manual_timeout
-    timesheet = Timesheet.find(params[:id])
-    timesheet.manual_update(params[:timeout]) if params[:timeout]
-    redirect_to :timesheets
+    @timesheet = Timesheet.find_by_id(params[:id])
+    save_manual_timeentry('timeout', params[:timeout])
   end
   
   def timesheets_nav
@@ -61,6 +59,22 @@ private
   
   def invalid_timesheet_prev
     @invalid_timesheets = current_user.timesheets.previous.no_timeout
+  end
+  
+  # TODO: Refactor
+  def save_manual_timeentry(type, attrs)
+    if @timesheet.manual_update(attrs)
+      redirect_to :timesheets
+    else
+      flash[:alert] = error_message(@timesheet.errors.full_messages)
+      if type.eql?('timein')
+        date = Time.now.beginning_of_day
+        @invalid_timesheet = current_user.timesheets.new(:date => date)
+      else
+        @invalid_timesheets = current_user.timesheets.latest.no_timeout
+      end
+      render :template => "timesheets/manual_#{type}"
+    end
   end
   
 end

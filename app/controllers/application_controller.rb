@@ -20,8 +20,13 @@ class ApplicationController < ActionController::Base
   end
 
 protected
-  def error_message(symbol)
-    I18n.t "errors.#{symbol}" if symbol.is_a?(Symbol)
+  def error_message(symbol_or_string)
+    case symbol_or_string
+    when Symbol then I18n.t("errors.#{symbol_or_string}")
+    when String then symbol_or_string
+    when Array then symbol_or_string.join("</br>")
+    else nil
+    end
   end
 
 end
