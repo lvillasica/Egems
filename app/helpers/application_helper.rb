@@ -18,20 +18,18 @@ module ApplicationHelper
     flashes.html_safe
   end
 
-  def format_date_slash(date)
-    date ?  date.localtime.strftime("%m/%d/%Y") : "mm/dd/yyyy"
-  end
 
   def format_date(date)
-    date ? date.localtime.strftime("%Y-%m-%d") : "yyyy-mm-dd"
-  end
-
-  def format_short_time(time)
-    time ? time.localtime.strftime("%I:%M %p") : "--:--"
+    return 'yyyy-mm-dd' unless date
+    date = date.is_a?(Time) ? date.to_date : date
+    I18n.l(date, :format => :default)
   end
 
   def format_long_time(time)
-    time ? time.localtime.strftime("%I:%M:%S %p %Y-%m-%d") : "--:--"
+    time ? I18n.l(User.of_localtime(time), :format => :short) : "--:--"
   end
 
+  def format_time_in_long_with_date(time)
+    time ? I18n.l(User.of_localtime(time), :format => :long_with_date) : "mm-dd-yyyy --:--"
+  end
 end

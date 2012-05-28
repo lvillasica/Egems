@@ -1,4 +1,9 @@
 class User < ActiveRecord::Base
+  # -------------------------------------------------------
+  # Constants
+  # -------------------------------------------------------
+  TIMEZONE = 'Asia/Manila'
+
   # Include default devise modules. Others available are:
   # :token_authenticatable, :encryptable, :confirmable, :lockable, :timeoutable, :validatable and :omniauthable
   devise :ldap_authenticatable, :registerable,
@@ -23,6 +28,14 @@ class User < ActiveRecord::Base
   # Setup accessible (or protected) attributes for your model
   attr_accessible :email, :login, :password, :password_confirmation, :remember_me
   attr_accessible :employee_id
+
+  # -------------------------------------------------------
+  # Class Methods
+  # -------------------------------------------------------
+  # We are anticipating that timezone display will be from a user preference
+  def self.of_localtime(time)
+    time.in_time_zone(TIMEZONE)
+  end
 
   # -------------------------------------------------------
   # Instance Methods

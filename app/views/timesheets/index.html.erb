@@ -19,7 +19,7 @@
       <tbody>
       <% @employee_timesheets_active.each do |timesheet| %>
       <tr>
-        <td><%= format_date timesheet.date %></td>
+        <td><%= format_date timesheet.date.to_date %></td>
         <td><%= format_long_time timesheet.time_in %></td>
         <td><%= format_long_time timesheet.time_out %></td>
       </tr>
