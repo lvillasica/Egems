@@ -1,0 +1,79 @@
+$:.unshift(File.expand_path('./lib', ENV['rvm_path']))
+require 'rvm/capistrano'
+require "bundler/capistrano"
+
+load 'deploy/assets'
+
+set :application, "egems"
+set :domain, '0.0.0.0'
+
+set :deploy_to,         "/var/applications/#{application}"
+set :current_folder,    "#{deploy_to}/current"
+set :rails_env, "production"
+
+set :repository,  "git@github.com:mpagalan/Egems.git"
+set :scm, :git
+set :git_shallow_clone, 1
+set :git_enable_submodules, 1 
+set :scm_verbose, true
+set :deploy_via, :copy
+set :copy_strategy, :export
+set :copy_cache, true
+set :copy_cache, "/tmp/caches/#{application}"
+set :copy_exclude, [".git",".git/*"]
+set :copy_compression, :gzip # Also valid are :zip and :bz2 
+set :bundle_gemfile,  "Gemfile"
+set :bundle_without,  [:development, :test]
+set :rvm_ruby_string, "1.9.3-p125@egems"
+
+
+set :user, 'deploy'
+set :use_sudo, false
+ssh_options[:port] = 2222
+
+role :web, domain                   # Your HTTP server, Apache/etc
+role :app, domain                   # This may be the same as your `Web` server
+role :db,  domain, :primary => true # This is where Rails migrations will run
+
+
+
+
+# if you want to clean up old releases on each deploy uncomment this:
+before "deploy:finalize_update", "setup:db_conf"
+before "bundle:install", "rvm:trust_rvmrc"
+after  "deploy:restart", "deploy:cleanup"
+
+
+# if you're still using the script/reaper helper you will need
+# these http://github.com/rails/irs_process_scripts
+
+namespace :setup do
+  task :db_conf, :except => { :no_release => true } do
+    run %{ ln -nfs #{shared_path}/config/database.yml #{release_path}/config/database.yml; }
+    run %{ ln -nfs #{shared_path}/config/initializers_setup_mail #{release_path}/config/initializers/setup_mail.rb }
+  end
+end
+
+namespace :bundle do
+  desc "Installs an rvm wrapper for bundler"
+  task :wrapper, :roles => :app do
+    run "rvm wrapper #{rvm_ruby_string} egems bundle"
+  end
+
+end
+
+namespace :rvm do
+  task :trust_rvmrc do
+    run "rvm rvmrc trust #{release_path}"
+  end
+end
+
+namespace :deploy do
+  task :start do
+    run "#{try_sudo} /etc/init.d/unicorn start"
+  end
+  task :stop do ; end
+  task :restart, :roles => :app, :except => { :no_release => true } do
+    run "#{try_sudo} /etc/init.d/unicorn restart"
+  end
+end
