@@ -9,10 +9,16 @@ class Timesheet < ActiveRecord::Base
   attr_accessible :date, :time_in, :time_out
 
   # -------------------------------------------------------
+  # Modules
+  # -------------------------------------------------------
+  include ApplicationHelper
+  
+  # -------------------------------------------------------
   # Validations
   # -------------------------------------------------------
   validates_presence_of :time_in
   validates_presence_of :time_out, :on => :update
+  validate :invalid_entries
 
   # -------------------------------------------------------
   # Relationships / Associations
@@ -69,10 +75,18 @@ class Timesheet < ActiveRecord::Base
     begin
       if self.save!
         user = User.find_by_employee_id(employee_id)
+        # TODO: move to instance method and rescue exceptions
         TimesheetMailer.invalid_timesheet(user, self, type).deliver
       end
     rescue ActiveRecord::RecordInvalid
       return false
+    end
+  end
+  
+  def invalid_entries
+    if time_in && time_out && time_in > time_out
+      t_i, t_o = format_short_time_with_sec(time_in), format_short_time_with_sec(time_out)
+      errors[:base] << "Time in (#{t_i}) shouldn't be later than Time out (#{t_o})."
     end
   end
 end

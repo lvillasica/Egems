@@ -62,7 +62,8 @@ private
     if @timesheet.manual_update(attrs)
       redirect_to :timesheets
     else
-      flash_message(:alert, @timesheet.errors.full_messages)
+      errors = @timesheet.errors
+      flash_message(:alert, errors.full_messages) if errors.any?
       if type.eql?('timein')
         date = Time.now.beginning_of_day
         @invalid_timesheet = current_user.timesheets.new(:date => date)
