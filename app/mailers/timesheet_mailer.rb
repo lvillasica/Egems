@@ -4,7 +4,7 @@ class TimesheetMailer < BaseMailer
     @user = user
     @type = type.capitalize.dasherize
     @date = timesheet.date
-    @timeout = timesheet.time_out
+    @time = timesheet[type]
 
     #TODO: send mail to approver
     mail(:to      => @user.email,

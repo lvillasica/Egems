@@ -7,7 +7,7 @@ class Timesheet < ActiveRecord::Base
 
   self.table_name = 'employee_timesheets'
   attr_accessible :date, :time_in, :time_out
-  
+
   # -------------------------------------------------------
   # Validations
   # -------------------------------------------------------
