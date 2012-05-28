@@ -1,7 +1,0 @@
-# Sample localization file for English. Add more files in this directory for other locales.
-# See https://github.com/svenfuchs/rails-i18n/tree/master/rails%2Flocale for starting points.
-
-en:
-  errors:
-    no_timeout: 'No time out entry.'
-    no_timein: 'No time in entry.'

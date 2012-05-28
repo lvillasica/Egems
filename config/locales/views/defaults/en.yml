@@ -1,0 +1,7 @@
+# Default View locales
+en:
+  views:
+    flash:
+      alert:
+        no_timeout: 'No time out entry.'
+        no_timein: 'No time in entry.'

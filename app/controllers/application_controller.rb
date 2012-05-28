@@ -9,7 +9,7 @@ class ApplicationController < ActionController::Base
       Timesheet.time_in!(resource, true)
     rescue Timesheet::NoTimeoutError
       @invalid_timesheets = resource.timesheets.previous.no_timeout
-      flash[:alert] = error_message(:no_timeout)
+      flash_message(:alert, :no_timeout)
     end if params[:commit].eql?('Time in')
     return request.env['omniauth.origin'] || stored_location_for(resource) || timesheets_path
   end
@@ -20,13 +20,13 @@ class ApplicationController < ActionController::Base
   end
 
 protected
-  def error_message(symbol_or_string)
-    case symbol_or_string
-    when Symbol then I18n.t("errors.#{symbol_or_string}")
-    when String then symbol_or_string
-    when Array then symbol_or_string.join("</br>")
-    else nil
-    end
+  def flash_message(type,symbol_or_string)
+    flash[type] = case symbol_or_string
+                  when Symbol then I18n.t("views.flash.#{type.to_s}.#{symbol_or_string}")
+                  when String then symbol_or_string
+                  when Array then symbol_or_string.join("</br>")
+                  else nil
+                  end
   end
 
 end

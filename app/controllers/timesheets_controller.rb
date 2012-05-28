@@ -17,7 +17,7 @@ class TimesheetsController < ApplicationController
       redirect_to :timesheets if Timesheet.time_in!(current_user)
     rescue Timesheet::NoTimeoutError
       @invalid_timesheets = current_user.timesheets.latest.no_timeout
-      flash[:alert] = error_message(:no_timeout)
+      flash_message(:alert, :no_timeout)
       render :template => 'timesheets/manual_timeout'
     end
   end
@@ -27,7 +27,7 @@ class TimesheetsController < ApplicationController
       redirect_to :timesheets if Timesheet.time_out!(current_user)
     rescue Timesheet::NoTimeinError
       @invalid_timesheet = current_user.timesheets.new(:date => Time.now.beginning_of_day)
-      flash[:alert] = error_message(:no_timein)
+      flash_message(:alert, :no_timein)
       render :template => 'timesheets/manual_timein'
     end
   end
@@ -62,7 +62,7 @@ private
     if @timesheet.manual_update(attrs)
       redirect_to :timesheets
     else
-      flash[:alert] = error_message(@timesheet.errors.full_messages)
+      flash_message(:alert, @timesheet.errors.full_messages)
       if type.eql?('timein')
         date = Time.now.beginning_of_day
         @invalid_timesheet = current_user.timesheets.new(:date => date)
