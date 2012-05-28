@@ -5,12 +5,8 @@ class TimesheetsController < ApplicationController
 
   def index
     if user_signed_in?
-      if @invalid_timesheets.present?
-        render :template => 'timesheets/manual_timeout'
-      else
-        render :template => 'timesheets/index'
-      end
-
+      template = (@invalid_timesheets.present? ? 'manual_timeout' : 'index')
+      render :template => "timesheets/#{template}"
     else
       redirect_to signin_url
     end
