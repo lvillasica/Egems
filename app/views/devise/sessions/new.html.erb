@@ -3,9 +3,9 @@
   <%= form_for(resource, :as => resource_name, :url => session_path(resource_name), :html => { :class => 'well form-horizontal' }) do |f| %>
     <h2>Sign in</h2>
     <fieldset>
-      <%= flash_message %> 
+      <%= flash_message %>
       <div class="control-group">
-        <%= f.label :login, :class => 'control-label' %>
+        <%= f.label :login, "Username", :class => 'control-label' %>
         <div class="controls">
           <%= f.text_field :login %>
         </div>
@@ -17,17 +17,7 @@
           <%= f.password_field :password %>
         </div>
       </div>
-
-      <% if devise_mapping.rememberable? -%>
-        <div class="control-group">
-          <div class="controls">
-            <label class="checkbox">
-              <%= f.check_box :remember_me %>
-              Remember me
-            </label>
-          </div>
-        </div>
-      <% end -%>
+      
       <div class="form-actions no-padding-bottom no-margin-bottom">
         <%= f.submit "Sign in", :class => 'btn btn-primary btn-large' %>
         <%= f.submit "Time in", :class => 'btn btn-primary btn-large' %>
