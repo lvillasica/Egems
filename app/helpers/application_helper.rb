@@ -21,7 +21,7 @@ module ApplicationHelper
 
   def format_date(date)
     return 'yyyy-mm-dd' unless date
-    date = date.is_a?(Time) ? date.to_date : date
+    date = date.is_a?(Time) ? User.of_localtime(date).to_date : date
     I18n.l(date, :format => :default)
   end
 
