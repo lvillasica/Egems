@@ -34,11 +34,9 @@ class Timesheet < ActiveRecord::Base
   scope :previous, :conditions => ["Date(date) < Date(?)", Time.now.beginning_of_day.utc]
   scope :no_timeout,  :conditions => ["time_in is not null and time_out is null"]
   scope :desc, :order => 'date desc, created_on desc'
-  scope :last_entries, :conditions => ["created_on < ?", Time.now.utc]
   scope :within, lambda { |range|
     where(["Date(date) between Date(?) and Date(?)", range.first.utc, range.last.utc])
   }
-
 
   # -------------------------------------------------------
   # Class Methods
@@ -80,7 +78,11 @@ class Timesheet < ActiveRecord::Base
     begin
       if self.save!
         user = User.find_by_employee_id(employee_id)
-        self.class.time_in!(user) rescue NoTimeoutError if type.eql?("time_out")
+        # Time in after manual timeout only if your manual timeout entry is for
+        # the current day.
+        if type.eql?("time_out") && time.today?
+          self.class.time_in!(user) rescue NoTimeoutError
+        end
         # TODO: move to instance method and rescue exceptions
         TimesheetMailer.invalid_timesheet(user, self, type).deliver
       end
@@ -97,7 +99,7 @@ class Timesheet < ActiveRecord::Base
       end
 
       user = User.find_by_employee_id(employee_id)
-      last_entry = user.timesheets.last_entries.desc.first
+      last_entry = user.timesheets.order(:created_on).last
       if last_entry && last_entry.time_out && time_in < last_entry.time_out
         errors[:base] << "Time in should be later than last entries."
       end

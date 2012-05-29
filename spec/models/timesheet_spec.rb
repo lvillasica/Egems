@@ -16,4 +16,7 @@ describe Timesheet do
       end
     end
   end
+  
+  it 'should get minutes late'
+  it 'should get total hours'
 end
