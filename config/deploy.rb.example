@@ -39,7 +39,9 @@ role :db,  domain, :primary => true # This is where Rails migrations will run
 
 
 # if you want to clean up old releases on each deploy uncomment this:
+before "deploy:finalize_update", "setup:directories"
 before "deploy:finalize_update", "setup:db_conf"
+before "deploy:finalize_update", "setup:mailer_settings"
 before "bundle:install", "rvm:trust_rvmrc"
 after  "deploy:restart", "deploy:cleanup"
 
@@ -50,7 +52,12 @@ after  "deploy:restart", "deploy:cleanup"
 namespace :setup do
   task :db_conf, :except => { :no_release => true } do
     run %{ ln -nfs #{shared_path}/config/database.yml #{release_path}/config/database.yml; }
+  end
+  task :mailer_settings, :except => { :no_release => true } do
     run %{ ln -nfs #{shared_path}/config/initializers_setup_mail #{release_path}/config/initializers/setup_mail.rb }
+  end
+  task :directories, :except => { :no_release => true } do
+    run %{ mkdir -p #{release_path}/tmp/sockets }
   end
 end
 
