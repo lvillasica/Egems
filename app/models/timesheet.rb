@@ -93,11 +93,15 @@ class Timesheet < ActiveRecord::Base
 
   def invalid_entries
     if time_in && time_out
+      t_i, t_o = format_short_time_with_sec(time_in), format_short_time_with_sec(time_out)
       if time_in > time_out
-        t_i, t_o = format_short_time_with_sec(time_in), format_short_time_with_sec(time_out)
         errors[:base] << "Time in (#{t_i}) shouldn't be later than Time out (#{t_o})."
       end
-
+      
+      if time_out > Time.now.utc
+        errors[:base] << "Time out (#{t_o}) shouldn't be later than current time."
+      end
+      
       user = User.find_by_employee_id(employee_id)
       last_entry = user.timesheets.order(:created_on).last
       if last_entry && last_entry.time_out && time_in < last_entry.time_out
