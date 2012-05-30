@@ -12,7 +12,7 @@ class Timesheet < ActiveRecord::Base
   # Modules
   # -------------------------------------------------------
   include ApplicationHelper
-  
+
   # -------------------------------------------------------
   # Validations
   # -------------------------------------------------------
@@ -28,14 +28,17 @@ class Timesheet < ActiveRecord::Base
   # -------------------------------------------------------
   # Namescopes
   # -------------------------------------------------------
-  scope :latest, lambda{ |time = Time.now.beginning_of_day|
-    { :conditions => ["Date(date) = Date(?)", time.utc] }
+  scope :latest, lambda { |time = Time.now.beginning_of_day|
+    where("Date(date) = Date(?)", time.utc)
   }
   scope :previous, :conditions => ["Date(date) < Date(?)", Time.now.beginning_of_day.utc]
   scope :no_timeout,  :conditions => ["time_in is not null and time_out is null"]
   scope :desc, :order => 'date desc, created_on desc'
   scope :last_entries, :conditions => ["created_on < ?", Time.now.utc]
-  
+  scope :within, lambda { |range|
+    where(["Date(date) between Date(?) and Date(?)", range.first.utc, range.last.utc])
+  }
+
 
   # -------------------------------------------------------
   # Class Methods
@@ -85,14 +88,14 @@ class Timesheet < ActiveRecord::Base
       return false
     end
   end
-  
+
   def invalid_entries
     if time_in && time_out
       if time_in > time_out
         t_i, t_o = format_short_time_with_sec(time_in), format_short_time_with_sec(time_out)
         errors[:base] << "Time in (#{t_i}) shouldn't be later than Time out (#{t_o})."
       end
-      
+
       user = User.find_by_employee_id(employee_id)
       last_entry = user.timesheets.last_entries.desc.first
       if last_entry && last_entry.time_out && time_in < last_entry.time_out

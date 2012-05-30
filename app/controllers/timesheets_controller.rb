@@ -41,22 +41,29 @@ class TimesheetsController < ApplicationController
     @timesheet = Timesheet.find_by_id(params[:id])
     save_manual_timeentry('timeout', params[:timeout])
   end
-  
+
   def timesheets_nav
     @active_time = (params[:time].blank? ? Time.now.beginning_of_day : Time.parse(params[:time]))
     active_timesheet(@active_time)
     render :action => :index
   end
-  
+
+  def timesheets_nav_week
+    time = Time.parse(params[:time])
+    @active_time = Range.new(time.monday, time.sunday)
+    @employee_timesheets_active = current_user.timesheets.within(@active_time)
+    render :action => :index
+  end
+
 private
   def active_timesheet(active_time = Time.now.beginning_of_day)
     @employee_timesheets_active = current_user.timesheets.latest(active_time)
   end
-  
+
   def invalid_timesheet_prev
     @invalid_timesheets = current_user.timesheets.previous.no_timeout
   end
-  
+
   # TODO: Refactor
   def save_manual_timeentry(type, attrs)
     if @timesheet.manual_update(attrs)
@@ -73,5 +80,5 @@ private
       render :template => "timesheets/manual_#{type}"
     end
   end
-  
+
 end
