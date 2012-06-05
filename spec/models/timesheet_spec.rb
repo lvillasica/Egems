@@ -21,8 +21,32 @@ describe Timesheet do
     end
   end
 
-  it 'should get minutes late'
-  it 'should get total hours'
+  describe :mins_late do
+    before do
+      @user = User.find_by_login('lvillasica')
+      @user.timesheets.each(&:destroy)
+    end
+    
+    context 'when timein is beyond maximum considerable timein' do
+      it 'should get the total minutes late' do
+        time = Time.parse("10:02am")
+        Timecop.return
+        Timecop.freeze(time)
+        Timesheet.time_in!(@user)
+        @user.timesheets.latest.last.mins_late.should_not be_zero
+      end
+    end
+    
+    context 'when timein is within earliest and maximum considerable timein' do
+      it 'should return 0' do
+        time = Time.parse("9:40am")
+        Timecop.return
+        Timecop.freeze(time)
+        Timesheet.time_in!(@user)
+        @user.timesheets.latest.last.mins_late.should be_zero
+      end
+    end
+  end
 
   # TODO: incorporate shift_schedules
   context 'single timesheet' do
@@ -96,5 +120,43 @@ describe Timesheet do
         end
       end
     end
+  end
+  
+  describe :is_within_shift? do
+    context 'when entry is within shift schedule' do
+      it 'should return true'
+    end
+    
+    context 'when entry is beyond shift schedule' do
+      it 'should return false'
+    end
+    
+    context 'when entry falls on weekend or holiday' do
+      it 'should return false'
+    end
+  end
+  
+  describe :weekend? do
+    context 'when entry date falls on a weekend' do
+      it 'should return true'
+    end
+    
+    context 'when entry date did not fall on a weekend' do
+      it 'should return false'
+    end
+  end
+  
+  describe :holiday? do
+    context 'when entry date is a holiday' do
+      it 'should return true'
+    end
+    
+    context 'when entry date is not a holiday' do
+      it 'should return false'
+    end
+  end
+  
+  describe :total_hours do
+    it 'should get total hours'
   end
 end

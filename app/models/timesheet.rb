@@ -157,6 +157,12 @@ class Timesheet < ActiveRecord::Base
       self.minutes_excess = 0
     end
   end
+  
+  def mins_late
+    detail = shift_schedule_detail
+    max_time_in = detail.am_time_start + detail.am_time_allowance.minutes
+    (time_in && time_in > max_time_in)? ((time_in - max_time_in) / 60).round : 0
+  end
 
   def put_shift_details
     self.shift_schedule_detail = ShiftScheduleDetail.find(date_wday)

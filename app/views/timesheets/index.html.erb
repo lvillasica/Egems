@@ -15,6 +15,7 @@
         <th>Time In</th>
         <th>Time Out</th>
         <th>Total Minutes</th>
+        <th>Minutes Late</th>
         <th>Minutes Undertime</th>
       </tr>
       </thead>
@@ -25,6 +26,7 @@
         <td><%= format_long_time timesheet.time_in %></td>
         <td><%= format_long_time timesheet.time_out %></td>
         <td><%= timesheet.duration %></td>
+        <td><%= timesheet.mins_late %>
         <td><%= timesheet.minutes_undertime %></td>
       </tr>
       <% end %>
