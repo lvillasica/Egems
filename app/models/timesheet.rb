@@ -120,20 +120,41 @@ class Timesheet < ActiveRecord::Base
   end
 
   def compute_minutes
-    if time_out
-      self.duration = (time_out - time_in) / 1.minute
+    if time_out && is_within_shift?
+      self.duration = ((time_out - time_in) / 1.minute).round
       user = User.find_by_employee_id(employee_id)
       timesheets_today = user.timesheets.latest(date.localtime)
                              .reject{ |t| t.id == id }.select(&:is_within_shift?)
-      valid_time_out = shift_schedule_detail.valid_time_out
 
-      if time_out < valid_time_out
-        self.minutes_undertime = (valid_time_out - time_out) / 1.minute
-        self.minutes_excess = 0
-      elsif time_out > valid_time_out
-        self.minutes_undertime = 0
-        self.minutes_excess = (time_out - valid_time_out) / 1.minute
+      if timesheets_today.empty?
+        valid_time_out = get_valid_time_out
+        if time_out < valid_time_out
+          self.minutes_undertime = ((valid_time_out - time_out) / 1.minute).round
+          self.minutes_excess = 0
+        elsif time_out > valid_time_out
+          self.minutes_undertime = 0
+          self.minutes_excess = ((time_out - valid_time_out) / 1.minute).round
+        end
+      else
+        timesheets_today.each do |prev|
+          prev.update_column(:minutes_excess, 0)
+          prev.update_column(:minutes_undertime, 0)
+        end
+
+        first_timesheet = timesheets_today.sort_by(&:time_in).first
+        valid_time_out = get_valid_time_out(first_timesheet)
+        if time_out < valid_time_out
+          self.minutes_undertime = ((valid_time_out - time_out) / 1.minute).round
+          self.minutes_excess = 0
+        elsif time_out > valid_time_out
+          self.minutes_undertime = 0
+          self.minutes_excess = ((time_out - valid_time_out) / 1.minute).round
+        end
       end
+    elsif time_out && !is_within_shift?
+      self.duration = ((time_out - time_in) / 1.minute).round
+      self.minutes_undertime = 0
+      self.minutes_excess = 0
     end
   end
 
@@ -141,17 +162,16 @@ class Timesheet < ActiveRecord::Base
     self.shift_schedule_detail = ShiftScheduleDetail.find(date_wday)
   end
 
-  def is_within_shift?
-    shift = shift_schedule_detail
-    shift_start = shift.am_time_start - shift.am_time_allowance.minutes
-    shift_end = shift.pm_time_start + shift.pm_time_duration.minutes + shift.pm_time_allowance.minutes
+  def get_valid_time_out(timesheet=self)
+    timesheet.time_in.localtime + timesheet.shift_schedule_detail.shift_total_time.minutes
+  end
 
-    time_start = Time.parse I18n.l(shift_start, :format => :short)
-    timein = Time.parse I18n.l(time_in, :format => :short)
-    time_end = Time.parse I18n.l(shift_end, :format => :short)
+  def is_within_shift?
+    time_start = shift_schedule_detail.valid_time_in
+    time_end = shift_schedule_detail.valid_time_out
 
     shift_schedule = Range.new(time_start, time_end)
-    shift_schedule.cover?(timein)
+    shift_schedule.cover?(time_in.localtime)
   end
 
   private
