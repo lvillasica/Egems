@@ -23,7 +23,16 @@ class Timesheet < ActiveRecord::Base
   # -------------------------------------------------------
   # Relationships / Associations
   # -------------------------------------------------------
-  belongs_to :user, :foreign_key => :employee_id
+  belongs_to :user, foreign_key: 'employee_id'
+
+  belongs_to  :shift_schedule, foreign_key: 'shift_schedule_id'
+  belongs_to  :shift_schedule_detail, foreign_key: 'shift_schedule_detail_id'
+
+  # -------------------------------------------------------
+  # Callbacks
+  # -------------------------------------------------------
+  before_create :put_shift_details
+  before_update :compute_minutes
 
   # -------------------------------------------------------
   # Namescopes
@@ -97,16 +106,56 @@ class Timesheet < ActiveRecord::Base
       if time_in > time_out
         errors[:base] << "Time in (#{t_i}) shouldn't be later than Time out (#{t_o})."
       end
-      
+
       if time_out > Time.now.utc
         errors[:base] << "Time out (#{t_o}) shouldn't be later than current time."
       end
-      
+
       user = User.find_by_employee_id(employee_id)
       last_entry = user.timesheets.order(:created_on).last
       if last_entry && last_entry.time_out && time_in < last_entry.time_out
         errors[:base] << "Time in should be later than last entries."
       end
     end
+  end
+
+  def compute_minutes
+    if time_out
+      self.duration = (time_out - time_in) / 1.minute
+      user = User.find_by_employee_id(employee_id)
+      timesheets_today = user.timesheets.latest(date.localtime)
+                             .reject{ |t| t.id == id }.select(&:is_within_shift?)
+      valid_time_out = shift_schedule_detail.valid_time_out
+
+      if time_out < valid_time_out
+        self.minutes_undertime = (valid_time_out - time_out) / 1.minute
+        self.minutes_excess = 0
+      elsif time_out > valid_time_out
+        self.minutes_undertime = 0
+        self.minutes_excess = (time_out - valid_time_out) / 1.minute
+      end
+    end
+  end
+
+  def put_shift_details
+    self.shift_schedule_detail = ShiftScheduleDetail.find(date_wday)
+  end
+
+  def is_within_shift?
+    shift = shift_schedule_detail
+    shift_start = shift.am_time_start - shift.am_time_allowance.minutes
+    shift_end = shift.pm_time_start + shift.pm_time_duration.minutes + shift.pm_time_allowance.minutes
+
+    time_start = Time.parse I18n.l(shift_start, :format => :short)
+    timein = Time.parse I18n.l(time_in, :format => :short)
+    time_end = Time.parse I18n.l(shift_end, :format => :short)
+
+    shift_schedule = Range.new(time_start, time_end)
+    shift_schedule.cover?(timein)
+  end
+
+  private
+  def date_wday
+    date.localtime.to_date.wday
   end
 end

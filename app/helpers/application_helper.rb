@@ -26,7 +26,7 @@ module ApplicationHelper
   end
 
   def format_long_time(time)
-    time ? I18n.l(User.of_localtime(time), :format => :short) : "--:--"
+    time ? I18n.l(User.of_localtime(time), :format => :long_with_date_default) : "--:--"
   end
 
   def format_short_time_with_sec(time)

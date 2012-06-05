@@ -9,7 +9,7 @@ en:
     - Fri
     - Sat
     abbr_month_names:
-    - 
+    -
     - Jan
     - Feb
     - Mar
@@ -35,7 +35,7 @@ en:
       long: ! '%B %d, %Y'
       short: ! '%b %d'
     month_names:
-    - 
+    -
     - January
     - February
     - March
@@ -197,4 +197,5 @@ en:
       long: ! '%B %d, %Y %H:%M'
       short: '%I:%M %p'
       short_with_sec: '%I:%M:%S %p'
+      long_with_date_default: ! '%I:%M:%S %p %Y-%m-%d'
       long_with_date: '%a, %m/%d/%Y %I:%M %p'

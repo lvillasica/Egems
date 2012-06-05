@@ -12,8 +12,10 @@
       <thead>
       <tr>
         <th>Date</th>
-        <th>Time in</th>
-        <th>Time out</th>
+        <th>Time In</th>
+        <th>Time Out</th>
+        <th>Total Minutes</th>
+        <th>Minutes Undertime</th>
       </tr>
       </thead>
       <tbody>
@@ -22,6 +24,8 @@
         <td><%= format_date timesheet.date %></td>
         <td><%= format_long_time timesheet.time_in %></td>
         <td><%= format_long_time timesheet.time_out %></td>
+        <td><%= timesheet.duration %></td>
+        <td><%= timesheet.minutes_undertime %></td>
       </tr>
       <% end %>
       </tbody>
