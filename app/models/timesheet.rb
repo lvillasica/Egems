@@ -161,7 +161,9 @@ class Timesheet < ActiveRecord::Base
   def mins_late
     detail = shift_schedule_detail
     max_time_in = detail.am_time_start + detail.am_time_allowance.minutes
-    (time_in && time_in > max_time_in)? ((time_in - max_time_in) / 60).round : 0
+    t_in = Time.utc(2000, 1, 1, time_in.hour, time_in.min)
+    max_t_in = Time.utc(2000, 1, 1, max_time_in.hour, max_time_in.min)
+    (t_in > max_t_in)? mins = ((t_in - max_t_in) / 60).floor : 0
   end
 
   def put_shift_details
