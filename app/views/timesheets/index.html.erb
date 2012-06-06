@@ -17,6 +17,7 @@
         <th>Total Minutes</th>
         <th>Minutes Late</th>
         <th>Minutes Undertime</th>
+        <th>Minutes Excess</th>
       </tr>
       </thead>
       <tbody>
@@ -28,6 +29,7 @@
         <td><%= timesheet.duration %></td>
         <td><%= timesheet.mins_late %>
         <td><%= timesheet.minutes_undertime %></td>
+        <td><%= timesheet.minutes_excess %></td>
       </tr>
       <% end %>
       </tbody>
