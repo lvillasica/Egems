@@ -12,15 +12,27 @@ class ShiftScheduleDetail < ActiveRecord::Base
     am_time_duration + pm_time_duration + (1.hour/1.minute)
   end
 
-  def valid_time_in
-    time = am_time_start.localtime - am_time_allowance.minutes
-    date = Time.now.beginning_of_week + (day_of_week - 1).days
-    Time.local(date.year, date.month, date.day, time.hour, time.min)
+  def valid_time_in(timesheet)
+    if am_time_start && pm_time_start
+      s_time = am_time_start.localtime - am_time_allowance.minutes
+      e_time = am_time_start.localtime + am_time_allowance.minutes
+
+      date = timesheet.date.localtime.beginning_of_week + (day_of_week - 1).days
+      time_start = Time.local(date.year, date.month, date.day, s_time.hour, s_time.min)
+      time_end = Time.local(date.year, date.month, date.day, e_time.hour, e_time.min)
+      Range.new(time_start, time_end)
+    end
   end
 
-  def valid_time_out
-    time = pm_time_start.localtime + pm_time_duration.minutes + pm_time_allowance.minutes
-    date = Time.now.beginning_of_week + (day_of_week - 1).days
-    Time.local(date.year, date.month, date.day, time.hour, time.min)
+  def valid_time_out(timesheet)
+    if am_time_start && pm_time_start
+      s_time = pm_time_start.localtime + pm_time_duration.minutes - pm_time_allowance.minutes
+      e_time = pm_time_start.localtime + pm_time_duration.minutes + pm_time_allowance.minutes
+
+      date = timesheet.date.localtime.beginning_of_week + (day_of_week - 1).days
+      time_start = Time.local(date.year, date.month, date.day, s_time.hour, s_time.min)
+      time_end = Time.local(date.year, date.month, date.day, e_time.hour, e_time.min)
+      Range.new(time_start, time_end)
+    end
   end
 end

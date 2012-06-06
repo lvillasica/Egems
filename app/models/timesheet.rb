@@ -44,7 +44,7 @@ class Timesheet < ActiveRecord::Base
   scope :no_timeout,  :conditions => ["time_in is not null and time_out is null"]
   scope :desc, :order => 'date desc, created_on desc'
   scope :within, lambda { |range|
-    where(["Date(date) between Date(?) and Date(?)", range.first.utc, range.last.utc])
+    where(["Date(date) between Date(?) and Date(?)", range.first.utc, range.last.beginning_of_day.utc])
   }
 
   # -------------------------------------------------------
@@ -120,20 +120,20 @@ class Timesheet < ActiveRecord::Base
   end
 
   def compute_minutes
-    if time_out && is_within_shift?
-      self.duration = ((time_out - time_in) / 1.minute).round
+    if time_out && is_work_day? && is_within_shift?
+      self.duration = ((time_out - time_in) / 1.minute).floor
       user = User.find_by_employee_id(employee_id)
       timesheets_today = user.timesheets.latest(date.localtime)
                              .reject{ |t| t.id == id }.select(&:is_within_shift?)
 
       if timesheets_today.empty?
         valid_time_out = get_valid_time_out
-        if time_out < valid_time_out
-          self.minutes_undertime = ((valid_time_out - time_out) / 1.minute).round
+        if time_out <= valid_time_out
+          self.minutes_undertime = ((valid_time_out - time_out) / 1.minute).floor
           self.minutes_excess = 0
         elsif time_out > valid_time_out
           self.minutes_undertime = 0
-          self.minutes_excess = ((time_out - valid_time_out) / 1.minute).round
+          self.minutes_excess = ((time_out - valid_time_out) / 1.minute).floor
         end
       else
         timesheets_today.each do |prev|
@@ -142,44 +142,60 @@ class Timesheet < ActiveRecord::Base
         end
 
         first_timesheet = timesheets_today.sort_by(&:time_in).first
-        valid_time_out = get_valid_time_out(first_timesheet)
-        if time_out < valid_time_out
-          self.minutes_undertime = ((valid_time_out - time_out) / 1.minute).round
+        valid_time_out = first_timesheet.get_valid_time_out
+        if time_out <= valid_time_out
+          self.minutes_undertime = ((valid_time_out - time_out) / 1.minute).floor
           self.minutes_excess = 0
         elsif time_out > valid_time_out
           self.minutes_undertime = 0
-          self.minutes_excess = ((time_out - valid_time_out) / 1.minute).round
+          self.minutes_excess = ((time_out - valid_time_out) / 1.minute).floor
         end
       end
-    elsif time_out && !is_within_shift?
+    else
       self.duration = ((time_out - time_in) / 1.minute).round
       self.minutes_undertime = 0
       self.minutes_excess = 0
     end
   end
-  
+
   def mins_late
-    detail = shift_schedule_detail
-    max_time_in = detail.am_time_start + detail.am_time_allowance.minutes
-    t_in = Time.utc(2000, 1, 1, time_in.hour, time_in.min)
-    max_t_in = Time.utc(2000, 1, 1, max_time_in.hour, max_time_in.min)
-    (t_in > max_t_in)? mins = ((t_in - max_t_in) / 60).floor : 0
+    if is_work_day? && is_within_shift?
+      detail = shift_schedule_detail
+      max_time_in = detail.am_time_start.localtime + detail.am_time_allowance.minutes
+      l_time_in = time_in.localtime
+      t_in = Time.local(2000, 1, 1, l_time_in.hour, l_time_in.min)
+      max_t_in = Time.local(2000, 1, 1, max_time_in.hour, max_time_in.min)
+      (t_in > max_t_in)? mins = ((t_in - max_t_in) / 60).floor : 0
+    else
+      0
+    end
   end
 
   def put_shift_details
-    self.shift_schedule_detail = ShiftScheduleDetail.find(date_wday)
+    self.shift_schedule_detail = ShiftScheduleDetail.find_by_day_of_week(date_wday)
   end
 
-  def get_valid_time_out(timesheet=self)
-    timesheet.time_in.localtime + timesheet.shift_schedule_detail.shift_total_time.minutes
+  def get_valid_time_out
+    if mins_late > 0
+      shift_schedule_detail.valid_time_out(self).last
+    else
+      t_in_min = shift_schedule_detail.valid_time_in(self).first
+      t_in = time_in < t_in_min ? t_in_min : time_in
+      t_in.localtime + shift_schedule_detail.shift_total_time.minutes
+    end
   end
 
   def is_within_shift?
-    time_start = shift_schedule_detail.valid_time_in
-    time_end = shift_schedule_detail.valid_time_out
+    time_start = shift_schedule_detail.valid_time_in(self).first
+    time_end = shift_schedule_detail.valid_time_out(self).last
 
     shift_schedule = Range.new(time_start, time_end)
-    shift_schedule.cover?(time_in.localtime)
+    t_in = time_in < time_start ? time_start : time_in
+    shift_schedule.cover?(t_in.localtime)
+  end
+
+  def is_work_day?
+    !shift_schedule_detail.am_time_start.nil? && !shift_schedule_detail.pm_time_start.nil?
   end
 
   private

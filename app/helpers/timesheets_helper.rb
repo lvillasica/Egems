@@ -9,7 +9,7 @@ module TimesheetsHelper
 
     tabs = []
     current = active_time.localtime.monday
-    week_end = (current + 6.days)
+    week_end = current.sunday
     nav = %Q{
       <ul class="nav nav-tabs" id="myTab">
       <li class="#{active_range} pull-right">
