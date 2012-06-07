@@ -40,7 +40,7 @@ class Timesheet < ActiveRecord::Base
   scope :latest, lambda { |time = Time.now.beginning_of_day|
     # where("Date(date) = Date(?)", time.utc)
     range = Range.new(time, (time + 24.hours - 1.minute))
-    ids = within(range).map { |t| t.id if t.within_24hr_shift? }.compact
+    ids = within(range).map { |t| t.id if t.is_within_24hr_shift? }.compact
     where("id IN (#{ids.join(',')})")
   }
   scope :previous, :conditions => ["Date(date) < Date(?)", Time.now.beginning_of_day.utc]
@@ -164,13 +164,13 @@ class Timesheet < ActiveRecord::Base
   end
 
   def mins_late
-    if is_work_day? && is_within_shift?
+    if is_first_entry? && is_work_day? && is_within_shift?
       detail = shift_schedule_detail
-      max_time_in = detail.am_time_start.localtime + detail.am_time_allowance.minutes
       l_time_in = time_in.localtime
-      t_in = Time.local(2000, 1, 1, l_time_in.hour, l_time_in.min)
-      max_t_in = Time.local(2000, 1, 1, max_time_in.hour, max_time_in.min)
-      (t_in > max_t_in)? mins = ((t_in - max_t_in) / 60).floor : 0
+      t_in = Time.local(l_time_in.year, l_time_in.mon, l_time_in.day,
+                        l_time_in.hour, l_time_in.min)
+      max_time_in = detail.valid_time_in(self).last
+      (t_in > max_time_in)? mins = ((t_in - max_time_in) / 60).floor : 0
     else
       0
     end
@@ -204,7 +204,7 @@ class Timesheet < ActiveRecord::Base
     !shift_schedule_detail.am_time_start.nil? && !shift_schedule_detail.pm_time_start.nil?
   end
   
-  def within_24hr_shift?
+  def is_within_24hr_shift?
     unless shift_schedule_detail.nil?
       time_start = shift_schedule_detail.valid_time_in(self).first
       time_end = time_start + 24.hours - 1.minute
@@ -212,6 +212,11 @@ class Timesheet < ActiveRecord::Base
       time_out_covered = (time_out ? range.cover?(time_out.localtime) : true)
       range.cover?(time_in.localtime) && time_out_covered
     end
+  end
+  
+  def is_first_entry?
+    user = User.find_by_employee_id(employee_id)
+    self.eql? user.timesheets.latest(date.localtime).first
   end
 
   private
