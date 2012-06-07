@@ -38,16 +38,16 @@ class Timesheet < ActiveRecord::Base
   # Namescopes
   # -------------------------------------------------------
   scope :latest, lambda { |time = Time.now.beginning_of_day|
-    # where("Date(date) = Date(?)", time.utc)
-    range = Range.new(time, (time + 24.hours - 1.minute))
-    ids = within(range).map { |t| t.id if t.is_within_24hr_shift? }.compact
-    where("id IN (#{ids.join(',')})")
+    range = Range.new(time.monday, time.sunday)
+    day = time.localtime.to_date.wday
+    ids = within(range).map { |t| t.id if t.shift_schedule_detail.day_of_week == day }
+    where("id IN (#{ids.compact.join(',')})")
   }
-  scope :previous, :conditions => ["Date(date) < Date(?)", Time.now.beginning_of_day.utc]
+  scope :previous, lambda { latest(Time.now.yesterday.beginning_of_day) }
   scope :no_timeout,  :conditions => ["time_in is not null and time_out is null"]
   scope :desc, :order => 'date desc, created_on desc'
   scope :within, lambda { |range|
-    where(["Date(date) between Date(?) and Date(?)", range.first.utc, range.last.beginning_of_day.utc])
+    where(["Date(date) between Date(?) and Date(?)", range.first.utc, range.last.utc])
   }
 
   # -------------------------------------------------------
@@ -124,6 +124,7 @@ class Timesheet < ActiveRecord::Base
 
   def compute_minutes
     if time_out
+      update_shift_details
       if is_work_day? && is_within_shift?
         self.duration = ((time_out - time_in) / 1.minute).floor
         user = User.find_by_employee_id(employee_id)
@@ -178,7 +179,18 @@ class Timesheet < ActiveRecord::Base
 
   def put_shift_details
     # TODO: timein at 1AM tuesday, day_of_week
-    self.shift_schedule_detail = ShiftScheduleDetail.find_by_day_of_week(date_wday)
+     self.shift_schedule_detail = ShiftScheduleDetail.find_by_day_of_week(date_wday)
+  end
+
+  def update_shift_details
+    shift_start = shift_schedule_detail.valid_time_in(self).first
+    shift_end = shift_start + 24.hours
+    range = Range.new(shift_start, shift_end, true)
+
+    unless range.cover?(time_in.localtime)
+      day = (date.localtime - 1.day).to_date.wday
+      self.shift_schedule_detail = ShiftScheduleDetail.find_by_day_of_week(day)
+    end
   end
 
   def get_valid_time_out
@@ -192,34 +204,25 @@ class Timesheet < ActiveRecord::Base
   end
 
   def is_within_shift?
-    time_start = shift_schedule_detail.valid_time_in(self).first
-    time_end = shift_schedule_detail.valid_time_out(self).last
+    if is_work_day?
+      time_start = shift_schedule_detail.valid_time_in(self).first
+      time_end = shift_schedule_detail.valid_time_out(self).last
 
-    shift_schedule = Range.new(time_start, time_end, true)
-    t_in = time_in < time_start ? time_start : time_in
-    shift_schedule.cover?(t_in.localtime)
+      shift_schedule = Range.new(time_start, time_end, true)
+      t_in = time_in < time_start ? time_start : time_in
+      shift_schedule.cover?(t_in.localtime)
+    end
   end
 
   def is_work_day?
     !shift_schedule_detail.am_time_start.nil? && !shift_schedule_detail.pm_time_start.nil?
   end
-  
-  def is_within_24hr_shift?
-    unless shift_schedule_detail.nil?
-      time_start = shift_schedule_detail.valid_time_in(self).first
-      time_end = time_start + 24.hours - 1.minute
-      range = Range.new(time_start, time_end)
-      time_out_covered = (time_out ? range.cover?(time_out.localtime) : true)
-      range.cover?(time_in.localtime) && time_out_covered
-    end
-  end
-  
+
   def is_first_entry?
     user = User.find_by_employee_id(employee_id)
     self.eql? user.timesheets.latest(date.localtime).first
   end
 
-  private
   def date_wday
     date.localtime.to_date.wday
   end
