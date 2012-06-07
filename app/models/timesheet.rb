@@ -38,7 +38,10 @@ class Timesheet < ActiveRecord::Base
   # Namescopes
   # -------------------------------------------------------
   scope :latest, lambda { |time = Time.now.beginning_of_day|
-    where("Date(date) = Date(?)", time.utc)
+    # where("Date(date) = Date(?)", time.utc)
+    range = Range.new(time, (time + 24.hours - 1.minute))
+    ids = within(range).map { |t| t.id if t.within_24hr_shift? }.compact
+    where("id IN (#{ids.join(',')})")
   }
   scope :previous, :conditions => ["Date(date) < Date(?)", Time.now.beginning_of_day.utc]
   scope :no_timeout,  :conditions => ["time_in is not null and time_out is null"]
@@ -199,6 +202,16 @@ class Timesheet < ActiveRecord::Base
 
   def is_work_day?
     !shift_schedule_detail.am_time_start.nil? && !shift_schedule_detail.pm_time_start.nil?
+  end
+  
+  def within_24hr_shift?
+    unless shift_schedule_detail.nil?
+      time_start = shift_schedule_detail.valid_time_in(self).first
+      time_end = time_start + 24.hours - 1.minute
+      range = Range.new(time_start, time_end)
+      time_out_covered = (time_out ? range.cover?(time_out.localtime) : true)
+      range.cover?(time_in.localtime) && time_out_covered
+    end
   end
 
   private
