@@ -31,10 +31,10 @@ class Timesheet < ActiveRecord::Base
   # -------------------------------------------------------
   # Callbacks
   # -------------------------------------------------------
-  before_create :put_shift_details
-  before_create :set_minutes_late
+  before_save :put_shift_details, :on => :create
+  before_save :set_minutes_late, :on => :create
+  before_save :compute_minutes
   before_update :update_shift_details
-  before_update :compute_minutes
 
   # -------------------------------------------------------
   # Namescopes
@@ -201,8 +201,8 @@ class Timesheet < ActiveRecord::Base
 
   def put_shift_details
     # TODO: timein at 1AM tuesday, day_of_week
-     self.shift_schedule_detail = ShiftScheduleDetail.find_by_day_of_week(date_wday)
-     update_shift_details
+    self.shift_schedule_detail = ShiftScheduleDetail.find_by_day_of_week(date_wday)
+    update_shift_details
   end
 
   def update_shift_details
