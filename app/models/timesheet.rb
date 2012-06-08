@@ -108,9 +108,12 @@ class Timesheet < ActiveRecord::Base
       if self.save!
         user = User.find_by_employee_id(employee_id)
         # Time in after manual timeout only if your manual timeout entry is for
-        # the current day.
-        if type.eql?("time_out") && shift_schedule_detail.day_of_week == Date.today.wday
-          self.class.time_in!(user) rescue NoTimeoutError
+        # the current shift or if no timesheet for the shift created yet.
+        if type.eql?("time_out")
+          latest_entry = user.timesheets.latest.last
+          if shift_schedule_detail.day_of_week == Date.today.wday || latest_entry.nil?
+            self.class.time_in!(user) rescue NoTimeoutError
+          end
         end
         # TODO: move to instance method and rescue exceptions
         TimesheetMailer.invalid_timesheet(user, self, type).deliver
