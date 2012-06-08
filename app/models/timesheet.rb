@@ -148,6 +148,8 @@ class Timesheet < ActiveRecord::Base
       @timesheets_today = user.timesheets.latest(date.localtime)
                               .reject{ |t| t.id == id }.sort_by(&:time_in)
       @first_timesheet = @timesheets_today.first || self
+      undertimes = @timesheets_today.sum(&:minutes_undertime)
+
       if is_work_day? and is_within_shift?
         if @timesheets_today.empty?
           self.duration = ((time_out - time_in) / 1.minute).floor
@@ -175,13 +177,14 @@ class Timesheet < ActiveRecord::Base
             self.minutes_excess = 0
           elsif time_out > valid_time_out
             self.minutes_undertime = 0
-            self.minutes_excess = ((time_out - valid_time_out) / 1.minute).floor
+            excess = ((time_out - valid_time_out) / 1.minute).floor
+            self.minutes_excess = undertimes > 0 ? 0 : excess
           end
         end
       else
         self.duration = ((time_out - time_in) / 1.minute).floor
         self.minutes_undertime = 0
-        self.minutes_excess = duration
+        self.minutes_excess = undertimes > 0 ? 0 : duration
       end
     end
   end
@@ -227,11 +230,11 @@ class Timesheet < ActiveRecord::Base
       first_timesheet = @first_timesheet || self
 
       in_min, in_max = shift_schedule_detail.valid_time_in(self)
-      shift_start = time_in < in_min ? in_min : first_timesheet.time_in
+      shift_start = first_timesheet.time_in
       shift_start = shift_start > in_max ? in_max : shift_start
-      shift_end = shift_start + shift_schedule_detail.shift_total_time
+      shift_end = shift_start + shift_schedule_detail.shift_total_time.minutes
 
-      shift = Range.new(shift_start, shift_end, true)
+      shift = Range.new(shift_start, shift_end)
       shift.cover?(time_in.localtime)
     end
   end

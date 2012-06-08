@@ -14,10 +14,10 @@
         <th>Date</th>
         <th>Time In</th>
         <th>Time Out</th>
-        <th>Total Minutes</th>
-        <th>Minutes Late</th>
-        <th>Minutes Undertime</th>
-        <th>Minutes Excess</th>
+        <th>Total Hours</th>
+        <th>Late</th>
+        <th>Undertime</th>
+        <th>Excess</th>
       </tr>
       </thead>
       <tbody>
@@ -26,10 +26,10 @@
         <td><%= format_date timesheet.date %></td>
         <td><%= format_long_time timesheet.time_in_without_adjustment %></td>
         <td><%= format_long_time timesheet.time_out %></td>
-        <td><%= timesheet.duration %></td>
-        <td><%= timesheet.minutes_late %>
-        <td><%= timesheet.minutes_undertime %></td>
-        <td><%= timesheet.minutes_excess %></td>
+        <td><%= format_in_hours timesheet.duration %></td>
+        <td><%= format_in_hours timesheet.minutes_late %>
+        <td><%= format_in_hours timesheet.minutes_undertime %></td>
+        <td><%= format_in_hours timesheet.minutes_excess %></td>
       </tr>
       <% end %>
       </tbody>

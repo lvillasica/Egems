@@ -30,19 +30,14 @@ module TimesheetsHelper
     nav += (tabs.join(" ") << "</ul>")
     nav.html_safe
   end
-  
-  def total_hours(timesheets)
-    total_mins = 0
+
+  def format_in_hours(minutes)
     str = []
-    if timesheets.any? && timesheets.last.duration > 0
-      timesheets.each do |timesheet|
-        total_mins += timesheet.duration
-      end
-      hrs = (total_mins / 60).to_i
-      mins = (total_mins - (hrs * 60)).to_i
-      str << "#{hrs}hr(s)" if hrs > 0
-      str << "#{mins}min(s)" if mins > 0
-    end
-    str.join(" ")
+    hrs = (minutes/1.minute).to_i
+    mins = (minutes % 1.minute).to_i
+
+    str << pluralize(hrs, 'hr') if hrs > 0
+    str << pluralize(mins, 'min') if mins > 0
+    str.empty? ? "0" : str.join(" ")
   end
 end
