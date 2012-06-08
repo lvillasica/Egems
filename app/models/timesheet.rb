@@ -81,7 +81,7 @@ class Timesheet < ActiveRecord::Base
     shift = shift_schedule_detail
     time_in_original = read_attribute(:time_in).localtime
 
-    if shift && shift.day_of_week == date_wday && time_out
+    if shift && shift.day_of_week == date_wday && time_out && is_work_day?
       shift_min = shift.valid_time_in(self).first
       time_in_original < shift_min ? shift_min : time_in_original
     else
@@ -149,37 +149,27 @@ class Timesheet < ActiveRecord::Base
       @timesheets_today = user.timesheets.latest(date.localtime)
                               .reject{ |t| t.id == id }.sort_by(&:time_in)
       @first_timesheet = @timesheets_today.first || self
-      undertimes = @timesheets_today.sum(&:minutes_undertime)
+
       if is_within_shift?
         if @timesheets_today.empty?
+          @valid_time_out = get_valid_time_out
           self.duration = ((time_out - time_in) / 1.minute).floor
-          valid_time_out = get_valid_time_out
-          if time_out <= valid_time_out
-            self.minutes_undertime = ((valid_time_out - time_out) / 1.minute).floor
-            self.minutes_excess = 0
-          elsif time_out > valid_time_out
-            self.minutes_undertime = 0
-            self.minutes_excess = ((time_out - valid_time_out) / 1.minute).floor
-          end
+          self.minutes_undertime = get_minutes_undertime
+          self.minutes_excess = get_minutes_excess
         else
+          @valid_time_out = @first_timesheet.get_valid_time_out
+          self.duration = ((time_out - @first_timesheet.time_in) / 1.minute).floor
+          self.minutes_undertime = get_minutes_undertime
+          self.minutes_excess = get_minutes_excess
+
           @timesheets_today.each do |prev|
             prev.update_column(:duration, 0)
             prev.update_column(:minutes_excess, 0)
             prev.update_column(:minutes_undertime, 0)
           end
-
-          valid_time_out = @first_timesheet.get_valid_time_out
-          self.duration = ((time_out - @first_timesheet.time_in) / 1.minute).floor
-          if time_out <= valid_time_out
-            self.minutes_undertime = ((valid_time_out - time_out) / 1.minute).floor
-            self.minutes_excess = 0
-          elsif time_out > valid_time_out
-            self.minutes_undertime = 0
-            excess = ((time_out - valid_time_out) / 1.minute).floor
-            self.minutes_excess = undertimes > 0 ? 0 : excess
-          end
         end
       else
+        undertimes = @timesheets_today.sum(&:minutes_undertime)
         self.duration = ((time_out - time_in) / 1.minute).floor
         self.minutes_undertime = 0
         self.minutes_excess = undertimes > 0 ? 0 : duration
@@ -188,7 +178,6 @@ class Timesheet < ActiveRecord::Base
   end
 
   def set_minutes_late
-    binding.pry
     if is_first_entry? && is_within_shift?
       detail = self.shift_schedule_detail
       l_time_in = self.time_in.localtime
@@ -199,6 +188,17 @@ class Timesheet < ActiveRecord::Base
     end
   end
 
+  def get_minutes_undertime
+    t_undertime = ((@valid_time_out - time_out) / 1.minute).ceil
+    t_undertime > 0 ? t_undertime : 0
+  end
+
+  def get_minutes_excess
+    return 0 if minutes_undertime > 0
+    t_excess = ((time_out - @valid_time_out) / 1.minute).floor
+    t_excess > 0 ? t_excess : 0
+  end
+
   def put_shift_details
     # TODO: timein at 1AM tuesday, day_of_week
      self.shift_schedule_detail = ShiftScheduleDetail.find_by_day_of_week(date_wday)
@@ -206,14 +206,16 @@ class Timesheet < ActiveRecord::Base
   end
 
   def update_shift_details
-    shift_start = shift_schedule_detail.valid_time_in(self).first
-    shift_end = shift_start + 24.hours
-    range = Range.new(shift_start, shift_end, true)
+    if is_work_day?
+      shift_start = shift_schedule_detail.valid_time_in(self).first
+      shift_end = shift_start + 24.hours
+      range = Range.new(shift_start, shift_end, true)
 
-    if !range.cover?(time_in_without_adjustment.localtime)
-      if !time_out.nil? && !range.cover?(time_out.localtime)
-        day = (date.localtime - 1.day).to_date.wday
-        self.shift_schedule_detail = ShiftScheduleDetail.find_by_day_of_week(day)
+      if !range.cover?(time_in_without_adjustment.localtime)
+        if !time_out.nil? && !range.cover?(time_out.localtime)
+          day = (date.localtime - 1.day).to_date.wday
+          self.shift_schedule_detail = ShiftScheduleDetail.find_by_day_of_week(day)
+        end
       end
     end
   end

@@ -33,7 +33,7 @@ module TimesheetsHelper
 
   def format_in_hours(minutes)
     str = []
-    hrs = (minutes/1.minute).to_i
+    hrs = (minutes / 1.minute).to_i
     mins = (minutes % 1.minute).to_i
 
     str << pluralize(hrs, 'hr') if hrs > 0
