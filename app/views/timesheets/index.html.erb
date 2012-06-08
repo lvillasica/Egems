@@ -24,10 +24,10 @@
       <% @employee_timesheets_active.each do |timesheet| %>
       <tr>
         <td><%= format_date timesheet.date %></td>
-        <td><%= format_long_time timesheet.time_in %></td>
+        <td><%= format_long_time timesheet.time_in_without_adjustment %></td>
         <td><%= format_long_time timesheet.time_out %></td>
         <td><%= timesheet.duration %></td>
-        <td><%= timesheet.mins_late %>
+        <td><%= timesheet.minutes_late %>
         <td><%= timesheet.minutes_undertime %></td>
         <td><%= timesheet.minutes_excess %></td>
       </tr>

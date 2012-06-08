@@ -20,7 +20,7 @@ class ShiftScheduleDetail < ActiveRecord::Base
       date = timesheet.date.localtime.beginning_of_week + (day_of_week - 1).days
       time_start = Time.local(date.year, date.month, date.day, s_time.hour, s_time.min)
       time_end = Time.local(date.year, date.month, date.day, e_time.hour, e_time.min)
-      Range.new(time_start, time_end)
+      [time_start, time_end]
     end
   end
 
@@ -32,7 +32,7 @@ class ShiftScheduleDetail < ActiveRecord::Base
       date = timesheet.date.localtime.beginning_of_week + (day_of_week - 1).days
       time_start = Time.local(date.year, date.month, date.day, s_time.hour, s_time.min)
       time_end = Time.local(date.year, date.month, date.day, e_time.hour, e_time.min)
-      Range.new(time_start, time_end)
+      [time_start, time_end]
     end
   end
 end
