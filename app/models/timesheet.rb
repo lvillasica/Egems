@@ -32,6 +32,7 @@ class Timesheet < ActiveRecord::Base
   # Callbacks
   # -------------------------------------------------------
   before_create :put_shift_details
+  before_create :set_minutes_late
   before_update :update_shift_details
   before_update :compute_minutes
 
@@ -149,11 +150,9 @@ class Timesheet < ActiveRecord::Base
                               .reject{ |t| t.id == id }.sort_by(&:time_in)
       @first_timesheet = @timesheets_today.first || self
       undertimes = @timesheets_today.sum(&:minutes_undertime)
-
-      if is_work_day? and is_within_shift?
+      if is_within_shift?
         if @timesheets_today.empty?
           self.duration = ((time_out - time_in) / 1.minute).floor
-          self.minutes_late = get_minutes_late
           valid_time_out = get_valid_time_out
           if time_out <= valid_time_out
             self.minutes_undertime = ((valid_time_out - time_out) / 1.minute).floor
@@ -171,7 +170,6 @@ class Timesheet < ActiveRecord::Base
 
           valid_time_out = @first_timesheet.get_valid_time_out
           self.duration = ((time_out - @first_timesheet.time_in) / 1.minute).floor
-          self.minutes_late = @first_timesheet.get_minutes_late
           if time_out <= valid_time_out
             self.minutes_undertime = ((valid_time_out - time_out) / 1.minute).floor
             self.minutes_excess = 0
@@ -189,13 +187,16 @@ class Timesheet < ActiveRecord::Base
     end
   end
 
-  def get_minutes_late
-    detail = shift_schedule_detail
-    l_time_in = time_in.localtime
-    t_in = Time.local(l_time_in.year, l_time_in.mon, l_time_in.day,
-                      l_time_in.hour, l_time_in.min)
-    max_time_in = detail.valid_time_in(self).last
-    (t_in > max_time_in)? mins = ((t_in - max_time_in) / 60).floor : 0
+  def set_minutes_late
+    binding.pry
+    if is_first_entry? && is_within_shift?
+      detail = self.shift_schedule_detail
+      l_time_in = self.time_in.localtime
+      t_in = Time.local(l_time_in.year, l_time_in.mon, l_time_in.day,
+                        l_time_in.hour, l_time_in.min)
+      max_time_in = detail.valid_time_in(self).last
+      self.minutes_late = (t_in > max_time_in)? ((t_in - max_time_in) / 60).floor : 0
+    end
   end
 
   def put_shift_details
@@ -245,7 +246,7 @@ class Timesheet < ActiveRecord::Base
 
   def is_first_entry?
     user = User.find_by_employee_id(employee_id)
-    self.eql? user.timesheets.latest(date.localtime).first
+    user.timesheets.latest(date.localtime).first.nil?
   end
 
   def date_wday
