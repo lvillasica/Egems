@@ -49,7 +49,7 @@ class Timesheet < ActiveRecord::Base
   scope :no_timeout,  :conditions => ["time_in is not null and time_out is null"]
   scope :desc, :order => 'date desc, created_on desc'
   scope :within, lambda { |range|
-    where(["Date(date) between Date(?) and Date(?)", range.first.utc, range.last.utc])
+    where(["date between ? and ?", range.first.utc, range.last.utc])
   }
 
   # -------------------------------------------------------

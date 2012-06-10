@@ -40,4 +40,20 @@ module TimesheetsHelper
     str << pluralize(mins, 'min') if mins > 0
     str.empty? ? "0" : str.join(" ")
   end
+
+  def sum_minutes(timesheets)
+     timesheets.sum(&:duration)
+  end
+
+  def sum_late(timesheets)
+    timesheets.sum(&:minutes_late)
+  end
+
+  def sum_undertime(timesheets)
+    timesheets.sum(&:minutes_undertime)
+  end
+
+  def sum_excess(timesheets)
+    timesheets.sum(&:minutes_excess)
+  end
 end

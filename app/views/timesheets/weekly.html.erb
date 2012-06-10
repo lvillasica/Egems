@@ -1,0 +1,43 @@
+
+<p class="btn-group">
+  <%= link_to "Time in", timein_path, :method => :post, :class => 'btn btn-large' %>
+  <%= link_to "Time out", timeout_path, :method => :post, :class => 'btn btn-large' %>
+</p>
+
+<%# TODO: investigate why @active_time in here becomes UTC %>
+<%= timesheet_navs(@active_time) %>
+
+<div class="tab-content">
+  <div class="tab-pane active" id="monday">
+    <table class="table timesheets">
+      <thead>
+      <tr>
+        <th>Day</th>
+        <th>Date</th>
+        <th>Time In</th>
+        <th>Time Out</th>
+        <th>Total Hours</th>
+        <th>Late</th>
+        <th>Undertime</th>
+        <th>Excess</th>
+      </tr>
+      </thead>
+      <tbody>
+      <% @employee_timesheets_active.each do |sched, timesheets| %>
+      <tr>
+        <% first_timesheet = timesheets.first %>
+        <% last_timesheet = timesheets.last %>
+        <td><%= first_timesheet.date.strftime("%a") %></td>
+        <td><%= format_date first_timesheet.date %></td>
+        <td><%= format_long_time first_timesheet.time_in_without_adjustment %></td>
+        <td><%= format_long_time last_timesheet.time_out %></td>
+        <td><%= format_in_hours sum_minutes(timesheets) %></td>
+        <td><%= format_in_hours sum_late(timesheets) %></td>
+        <td><%= format_in_hours sum_undertime(timesheets) %></td>
+        <td><%= format_in_hours sum_excess(timesheets) %></td>
+      </tr>
+      <% end %>
+      </tbody>
+    </table>
+  </div>
+</div>

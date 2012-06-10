@@ -1,14 +1,15 @@
 
+<p class="btn-group">
+  <%= link_to "Time in", timein_path, :method => :post, :class => 'btn btn-large' %>
+  <%= link_to "Time out", timeout_path, :method => :post, :class => 'btn btn-large' %>
+</p>
+
 <%# TODO: investigate why @active_time in here becomes UTC %>
 <%= timesheet_navs(@active_time) %>
 
 <div class="tab-content">
   <div class="tab-pane active" id="monday">
-    <p class="btn-group">
-      <%= link_to "Time in", timein_path, :method => :post, :class => 'btn btn-large' %>
-      <%= link_to "Time out", timeout_path, :method => :post, :class => 'btn btn-large' %>
-    </p>
-    <table class="table">
+    <table class="table timesheets">
       <thead>
       <tr>
         <th>Date</th>
@@ -21,15 +22,29 @@
       </tr>
       </thead>
       <tbody>
-      <% @employee_timesheets_active.each do |timesheet| %>
+      <% size = @employee_timesheets_active.size %>
+      <% @employee_timesheets_active.each_with_index do |timesheet, index| %>
       <tr>
-        <td><%= format_date timesheet.date %></td>
-        <td><%= format_long_time timesheet.time_in_without_adjustment %></td>
-        <td><%= format_long_time timesheet.time_out %></td>
-        <td><%= format_in_hours timesheet.duration %></td>
-        <td><%= format_in_hours timesheet.minutes_late %>
-        <td><%= format_in_hours timesheet.minutes_undertime %></td>
-        <td><%= format_in_hours timesheet.minutes_excess %></td>
+        <% if index == 0 %>
+          <td class='mins' rowspan="<%= size %>"><%= format_date timesheet.date %></td>
+          <td><%= format_long_time timesheet.time_in_without_adjustment %></td>
+          <td><%= format_long_time timesheet.time_out %></td>
+          <td class='mins' rowspan="<%= size %>">
+            <%= format_in_hours sum_minutes(@employee_timesheets_active) %>
+          </td>
+          <td class='mins' rowspan="<%= size %>">
+            <%= format_in_hours sum_late(@employee_timesheets_active) %>
+          </td>
+          <td class='mins' rowspan="<%= size %>">
+            <%= format_in_hours sum_undertime(@employee_timesheets_active) %>
+          </td>
+          <td class='mins' rowspan="<%= size %>">
+            <%= format_in_hours sum_excess(@employee_timesheets_active) %>
+          </td>
+        <% else %>
+          <td><%= format_long_time timesheet.time_in_without_adjustment %></td>
+          <td><%= format_long_time timesheet.time_out %></td>
+        <% end %>
       </tr>
       <% end %>
       </tbody>
