@@ -33,10 +33,16 @@ table.timesheets th {
 table.timesheets tbody td {
   border: 1px solid #ddd;
   text-align: center;
+  width: 20%;
 }
 
 table.timesheets tbody td.mins {
   background-color: transparent;
   vertical-align: middle;
   text-align: center;
+  width: 10%;
+}
+
+table.timesheets tbody td.day {
+  width: 5%;
 }

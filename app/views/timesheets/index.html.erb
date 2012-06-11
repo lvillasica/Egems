@@ -3,7 +3,7 @@
   <%= link_to "Time in", timein_path, :method => :post, :class => 'btn btn-large' %>
   <%= link_to "Time out", timeout_path, :method => :post, :class => 'btn btn-large' %>
 </p>
-
+<br />
 <%# TODO: investigate why @active_time in here becomes UTC %>
 <%= timesheet_navs(@active_time) %>
 

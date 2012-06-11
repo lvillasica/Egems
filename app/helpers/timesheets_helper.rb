@@ -12,8 +12,11 @@ module TimesheetsHelper
     week_end = current.sunday
     nav = %Q{
       <ul class="nav nav-tabs" id="myTab">
+      <li class="input-append">
+        <input type="text" id="week-picker" class="span2 disabled" value="#{ get_week(active_time).join(' to ') }" />
+      </li>
       <li class="#{active_range} pull-right">
-        <a href="#{timesheets_nav_week_path(:time => current)}" data-method="post">Week</a>
+        <a id="week_tab" href="#{timesheets_nav_week_path(:time => current)}" data-method="post">Week</a>
       </li>
     }
     until current > week_end do
@@ -29,6 +32,16 @@ module TimesheetsHelper
     end
     nav += (tabs.join(" ") << "</ul>")
     nav.html_safe
+  end
+  
+  def get_week(active_time)
+    active_time ||= Time.now.beginning_of_day
+    if active_time.is_a?(Range)
+      active_time = active_time.first
+    end
+    current = active_time.localtime.monday
+    week_end = current.sunday
+    [format_date(current), format_date(week_end)]
   end
 
   def format_in_hours(minutes)
