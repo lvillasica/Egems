@@ -9,13 +9,21 @@ $(function() {
   }
   
   var setCurrentWeek = function(elem, date, inst) {
-    day = (date.getDay() == 0)? 6 : date.getDay() - 1;
-    startDate = new Date(date.getFullYear(), date.getMonth(), date.getDate() - day);
-    endDate = new Date(date.getFullYear(), date.getMonth(), date.getDate() - day + 6);
+    week = getWeekRange(date);
+    startDate = week.monday;
+    endDate = week.sunday;
     var dateFormat = inst.settings.dateFormat || $.datepicker._defaults.dateFormat;
     var startWeek = $.datepicker.formatDate( dateFormat, startDate, inst.settings );
     var endWeek = $.datepicker.formatDate( dateFormat, endDate, inst.settings );
     elem.val(startWeek + ' to ' + endWeek);
+  }
+  
+  var getWeekRange = function(date) {
+    day = (date.getDay() == 0)? 6 : date.getDay() - 1;
+    return {
+      monday: new Date(date.getFullYear(), date.getMonth(), date.getDate() - day),
+      sunday: new Date(date.getFullYear(), date.getMonth(), date.getDate() - day + 6)
+    }
   }
   
   $('#week-picker').datepicker( {
@@ -25,12 +33,13 @@ $(function() {
     buttonText: "<i class='icon-calendar'></i>",
     firstDay: 1,
     dateFormat: 'yy-mm-dd',
+    maxDate: getWeekRange(new Date()).sunday,
     onSelect: function(dateText, inst) {
       var date = $(this).datepicker('getDate');
-      var href="/timesheets/" + date + "/week"
+      var href="/timesheets/" + date + "/week";
       setCurrentWeek($(this), date, inst);
       selectCurrentWeek();
-      $("#week_tab").attr("href", "/timesheets/" + date + "/week").trigger('click');
+      $("#week_tab").attr("href", href).trigger('click');
     },
     beforeShow: function(input, inst) {
       var date = new Date($(input).val().split(" ")[0]);
