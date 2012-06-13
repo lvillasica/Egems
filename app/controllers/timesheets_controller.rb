@@ -17,6 +17,7 @@ class TimesheetsController < ApplicationController
       redirect_to :timesheets if Timesheet.time_in!(current_user)
     rescue Timesheet::NoTimeoutError
       @invalid_timesheets = current_user.timesheets.latest.no_timeout
+      @force = true
       flash_message(:alert, :no_timeout)
       render :template => 'timesheets/manual_timeout'
     end
@@ -39,7 +40,7 @@ class TimesheetsController < ApplicationController
 
   def manual_timeout
     @timesheet = Timesheet.find_by_id(params[:id])
-    save_manual_timeentry('timeout', params[:timeout])
+    save_manual_timeentry('timeout', params[:timeout], params[:forced])
   end
 
   def timesheets_nav
@@ -67,8 +68,8 @@ private
   end
 
   # TODO: Refactor
-  def save_manual_timeentry(type, attrs)
-    if @timesheet.manual_update(attrs)
+  def save_manual_timeentry(type, attrs, forced=nil)
+    if @timesheet.manual_update(attrs, forced)
       redirect_to :timesheets
     else
       errors = @timesheet.errors

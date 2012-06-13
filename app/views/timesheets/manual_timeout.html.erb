@@ -16,7 +16,7 @@
     <td><%= format_date timesheet.date %></td>
     <td><%= format_long_time timesheet.time_in %></td>
     <td>
-    <%= form_for(timesheet, :url => { :action => 'manual_timeout', :id => timesheet.id }, :method => :post) do |f| %>
+    <%= form_for(timesheet, :url => { :action => 'manual_timeout', :id => timesheet.id, :forced => @force }, :method => :post) do |f| %>
       <%= text_field 'timeout', 'hour', :placeholder => 'hh', :size => 2, :maxlength => 2, :class => 'time' %>
       <%= text_field 'timeout', 'min', :placeholder => 'mm', :size => 2, :maxlength => 2, :class => 'time' %>
       <%= select 'timeout', 'meridian', ['AM', 'PM'], {}, { :class => 'time' } %>

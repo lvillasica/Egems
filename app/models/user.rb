@@ -15,6 +15,7 @@ class User < ActiveRecord::Base
   has_many :timesheets, :table_name => 'employee_timesheets',
                         :foreign_key => 'employee_id',
                         :primary_key => 'employee_id'
+
   # -------------------------------------------------------
   # Validations
   # -------------------------------------------------------

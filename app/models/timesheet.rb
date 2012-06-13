@@ -45,7 +45,11 @@ class Timesheet < ActiveRecord::Base
     ids = within(range).map { |t| t.id if t.shift_schedule_detail.day_of_week == day }
     where("id IN (#{ids.compact.join(',')})")
   }
-  scope :previous, lambda { ids = latest(Time.now.yesterday) }
+  scope :previous, lambda {
+    time = Time.now.yesterday
+    time -= 1.day until (ids=latest(time)).present?
+    where("id IN (#{ids.map(&:id).compact.join(',')})")
+  }
   scope :no_timeout,  :conditions => ["time_in is not null and time_out is null"]
   scope :desc, :order => 'date desc, created_on desc'
   scope :within, lambda { |range|
@@ -93,7 +97,7 @@ class Timesheet < ActiveRecord::Base
     read_attribute(:time_in)
   end
 
-  def manual_update(attrs={})
+  def manual_update(attrs={}, forced=nil)
     #TODO: invalid date & time format
     begin
       t_date = attrs[:date] ? Time.parse(attrs[:date]) : date.localtime
@@ -110,12 +114,8 @@ class Timesheet < ActiveRecord::Base
         user = User.find_by_employee_id(employee_id)
         # Time in after manual timeout only if your manual timeout entry is for
         # the current shift or if no timesheet for the shift created yet.
-        if type.eql?("time_out")
-          latest_entry = user.timesheets.latest.last
-          if shift_schedule_detail.day_of_week == Date.today.wday || latest_entry.nil?
-            self.class.time_in!(user) rescue NoTimeoutError
-          end
-        end
+        self.class.time_in!(user) if type.eql?("time_out") && forced
+        return true
         # TODO: move to instance method and rescue exceptions
         TimesheetMailer.invalid_timesheet(user, self, type).deliver
       end

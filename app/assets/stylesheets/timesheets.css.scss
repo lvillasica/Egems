@@ -37,10 +37,13 @@ table.timesheets tbody td {
 }
 
 table.timesheets tbody td.mins {
-  background-color: transparent;
   vertical-align: middle;
   text-align: center;
   width: 10%;
+}
+
+table.timesheets.daily tbody tr:hover td.mins {
+  background-color: transparent;
 }
 
 table.timesheets tbody td.day {

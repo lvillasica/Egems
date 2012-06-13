@@ -33,7 +33,7 @@ module TimesheetsHelper
     nav += (tabs.join(" ") << "</ul>")
     nav.html_safe
   end
-  
+
   def get_week(active_time)
     active_time ||= Time.now.beginning_of_day
     if active_time.is_a?(Range)
@@ -49,8 +49,8 @@ module TimesheetsHelper
     hrs = (minutes / 1.minute).to_i
     mins = (minutes % 1.minute).to_i
 
-    str << pluralize(hrs, 'hr') if hrs > 0
-    str << pluralize(mins, 'min') if mins > 0
+    str << "#{hrs}h" if hrs > 0
+    str << "#{mins}m" if mins > 0
     str.empty? ? "0" : str.join(" ")
   end
 
