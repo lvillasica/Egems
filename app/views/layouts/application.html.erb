@@ -49,7 +49,9 @@
           <div class="container">
             <h2 class="nav pull-right" href="#">
               <i class="icon-time"></i>
-              <span id="time">--:--:-- --</span>
+              <span id="time" data-time="<%= format_long_time(now = Time.now) %>">
+                <%= format_short_time_with_sec(now) %>
+              </span>
             </h2>
           </div>
         </div>
