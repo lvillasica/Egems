@@ -5,6 +5,7 @@ class ShiftSchedule < ActiveRecord::Base
   # -------------------------------------------------------
   has_many :shift_schedule_details, :dependent => :destroy
   has_many :timesheets
+  has_and_belongs_to_many :employees, :join_table => 'employee_shift_schedules'
 
   # -------------------------------------------------------
   # Instance Methods

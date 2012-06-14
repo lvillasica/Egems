@@ -23,10 +23,9 @@ class Timesheet < ActiveRecord::Base
   # -------------------------------------------------------
   # Relationships / Associations
   # -------------------------------------------------------
-  belongs_to :user, foreign_key: 'employee_id'
-
   belongs_to  :shift_schedule, foreign_key: 'shift_schedule_id'
   belongs_to  :shift_schedule_detail, foreign_key: 'shift_schedule_detail_id'
+  belongs_to :employee
 
   # -------------------------------------------------------
   # Callbacks
@@ -48,9 +47,12 @@ class Timesheet < ActiveRecord::Base
     end
   }
   scope :previous, lambda {
-    if count > 0
+    if (index=count) > 0
       time = Time.now.yesterday
-      time -= 1.day until (ids=latest(time)).present?
+      until (ids=latest(time)).present? or index == 0
+        time -= 1.day
+        index -= 1
+      end
       where(:id => ids.compact.map(&:id))
     end
   }
@@ -64,17 +66,17 @@ class Timesheet < ActiveRecord::Base
   # Class Methods
   # -------------------------------------------------------
   class << self
-    def time_in!(user, force=false)
-      latest_invalid_timesheets = user.timesheets.latest.no_timeout
+    def time_in!(employee, force=false)
+      latest_invalid_timesheets = employee.timesheets.latest.no_timeout
       raise NoTimeoutError if latest_invalid_timesheets.present?
-      raise NoTimeoutError if user.timesheets.previous.no_timeout.present? and !force
-      timesheet = user.timesheets.new(:date => Time.now.beginning_of_day.utc,
+      raise NoTimeoutError if employee.timesheets.previous.no_timeout.present? and !force
+      timesheet = employee.timesheets.new(:date => Time.now.beginning_of_day.utc,
                                       :time_in => Time.now.utc)
       timesheet.save!
     end
 
-    def time_out!(user)
-      latest = user.timesheets.latest.no_timeout
+    def time_out!(employee)
+      latest = employee.timesheets.latest.no_timeout
       raise NoTimeinError if latest.empty?
       timesheet = latest.desc.first
       timesheet.time_out = Time.now.utc
@@ -115,12 +117,11 @@ class Timesheet < ActiveRecord::Base
     self.attributes = { "date" => t_date.beginning_of_day, "#{type}" => time }
     begin
       if self.save!
-        user = User.find_by_employee_id(employee_id)
         # Time in after manual timeout only if Time in is clicked.
-        self.class.time_in!(user) if type.eql?("time_out") && forced
+        self.class.time_in!(employee) if type.eql?("time_out") && forced
         return true
         # TODO: move to instance method and rescue exceptions
-        TimesheetMailer.invalid_timesheet(user, self, type).deliver
+        TimesheetMailer.invalid_timesheet(employee, self, type).deliver
       end
     rescue ActiveRecord::RecordInvalid
       return false
@@ -138,8 +139,7 @@ class Timesheet < ActiveRecord::Base
         errors[:base] << "Time out (#{t_o}) shouldn't be later than current time."
       end
 
-      user = User.find_by_employee_id(employee_id)
-      last_entry = user.timesheets.order(:created_on).last
+      last_entry = employee.timesheets.order(:created_on).last
       if last_entry && last_entry.time_out && time_in < last_entry.time_out
         errors[:base] << "Time in should be later than last entries."
       end
@@ -148,8 +148,7 @@ class Timesheet < ActiveRecord::Base
 
   def compute_minutes
     if time_out
-      user = User.find_by_employee_id(employee_id)
-      @timesheets_today = user.timesheets.latest(date.localtime)
+      @timesheets_today = employee.timesheets.latest(date.localtime)
                               .reject{ |t| t.id == id }.sort_by(&:time_in)
       @first_timesheet = @timesheets_today.first || self
 
@@ -204,7 +203,8 @@ class Timesheet < ActiveRecord::Base
 
   def put_shift_details
     # TODO: timein at 1AM tuesday, day_of_week
-    self.shift_schedule_detail = ShiftScheduleDetail.find_by_day_of_week(date_wday)
+    self.shift_schedule_id = employee.shift_schedule_id
+    self.shift_schedule_detail = shift_schedule.detail(date_wday)
     update_shift_details
   end
 
@@ -233,10 +233,12 @@ class Timesheet < ActiveRecord::Base
 
   def is_within_shift?
     if is_work_day?
-      first_timesheet = @first_timesheet || self
+      @timesheets_today ||= employee.timesheets.latest(date.localtime)
+                                 .reject{ |t| t.id == id }.sort_by(&:time_in)
+      @first_timesheet ||= @timesheets_today.first || self
 
       in_min, in_max = shift_schedule_detail.valid_time_in(self)
-      shift_start = first_timesheet.time_in
+      shift_start = @first_timesheet.time_in
       shift_start = shift_start > in_max ? in_max : shift_start
       shift_end = shift_start + shift_schedule_detail.shift_total_time.minutes
 
@@ -250,8 +252,7 @@ class Timesheet < ActiveRecord::Base
   end
 
   def is_first_entry?
-    user = User.find_by_employee_id(employee_id)
-    user.timesheets.latest(date.localtime).first.nil?
+    employee.timesheets.latest(date.localtime).first.nil?
   end
 
   def date_wday

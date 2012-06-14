@@ -5,10 +5,11 @@ class ApplicationController < ActionController::Base
   protect_from_forgery
 
   def after_sign_in_path_for(resource)
+    employee = resource.employee
     begin
-      Timesheet.time_in!(resource, true)
+      Timesheet.time_in!(employee, true)
     rescue Timesheet::NoTimeoutError
-      @invalid_timesheets = resource.timesheets.previous.no_timeout
+      @invalid_timesheets = employee.timesheets.previous.no_timeout
       flash_message(:alert, :no_timeout)
     end if params[:commit].eql?('Time in')
     return request.env['omniauth.origin'] || stored_location_for(resource) || timesheets_path

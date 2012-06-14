@@ -12,9 +12,7 @@ class User < ActiveRecord::Base
   # -------------------------------------------------------
   # Relationships / Associations
   # -------------------------------------------------------
-  has_many :timesheets, :table_name => 'employee_timesheets',
-                        :foreign_key => 'employee_id',
-                        :primary_key => 'employee_id'
+  belongs_to :employee
 
   # -------------------------------------------------------
   # Validations

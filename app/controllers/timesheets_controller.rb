@@ -1,5 +1,6 @@
 class TimesheetsController < ApplicationController
   before_filter :authenticate_user!, :except => [:index]
+  before_filter :get_employee, :except => [:manual_timeout, :timesheets_nav]
   before_filter :active_timesheet, :only => [:index]
   before_filter :invalid_timesheet_prev, :only => [:index, :timesheets_nav]
 
@@ -14,9 +15,9 @@ class TimesheetsController < ApplicationController
 
   def timein
     begin
-      redirect_to :timesheets if Timesheet.time_in!(current_user)
+      redirect_to :timesheets if Timesheet.time_in!(@employee)
     rescue Timesheet::NoTimeoutError
-      @invalid_timesheets = current_user.timesheets.latest.no_timeout
+      @invalid_timesheets = @employee.timesheets.latest.no_timeout
       @force = true
       flash_message(:alert, :no_timeout)
       render :template => 'timesheets/manual_timeout'
@@ -25,16 +26,16 @@ class TimesheetsController < ApplicationController
 
   def timeout
     begin
-      redirect_to :timesheets if Timesheet.time_out!(current_user)
+      redirect_to :timesheets if Timesheet.time_out!(@employee)
     rescue Timesheet::NoTimeinError
-      @invalid_timesheet = current_user.timesheets.new(:date => Time.now.beginning_of_day)
+      @invalid_timesheet = @employee.timesheets.new(:date => Time.now.beginning_of_day)
       flash_message(:alert, :no_timein)
       render :template => 'timesheets/manual_timein'
     end
   end
 
   def manual_timein
-    @timesheet = current_user.timesheets.new(:time_out => Time.now)
+    @timesheet = @employee.timesheets.new(:time_out => Time.now)
     save_manual_timeentry('timein', params[:timein])
   end
 
@@ -52,23 +53,30 @@ class TimesheetsController < ApplicationController
   def timesheets_nav_week
     time = Time.parse(params[:time])
     @active_time = Range.new(time.monday, time.sunday)
-    @employee_timesheets_active = current_user.timesheets.within(@active_time)
-                                              .sort_by(&:time_in)
-                                              .group_by(&:shift_schedule_detail_id)
+    @employee_timesheets_active = @employee.timesheets.within(@active_time)
+                                          .sort_by(&:time_in)
+                                          .group_by(&:shift_schedule_detail_id)
     render :template => 'timesheets/weekly'
   end
 
 private
+  def get_employee
+    @employee = current_user.employee
+  end
+
   def active_timesheet(active_time = Time.now.beginning_of_day)
-    @employee_timesheets_active = current_user.timesheets.latest(active_time)
+    @employee ||= get_employee
+    @employee_timesheets_active = @employee.timesheets.latest(active_time)
   end
 
   def invalid_timesheet_prev
-    @invalid_timesheets = current_user.timesheets.previous.no_timeout
+    @employee ||= get_employee
+    @invalid_timesheets = @employee.timesheets.previous.no_timeout
   end
 
   # TODO: Refactor
   def save_manual_timeentry(type, attrs, forced=nil)
+    @employee ||= get_employee
     if @timesheet.manual_update(attrs, forced)
       redirect_to :timesheets
     else
@@ -76,9 +84,9 @@ private
       flash_message(:alert, errors.full_messages) if errors.any?
       if type.eql?('timein')
         date = Time.now.beginning_of_day
-        @invalid_timesheet = current_user.timesheets.new(:date => date)
+        @invalid_timesheet = @employee.timesheets.new(:date => date)
       else
-        @invalid_timesheets = current_user.timesheets.latest.no_timeout
+        @invalid_timesheets = @employee.timesheets.latest.no_timeout
       end
       render :template => "timesheets/manual_#{type}"
     end

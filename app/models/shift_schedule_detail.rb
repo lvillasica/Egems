@@ -14,8 +14,8 @@ class ShiftScheduleDetail < ActiveRecord::Base
 
   def valid_time_in(timesheet)
     if am_time_start && pm_time_start
-      s_time = am_time_start.localtime - am_time_allowance.minutes
-      e_time = am_time_start.localtime + am_time_allowance.minutes
+      s_time = am_time_start - am_time_allowance.minutes
+      e_time = am_time_start + am_time_allowance.minutes
 
       date = timesheet.date.localtime.beginning_of_week + (day_of_week - 1).days
       time_start = Time.local(date.year, date.month, date.day, s_time.hour, s_time.min)
@@ -26,8 +26,8 @@ class ShiftScheduleDetail < ActiveRecord::Base
 
   def valid_time_out(timesheet)
     if am_time_start && pm_time_start
-      s_time = pm_time_start.localtime + pm_time_duration.minutes - pm_time_allowance.minutes
-      e_time = pm_time_start.localtime + pm_time_duration.minutes + pm_time_allowance.minutes
+      s_time = pm_time_start + pm_time_duration.minutes - pm_time_allowance.minutes
+      e_time = pm_time_start + pm_time_duration.minutes + pm_time_allowance.minutes
 
       date = timesheet.date.localtime.beginning_of_week + (day_of_week - 1).days
       time_start = Time.local(date.year, date.month, date.day, s_time.hour, s_time.min)
