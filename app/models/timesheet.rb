@@ -40,15 +40,19 @@ class Timesheet < ActiveRecord::Base
   # Namescopes
   # -------------------------------------------------------
   scope :latest, lambda { |time = Time.now|
-    range = Range.new(time.monday, time.sunday)
-    day = time.localtime.to_date.wday
-    ids = within(range).map { |t| t.id if t.shift_schedule_detail.day_of_week == day }
-    where("id IN (#{ids.compact.join(',')})")
+    if count > 0
+      range = Range.new(time.monday, time.sunday)
+      day = time.localtime.to_date.wday
+      within(range).includes(:shift_schedule_detail)
+                   .where("shift_schedule_details.day_of_week = ?", day)
+    end
   }
   scope :previous, lambda {
-    time = Time.now.yesterday
-    time -= 1.day until (ids=latest(time)).present?
-    where("id IN (#{ids.map(&:id).compact.join(',')})")
+    if count > 0
+      time = Time.now.yesterday
+      time -= 1.day until (ids=latest(time)).present?
+      where(:id => ids.compact.map(&:id))
+    end
   }
   scope :no_timeout,  :conditions => ["time_in is not null and time_out is null"]
   scope :desc, :order => 'date desc, created_on desc'
@@ -112,8 +116,7 @@ class Timesheet < ActiveRecord::Base
     begin
       if self.save!
         user = User.find_by_employee_id(employee_id)
-        # Time in after manual timeout only if your manual timeout entry is for
-        # the current shift or if no timesheet for the shift created yet.
+        # Time in after manual timeout only if Time in is clicked.
         self.class.time_in!(user) if type.eql?("time_out") && forced
         return true
         # TODO: move to instance method and rescue exceptions
