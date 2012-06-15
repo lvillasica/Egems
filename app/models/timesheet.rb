@@ -148,8 +148,10 @@ class Timesheet < ActiveRecord::Base
 
   def compute_minutes
     if time_out
-      @timesheets_today = employee.timesheets.latest(date.localtime)
-                                  .reject{ |t| t.id == id && t.time_in > time_in }
+      shift_date = shift_schedule_detail.valid_time_in(self)
+      shift_date = is_work_day? ? shift_date.first : date.localtime
+      @timesheets_today = employee.timesheets.latest(shift_date.beginning_of_day)
+                                  .reject{ |t| t.id == id || t.time_in > time_in }
       @first_timesheet = @timesheets_today.first || self
 
       if is_within_shift?
@@ -171,16 +173,18 @@ class Timesheet < ActiveRecord::Base
           end
         end
       else
-        undertimes = @timesheets_today.sum(&:minutes_undertime)
-        self.duration = ((time_out - time_in) / 1.minute).floor
-        self.minutes_undertime = 0
-        self.minutes_excess = undertimes > 0 ? 0 : duration
+        if !is_work_day? or (is_work_day? && @timesheets_today.select(&:is_within_shift?).present?)
+          undertimes = @timesheets_today.sum(&:minutes_undertime)
+          self.duration = ((time_out - time_in) / 1.minute).floor
+          self.minutes_undertime = 0
+          self.minutes_excess = undertimes > 0 ? 0 : duration
+        end
       end
     end
   end
 
   def set_minutes_late
-    if is_first_entry? && is_within_shift?
+    if is_first_entry? && is_work_day? && is_within_shift?
       detail = self.shift_schedule_detail
       l_time_in = self.time_in.localtime
       t_in = Time.local(l_time_in.year, l_time_in.mon, l_time_in.day,
@@ -233,8 +237,10 @@ class Timesheet < ActiveRecord::Base
 
   def is_within_shift?
     if is_work_day?
-      @timesheets_today ||= employee.timesheets.latest(date.localtime)
-                                 .reject{ |t| t.id == id }.sort_by(&:time_in)
+      shift_date = shift_schedule_detail.valid_time_in(self)
+      shift_date = is_work_day? ? shift_date.first : date.localtime
+      @timesheets_today ||= employee.timesheets.latest(shift_date.beginning_of_day)
+                                    .reject{ |t| t.id == id || t.time_in > time_in }
       @first_timesheet ||= @timesheets_today.first || self
 
       in_min, in_max = shift_schedule_detail.valid_time_in(self)
