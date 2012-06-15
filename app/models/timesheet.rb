@@ -43,7 +43,7 @@ class Timesheet < ActiveRecord::Base
       range = Range.new(time.monday, time.sunday)
       day = time.localtime.to_date.wday
       within(range).includes(:shift_schedule_detail)
-                   .where("shift_schedule_details.day_of_week = ?", day)
+                   .where("shift_schedule_details.day_of_week = ?", day).asc
     end
   }
   scope :previous, lambda {
@@ -53,11 +53,12 @@ class Timesheet < ActiveRecord::Base
         time -= 1.day
         index -= 1
       end
-      where(:id => ids.compact.map(&:id))
+      where(:id => ids.compact.map(&:id)).asc
     end
   }
   scope :no_timeout,  :conditions => ["time_in is not null and time_out is null"]
   scope :desc, :order => 'date desc, created_on desc'
+  scope :asc, :order => 'date asc, time_in asc'
   scope :within, lambda { |range|
     where(["date between ? and ?", range.first.utc, range.last.utc])
   }
@@ -70,9 +71,8 @@ class Timesheet < ActiveRecord::Base
       latest_invalid_timesheets = employee.timesheets.latest.no_timeout
       raise NoTimeoutError if latest_invalid_timesheets.present?
       raise NoTimeoutError if employee.timesheets.previous.no_timeout.present? and !force
-      timesheet = employee.timesheets.new(:date => Time.now.beginning_of_day.utc,
-                                      :time_in => Time.now.utc)
-      timesheet.save!
+      employee.timesheets.create!(:date => Time.now.beginning_of_day.utc,
+                                  :time_in => Time.now.utc)
     end
 
     def time_out!(employee)
@@ -129,9 +129,9 @@ class Timesheet < ActiveRecord::Base
   end
 
   def invalid_entries
-    if time_in && time_out
-      t_i, t_o = format_short_time_with_sec(time_in), format_short_time_with_sec(time_out)
-      if time_in > time_out
+    if time_in_without_adjustment && time_out
+      t_i, t_o = format_short_time_with_sec(time_in_without_adjustment), format_short_time_with_sec(time_out)
+      if time_in_without_adjustment > time_out
         errors[:base] << "Time in (#{t_i}) shouldn't be later than Time out (#{t_o})."
       end
 
@@ -140,7 +140,7 @@ class Timesheet < ActiveRecord::Base
       end
 
       last_entry = employee.timesheets.order(:created_on).last
-      if last_entry && last_entry.time_out && time_in < last_entry.time_out
+      if last_entry && last_entry.time_out && time_in_without_adjustment < last_entry.time_out
         errors[:base] << "Time in should be later than last entries."
       end
     end
@@ -149,7 +149,7 @@ class Timesheet < ActiveRecord::Base
   def compute_minutes
     if time_out
       @timesheets_today = employee.timesheets.latest(date.localtime)
-                              .reject{ |t| t.id == id }.sort_by(&:time_in)
+                                  .reject{ |t| t.id == id && t.time_in > time_in }
       @first_timesheet = @timesheets_today.first || self
 
       if is_within_shift?
@@ -217,7 +217,7 @@ class Timesheet < ActiveRecord::Base
       if !range.cover?(time_in_without_adjustment.localtime)
         if !time_out.nil? && !range.cover?(time_out.localtime)
           day = (date.localtime - 1.day).to_date.wday
-          self.shift_schedule_detail = ShiftScheduleDetail.find_by_day_of_week(day)
+          self.shift_schedule_detail = shift_schedule.detail(day)
         end
       end
     end
