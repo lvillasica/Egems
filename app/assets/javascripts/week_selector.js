@@ -1,4 +1,8 @@
 $(function() {
+  weekPicker();
+});
+
+var weekPicker = function() {
   var startDate;
   var endDate;
   
@@ -33,7 +37,11 @@ $(function() {
     buttonText: "<i class='icon-calendar'></i>",
     firstDay: 1,
     dateFormat: 'yy-mm-dd',
+    defaultDate: new Date($('#week-picker').val().split(" ")[0]),
     maxDate: getWeekRange(new Date()).sunday,
+    showButtonPanel: true,
+    currentText: 'Today',
+    closeText: '&times;',
     onSelect: function(dateText, inst) {
       var date = $(this).datepicker('getDate');
       var href="/timesheets/" + date + "/week";
@@ -60,4 +68,4 @@ $(function() {
   $('#ui-datepicker-div .ui-datepicker-calendar tr').live('mousemove', function() { $(this).find('td a').addClass('ui-state-hover'); });
   $('#ui-datepicker-div .ui-datepicker-calendar tr').live('mouseleave', function() { $(this).find('td a').removeClass('ui-state-hover'); });
   $('.ui-datepicker-trigger').addClass("btn");
-});
+}
