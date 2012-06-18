@@ -88,14 +88,18 @@ class Timesheet < ActiveRecord::Base
   # Instance Methods
   # -------------------------------------------------------
   def time_in
-    shift = shift_schedule_detail
-    time_in_original = read_attribute(:time_in).localtime
+    begin
+      shift = shift_schedule_detail
+      time_in_original = read_attribute(:time_in).localtime
 
-    if shift && shift.day_of_week == date_wday && time_out && is_work_day?
-      shift_min = shift.valid_time_in(self).first
-      time_in_original < shift_min ? shift_min : time_in_original
-    else
-      time_in_original
+      if shift && shift.day_of_week == date_wday && time_out && is_work_day?
+        shift_min = shift.valid_time_in(self).first
+        time_in_original < shift_min ? shift_min : time_in_original
+      else
+        time_in_original
+      end
+    rescue
+      nil
     end
   end
 
