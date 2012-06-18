@@ -1,11 +1,12 @@
 $(function() {
-  var serverTime = Date.parse($("span#time").data('time'));
-  
-  setInterval(function() {
-    serverTime.setSeconds(serverTime.getSeconds() + 1);
-    
-    $('span#time').html(serverTime.toCustomFormat());
-  }, 1000);
+  var timeHolder = $("span#time");
+  var serverTime = Date.parse(timeHolder.data('time'));
+  if (serverTime != null) {
+    setInterval(function() {
+      serverTime.setSeconds(serverTime.getSeconds() + 1);
+      timeHolder.html(serverTime.toCustomFormat());
+    }, 1000);
+  }
 });
 
 var prependZero = function(num) {

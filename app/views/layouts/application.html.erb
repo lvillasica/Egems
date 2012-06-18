@@ -26,28 +26,37 @@
       <div class="navbar navbar-fixed-top">
         <div class="navbar-inner">
           <div class="container">
+            <button class="btn btn-navbar">
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+            </button>
+            
             <a class="brand" href="#">Egems</a>
-            <ul class="nav">
-              <li class="active">
-                <a href="#">Timesheets</a>
-              </li>
-              <li><a href="#">Link</a></li>
-              <li><a href="#">Link</a></li>
-            </ul>
-            <ul class="nav pull-right">
-              <li><a href="#"><%= current_user.login %></a></li>
-              <li class="divider-vertical"></li>
-              <li>
-              <%= link_to "<i class=\"icon-off\"></i> Signout".html_safe,
-                signout_path, :method => :delete %>
-              </li>
-            </ul>
+            
+            <div class="nav-collapse collapse">
+              <ul class="nav">
+                <li class="active">
+                  <a href="#">Timesheets</a>
+                </li>
+                <li><a href="#">Link</a></li>
+                <li><a href="#">Link</a></li>
+              </ul>
+              <ul class="nav pull-right">
+                <li><a href="#"><%= current_user.login %></a></li>
+                <li class="divider-vertical"></li>
+                <li>
+                <%= link_to "<i class=\"icon-off\"></i> Signout".html_safe,
+                  signout_path, :method => :delete %>
+                </li>
+              </ul>
+            </div>
           </div>
         </div>
         <!-- ========== SUB NAV ========== -->
         <div class="navbar-sub">
           <div class="container">
-            <h2 class="nav pull-right" href="#">
+            <h2 id="digiclock" class="nav pull-right" href="#">
               <i class="icon-time"></i>
               <span id="time" data-time="<%= now = Time.now %>">
                 <%= format_long_date_with_time(now) %>
