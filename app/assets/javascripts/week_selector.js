@@ -1,5 +1,7 @@
 $(function() {
-  weekPicker();
+  if($('#week-picker').val() != undefined) {
+    weekPicker();
+  }
 });
 
 var weekPicker = function() {
