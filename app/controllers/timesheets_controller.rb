@@ -71,6 +71,11 @@ private
   def invalid_timesheet_prev
     @employee ||= get_employee
     @invalid_timesheets = @employee.timesheets.previous.no_timeout
+    if session[:invalid_timein_after_signin] && @invalid_timesheets.blank?
+      @invalid_timesheets = @employee.timesheets.latest.no_timeout
+      @force = true
+    end
+    session.delete(:invalid_timein_after_signin)
   end
 
   # TODO: Refactor
@@ -86,6 +91,7 @@ private
         @invalid_timesheet = @employee.timesheets.new(:date => date)
       else
         @invalid_timesheets = @employee.timesheets.latest.no_timeout
+        @force = forced
       end
       render :template => "timesheets/manual_#{type}"
     end

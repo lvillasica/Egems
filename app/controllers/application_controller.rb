@@ -9,7 +9,7 @@ class ApplicationController < ActionController::Base
     begin
       Timesheet.time_in!(employee, true)
     rescue Timesheet::NoTimeoutError
-      @invalid_timesheets = employee.timesheets.previous.no_timeout
+      session[:invalid_timein_after_signin] = true
       flash_message(:alert, :no_timeout)
     end if params[:commit].eql?('Time in')
     return request.env['omniauth.origin'] || stored_location_for(resource) || timesheets_path

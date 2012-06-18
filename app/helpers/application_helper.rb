@@ -36,4 +36,8 @@ module ApplicationHelper
   def format_time_in_long_with_date(time)
     time ? I18n.l(User.of_localtime(time), :format => :long_with_date) : "mm-dd-yyyy --:--"
   end
+  
+  def format_long_date_with_time(time)
+    time ? I18n.l(User.of_localtime(time), :format => :long_date_with_time) : "mmm dd, yyyy --:--"
+  end
 end
