@@ -38,24 +38,6 @@ class Timesheet < ActiveRecord::Base
   # -------------------------------------------------------
   # Namescopes
   # -------------------------------------------------------
-  scope :latest, lambda { |time = Time.now|
-    if count > 0
-      range = Range.new(time.monday, time.sunday)
-      day = time.localtime.to_date.wday
-      within(range).includes(:shift_schedule_detail)
-                   .where("shift_schedule_details.day_of_week = ?", day).asc
-    end
-  }
-  scope :previous, lambda {
-    if (index=count) > 0
-      time = Time.now.yesterday
-      until (ids=latest(time)).present? or index == 0
-        time -= 1.day
-        index -= 1
-      end
-      where(:id => ids.compact.map(&:id)).asc
-    end
-  }
   scope :no_timeout,  :conditions => ["time_in is not null and time_out is null"]
   scope :desc, :order => 'date desc, created_on desc'
   scope :asc, :order => 'date asc, time_in asc'
@@ -81,6 +63,27 @@ class Timesheet < ActiveRecord::Base
       timesheet = latest.desc.first
       timesheet.time_out = Time.now.utc
       timesheet.save!
+    end
+
+
+    def latest(time = Time.now)
+      if count > 0
+        range = Range.new(time.monday, time.sunday)
+        day = time.localtime.to_date.wday
+        within(range).includes(:shift_schedule_detail)
+                     .where("shift_schedule_details.day_of_week = ?", day).asc
+      end
+    end
+
+    def previous
+      if (index=count) > 0
+        time = Time.now.yesterday
+        until (ids=latest(time)).present? or index == 0
+          time -= 1.day
+          index -= 1
+        end
+        where(:id => ids.compact.map(&:id)).asc
+      end
     end
   end
 
@@ -123,9 +126,9 @@ class Timesheet < ActiveRecord::Base
       if self.save!
         # Time in after manual timeout only if Time in is clicked.
         self.class.time_in!(employee) if type.eql?("time_out") && forced
-        return true
         # TODO: move to instance method and rescue exceptions
         TimesheetMailer.invalid_timesheet(employee, self, type).deliver
+        return true
       end
     rescue ActiveRecord::RecordInvalid
       return false
