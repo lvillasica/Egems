@@ -90,7 +90,10 @@ private
         date = Time.now.beginning_of_day
         @invalid_timesheet = @employee.timesheets.new(:date => date)
       else
-        @invalid_timesheets = @employee.timesheets.latest.no_timeout
+        @invalid_timesheets = @employee.timesheets.previous.no_timeout
+        if @invalid_timesheets.blank?
+          @invalid_timesheets = @employee.timesheets.latest.no_timeout
+        end
         @force = forced
       end
       render :template => "timesheets/manual_#{type}"

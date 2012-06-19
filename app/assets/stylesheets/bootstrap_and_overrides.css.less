@@ -3,23 +3,6 @@ body { padding-top: 180px; }
 
 @import "twitter/bootstrap/responsive";
 
-@media (max-width: 1200px) {
-  .span5 {
-    width: 445px;
-  }
-}
-
-@media (max-width: 700px) {
-  .navbar .btn-navbar {
-    float: none;
-    display: inline-block;
-  }
-  
-  #digiclock {
-    float: none;
-  }
-}
-
 // Set the correct sprite paths
 @iconSpritePath: asset-path('twitter/bootstrap/glyphicons-halflings.png');
 @iconWhiteSpritePath: asset-path('twitter/bootstrap/glyphicons-halflings-white.png');
@@ -44,3 +27,20 @@ body { padding-top: 180px; }
 //
 // Example:
 // @linkColor: #ff0000;
+
+@media (max-width: 1200px) {
+  .span5 {
+    width: 445px;
+  }
+}
+
+@media (max-width: 730px) {
+  .navbar .btn-navbar, .navbar .brand {
+    display: inline;
+    float: left;
+  }
+  
+  #digiclock {
+    float: none;
+  }
+}
