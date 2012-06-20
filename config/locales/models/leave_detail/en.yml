@@ -1,0 +1,5 @@
+en:
+  activerecord:
+    attributes:
+      leave_detail:
+        leave_unit: 'No. of Days'

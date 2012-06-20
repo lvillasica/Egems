@@ -12,6 +12,8 @@ class Employee < ActiveRecord::Base
 
   belongs_to :shift_schedule
   belongs_to :branch
+  has_many :leaves, :class_name => 'Leave'
+  has_many :leave_details
 
   # -------------------------------------------------------
   # Instance Methods

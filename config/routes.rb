@@ -21,6 +21,7 @@ Egems::Application.routes.draw do
     match '/timein/manual/', to: 'timesheets#manual_timein', as:  'manual_timein', via: 'post'
     match '/timesheets/:time', to: 'timesheets#timesheets_nav', as: 'timesheets_nav', via: 'post'
     match '/timesheets/:time/week', to: 'timesheets#timesheets_nav_week', as: 'timesheets_nav_week', via: 'post'
+    resources :leave_details
     root :to => 'timesheets#index', :as => 'timesheets', :via => :get
   end
 

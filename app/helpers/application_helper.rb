@@ -18,6 +18,9 @@ module ApplicationHelper
     flashes.html_safe
   end
 
+  def set_active(condition = false)
+    'active' if condition
+  end
 
   def format_date(date)
     return 'yyyy-mm-dd' unless date
