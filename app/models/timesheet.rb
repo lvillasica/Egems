@@ -126,12 +126,26 @@ class Timesheet < ActiveRecord::Base
       if self.save!
         # Time in after manual timeout only if Time in is clicked.
         self.class.time_in!(employee) if type.eql?("time_out") && forced
-        # TODO: move to instance method and rescue exceptions
-        TimesheetMailer.invalid_timesheet(employee, self, type).deliver
+        send_invalid_timesheet_notification(type)
         return true
       end
     rescue ActiveRecord::RecordInvalid
       return false
+    end
+  end
+
+  def send_invalid_timesheet_notification(type)
+    recipients = [employee]
+    recipients << employee.immediate_supervisor
+    recipients << employee.project_manager
+
+    recipients.each do |recipient|
+      begin
+      TimesheetMailer.invalid_timesheet(employee, self, type, recipient).deliver
+      rescue Net::SMTPAuthenticationError, Net::SMTPServerBusy, Net::SMTPSyntaxError, Net::SMTPFatalError, Net::SMTPUnknownError => e
+        errors.add_to_base('Time entry was updated however there was problem with email notification to #{recipient.email}.' + "(#{e.message})")
+        next
+      end
     end
   end
 

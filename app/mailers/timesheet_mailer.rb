@@ -1,13 +1,22 @@
 class TimesheetMailer < BaseMailer
 
-  def invalid_timesheet(user, timesheet, type)
-    @user = user
+  def invalid_timesheet(requester, timesheet, type, recipient=requester)
+    @requester = requester
+    @approvers = [requester.project_manager, requester.immediate_supervisor]
+    @recipient = recipient
     @type = type.capitalize.dasherize
     @date = timesheet.date
     @time = timesheet[type]
 
-    #TODO: send mail to approver
-    mail(:to      => @user.email,
-         :subject => "[eGEMS]You Have Sent #{@type} Request for Approval")
+    if recipient == (requester)
+      @receiver_sv = 'You have'
+      @receiver_action = 'To view/edit request, please go to:'
+    else
+      @receiver_sv = "#{requester.full_name} has"
+      @receiver_action = 'To take action, please go to:'
+    end
+
+    mail(:to      => recipient.email,
+         :subject => "[eGems]#{@receiver_sv} sent a #{@type} request for approval")
   end
 end

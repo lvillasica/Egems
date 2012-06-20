@@ -1,14 +1,17 @@
-<p>Hi <%= @user.login %>,</p>
+<p>Hi <%= @recipient.full_name %>,</p>
 <br/>
-<p>You have sent <%= @type %> request { <%= format_time_in_long_with_date(@time) %> } for approval.</p>
+<p><%= @receiver_sv %> sent a <%= @type %> request { <%= format_time_in_long_with_date(@time) %> } for approval.</p>
 <p>The request has been sent to the following for appropriate action:</p>
-<p><Approver/s Name/s></p>
+<ul style='list-style-type: none'>
+  <% @approvers.map(&:full_name).each do |approver| %>
+    <li><%= approver %></li>
+  <% end %>
+</ul>
 <br/>
-<p>To view/edit request, please go to:</p>
-<Link>
+<p><%= @receiver_action %></p>
+<%= url_for(:action => 'index', :controller => 'timesheets', :only_path => false, :protocol => 'https') %>
 <br/>
 <p>This is a system generated email. Please do not reply.</p>
 <br/>
 <p>Regards,</p>
-<br/>
 <p>eGEMs</p>
