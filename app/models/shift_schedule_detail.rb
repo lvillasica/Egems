@@ -1,5 +1,7 @@
 class ShiftScheduleDetail < ActiveRecord::Base
 
+  attr_protected :shift_schedule_id
+
   # -------------------------------------------------------
   # Associations
   # -------------------------------------------------------

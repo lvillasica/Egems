@@ -272,7 +272,13 @@ class Timesheet < ActiveRecord::Base
   end
 
   def is_work_day?
+    # not holidays and rest days
+    !is_holiday? and
     !shift_schedule_detail.am_time_start.nil? && !shift_schedule_detail.pm_time_start.nil?
+  end
+
+  def is_holiday?
+    employee.branch.holidays.falls_on(date.localtime).present?
   end
 
   def is_first_entry?

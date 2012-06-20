@@ -1,5 +1,7 @@
 class ShiftSchedule < ActiveRecord::Base
 
+  attr_accessible :name, :description, :differential_rate
+
   # -------------------------------------------------------
   # Associations
   # -------------------------------------------------------
