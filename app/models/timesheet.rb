@@ -67,23 +67,20 @@ class Timesheet < ActiveRecord::Base
 
 
     def latest(time = Time.now)
-      if count > 0
-        range = Range.new(time.monday, time.sunday)
-        day = time.localtime.to_date.wday
-        within(range).includes(:shift_schedule_detail)
-                     .where("shift_schedule_details.day_of_week = ?", day).asc
-      end
+      range = Range.new(time.monday, time.sunday)
+      day = time.localtime.to_date.wday
+      within(range).includes(:shift_schedule_detail)
+                   .where("shift_schedule_details.day_of_week = ?", day).asc
     end
 
     def previous
-      if (index=count) > 0
-        time = Time.now.yesterday
-        until (ids=latest(time)).present? or index == 0
-          time -= 1.day
-          index -= 1
-        end
-        where(:id => ids.compact.map(&:id)).asc
+      index = count
+      time = Time.now.yesterday
+      until (ids=latest(time)).present? or index == 0
+        time -= 1.day
+        index -= 1
       end
+      where(:id => ids.compact.map(&:id)).asc
     end
   end
 
@@ -139,7 +136,7 @@ class Timesheet < ActiveRecord::Base
     recipients << employee.immediate_supervisor
     recipients << employee.project_manager
 
-    recipients.each do |recipient|
+    recipients.compact.each do |recipient|
       begin
       TimesheetMailer.invalid_timesheet(employee, self, type, recipient).deliver
       rescue Net::SMTPAuthenticationError, Net::SMTPServerBusy, Net::SMTPSyntaxError, Net::SMTPFatalError, Net::SMTPUnknownError => e
