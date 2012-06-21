@@ -21,23 +21,42 @@
     </div>
     
     <div class="control-group">
+      <%= f.label :period, :class => 'control-label' %>
+      <div class="controls">
+        <label class="radio inline">
+          <%= f.radio_button :period, "1" %> 1st Period
+        </label>&nbsp;
+        <label class="radio inline">
+          <%= f.radio_button :period, "2" %> 2nd Period
+        </label>
+        <label class="radio inline">
+          <button id="radio-reset-btn" class="btn btn-mini"><i class="icon-remove"></i></button>
+        </label>
+      </div>
+    </div>
+    
+    <div class="control-group">
       <%= f.label :leave_date, :class => 'control-label' %>
       <div class="controls">
-        <%= f.text_field :leave_date, :value => '' %>
+        <div class="input-append">
+          <%= f.text_field :leave_date, :value => '', :class => 'span2' %>
+        </div>
       </div>
     </div>
     
     <div class="control-group">
       <%= f.label :end_date, :class => 'control-label' %>
       <div class="controls">
-        <%= f.text_field :end_date, :value => '' %>
+        <div class="input-append">
+          <%= f.text_field :end_date, :value => '', :class => 'span2' %>
+        </div>
       </div>
     </div>
     
     <div class="control-group">
       <%= f.label :leave_unit, :class => 'control-label' %>
       <div class="controls">
-        <%= f.text_field :leave_unit, :value => '', :class => 'input-mini', :disabled => 'disabled' %>
+        <%= f.text_field :leave_unit, :value => '', :class => 'span1' %>
       </div>
     </div>
     

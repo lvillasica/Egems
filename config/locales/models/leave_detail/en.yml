@@ -3,3 +3,4 @@ en:
     attributes:
       leave_detail:
         leave_unit: 'No. of Days'
+        period: 'Half Day'

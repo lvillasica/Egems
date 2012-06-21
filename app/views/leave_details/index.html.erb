@@ -8,6 +8,7 @@
         <th>Leave Date</th>
         <th>Leave Type</th>
         <th>Details</th>
+        <th>Day(s)</th>
         <th>Period</th>
         <th>Responder</th>
         <th>Status</th>
@@ -18,12 +19,13 @@
     <tbody>
       <% @leave_details.each do |ld| %>
       <tr>
-        <td>ld.leave_date</td>
-        <td>ld.leave_type</td>
-        <td>ld.details</td>
-        <td>ld.period</td>
+        <td><%= format_date ld.leave_date %></td>
+        <td><%= ld.leave_type %></td>
+        <td><%= ld.details %></td>
+        <td><%= ld.leave_unit %></td>
+        <td><%= ld.period %></td>
         <td>&nbsp;</td>
-        <td>ld.status</td>
+        <td><%= ld.status %></td>
         <td>&nbsp;</td>
         <td>&nbsp;</td>
       <tr>

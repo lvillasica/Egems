@@ -42,17 +42,17 @@
                 </li>
                 <li class="dropdown <%= set_active(current_uri =~ /leave/) %>">
                   <a class="leaves-lnk" href="#">Leaves <i class="caret"></i></a>
-                  <% if (leaves = current_user.employee.leaves).any? %>
                   <ul class="dropdown-menu">
                     <li><%= link_to "My Leaves", '#' %></li>
+                    <% if (leaves = current_user.employee.leaves).any? %>
                     <% leaves.each do |leave| %>
                     <% type = leave.leave_type %>
                     <li><%= link_to type, leave_details_path(:leave_type => type) %></li>
                     <% end %>
                     <li class="divider"></li>
                     <li><%= link_to "Apply for Leave", new_leave_detail_path %></li>
+                    <% end %>
                   </ul>
-                  <% end %>
                 </li>
                 <li><a href="#">Link</a></li>
               </ul>

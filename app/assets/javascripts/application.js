@@ -14,6 +14,8 @@
 //= require jquery_ujs
 //= require twitter/bootstrap
 //= require date
-//= require week_selector
 //= require digiclock
+//= require week_selector
+//= require date_selector
+//= require apply_leave
 //= require_tree .
