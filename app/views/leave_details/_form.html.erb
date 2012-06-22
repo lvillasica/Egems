@@ -2,6 +2,7 @@
 <%= form_for(@leave_detail, :html => { :class => 'well form-horizontal' }) do |f| %>
   <% if @leave_detail.errors.any? %>
   <div id="errorExplanation" class="alert alert-error">
+    <button class='close' data-dismiss='alert'>&times;</button>
     <h3><%= pluralize(@leave_detail.errors.count, "error") %> prohibited
         this post from being saved:</h3>
     <ul>

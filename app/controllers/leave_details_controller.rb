@@ -28,7 +28,7 @@ private
   end
   
   def get_leave
-    @leave = @employee.leaves.where(:leave_type => params[:leave_type]).first
+    @leave = @employee.leaves.type(params[:leave_type]).first
   end
   
 end
