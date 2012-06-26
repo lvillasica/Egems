@@ -13,6 +13,7 @@ class ShiftSchedule < ActiveRecord::Base
   # Instance Methods
   # -------------------------------------------------------
   def detail(day)
+    return nil if shift_schedule_details.empty?
     shift_schedule_details.detect{ |d| d.day_of_week == day }
   end
 end

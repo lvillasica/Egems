@@ -8,8 +8,6 @@ class Holiday < ActiveRecord::Base
   # -------------------------------------------------------
   # Namescopes
   # -------------------------------------------------------
-  scope :falls_on, lambda { |date|
-    where("date = ?", (date.beginning_of_day + 8.hours).utc)
-  }
+  scope :falls_on, lambda { |date| where(["Date(date) = Date(?)", (date.end_of_day).utc]) }
 
 end

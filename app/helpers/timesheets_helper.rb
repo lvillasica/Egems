@@ -2,7 +2,7 @@ module TimesheetsHelper
 
   def timesheet_navs(active_time)
     active_time ||= Time.now.beginning_of_day
-    if active_time.is_a?(Range)
+    if active_time.is_a?(Array)
       active_range = "active"
       active_time = active_time.first
     end
