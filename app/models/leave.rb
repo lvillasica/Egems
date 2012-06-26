@@ -13,5 +13,14 @@ class Leave < ActiveRecord::Base
   # Namescopes
   # -------------------------------------------------------
   scope :type, lambda { |type| where(:leave_type => type).order(:id, :created_on) }
+  
+  # -------------------------------------------------------
+  # Instance Methods
+  # -------------------------------------------------------
+  def active?
+    from = date_from.localtime.to_date
+    to = date_to.localtime.to_date
+    status == 1 && (from .. to).include?(Date.today)
+  end
 
 end

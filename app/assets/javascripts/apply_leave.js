@@ -18,10 +18,10 @@ $(function () {
   var setFldsForLeaveType = function ( leaveType ) {
     if ( leaveType == 'Vacation Leave' ) {
       minDate = new Date().add(1).day();
-      maxDate = '';
+      maxDate = new Date().getEndOfYear();
       leaveDateFld.val(minDate.toString("yyyy-MM-dd"));
     } else {
-      minDate = '';
+      minDate = new Date().getStartOfYear();
       maxDate = new Date();
       leaveDateFld.val(maxDate.toString("yyyy-MM-dd"));
     }
@@ -126,3 +126,12 @@ $(function () {
   
 });
 
+Date.prototype.getStartOfYear = function() {
+  var year = this.getFullYear();
+  return new Date(year, 0, 1);
+}
+
+Date.prototype.getEndOfYear = function() {
+  var year = this.getFullYear();
+  return new Date(year, 11, 31);
+}

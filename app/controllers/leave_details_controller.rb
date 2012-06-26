@@ -5,7 +5,7 @@ class LeaveDetailsController < ApplicationController
   
   def index
     redirect_to timesheets_path if params[:leave_type].blank? || @leave.nil?
-    @leave_details = @employee.leave_details.type(params[:leave_type])
+    @leave_details = @leave.leave_details.latest.asc if @leave
   end
   
   def new
