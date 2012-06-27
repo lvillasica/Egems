@@ -12,7 +12,21 @@ class Leave < ActiveRecord::Base
   # -------------------------------------------------------
   # Namescopes
   # -------------------------------------------------------
-  scope :type, lambda { |type| where(:leave_type => type).order(:id, :created_on) }
+  scope :type, lambda { |type|
+    type = ((type == "Emergency Leave")? "Vacation Leave" : type)
+    where(:leave_type => type).order(:id, :created_on)
+  }
+  
+  # -------------------------------------------------------
+  # Class Methods
+  # -------------------------------------------------------
+  class << self
+    def leave_types
+      types = self.all.map(&:leave_type).compact
+      types << "Emergency Leave" if types.include?("Vacation Leave")
+      types
+    end
+  end
   
   # -------------------------------------------------------
   # Instance Methods

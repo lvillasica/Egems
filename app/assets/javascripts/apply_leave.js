@@ -20,10 +20,14 @@ $(function () {
       minDate = new Date().add(1).day();
       maxDate = new Date().getEndOfYear();
       leaveDateFld.val(minDate.toString("yyyy-MM-dd"));
-    } else {
+    } else if ( $.inArray(leaveType, ["Sick Leave", "Emergency Leave"]) != -1 ) {
       minDate = new Date().getStartOfYear();
       maxDate = new Date();
       leaveDateFld.val(maxDate.toString("yyyy-MM-dd"));
+    } else {
+      minDate = '';
+      maxDate = '';
+      leaveDateFld.val(new Date().toString("yyyy-MM-dd"));
     }
     
     if ( startDate != null && startDate > minDate ) {

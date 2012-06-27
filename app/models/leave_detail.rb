@@ -33,7 +33,7 @@ class LeaveDetail < ActiveRecord::Base
   # Namescopes
   # -------------------------------------------------------
   scope :latest, includes(:leave)
-    .where("employee_truancies.date_from = ? and employee_truancies.date_to = ?",
+    .where("employee_truancies.date_from >= ? and employee_truancies.date_to <= ?",
             Time.now.beginning_of_year.utc, Time.now.end_of_year.utc)
   scope :type, lambda { |type| where(:leave_type => type).order(:leave_date) }
   scope :pending, where(:status => 'Pending')
@@ -46,24 +46,25 @@ class LeaveDetail < ActiveRecord::Base
   #  Class Methods
   # -------------------------------------------------------
   class << self
-    def get_latest_pending_leaves
-      latest_pending_leaves = []
-      self.latest.pending.each do |ld|
+    def get_units_per_leave_date
+      units_per_leave_date = {}
+      self.latest.each do |ld|
+        local_leave_date = ld.leave_date.localtime.to_date
         if ld.leave_unit > 1
-          startDate = ld.leave_date.localtime.to_date
+          startDate = local_leave_date
           endDate = startDate + ld.leave_unit.days
           (startDate ... endDate).each do |day|
-            latest_pending_leaves << day
+            units_per_leave_date[day.to_s] = 1.0
           end
-        elsif ld.leave_unit < 1
-          if self.latest.where(:leave_date => ld.leave_date).sum(:leave_unit) == 1
-            latest_pending_leaves << ld.leave_date.localtime.to_date
-          end
+        elsif ld.leave_unit < 1 && units_per_leave_date[local_leave_date.to_s]
+          units_per_leave_date[local_leave_date.to_s] += ld.leave_unit
+        elsif ld.leave_unit < 1 && !units_per_leave_date[local_leave_date.to_s]
+          units_per_leave_date[local_leave_date.to_s] = ld.leave_unit
         else
-          latest_pending_leaves << ld.leave_date.localtime.to_date
+          units_per_leave_date[local_leave_date.to_s] = ld.leave_unit
         end
       end
-      return latest_pending_leaves
+      return units_per_leave_date
     end
   end
   
@@ -83,13 +84,14 @@ class LeaveDetail < ActiveRecord::Base
   end
   
   def invalid_leave
-    @leave = self.leave || self.employee.leaves.type(self.leave_type).first
+    @employee = self.employee
+    @leave = self.leave || @employee.leaves.type(self.leave_type).first
     @leave_date_local = leave_date.localtime.to_date
     @end_date_local = end_date.to_date
     if validate_dates && validate_active
       allocated = @leave.leaves_allocated.to_f
       consumed = @leave.leaves_consumed.to_f
-      pending_leaves = @leave.leave_details.pending
+      pending_leaves = @leave.leave_details.latest.pending
       pending_leave_units = pending_leaves.sum(:leave_unit).to_f
       remaining_leaves = allocated - consumed
       total_leaves = leave_unit.to_f + consumed + pending_leave_units
@@ -106,10 +108,13 @@ class LeaveDetail < ActiveRecord::Base
       
       validate_half_day
       
+      validate_date_of_filing
+      
       validate_leave_unit
     end
   end
   
+private
   def validate_dates
     if valid_date?(:leave_date) && valid_date?(:end_date) && @leave_date_local > @end_date_local
       errors[:base] << "Leave date shouldn't be later than End date."
@@ -137,7 +142,7 @@ class LeaveDetail < ActiveRecord::Base
       min_date = Date.today + 1.day
       max_date = date_to
       range = Range.new(min_date, max_date)
-    when "Sick Leave"
+    when "Sick Leave", "Emergency Leave"
       min_date = date_from
       max_date = Date.today
       range = Range.new(min_date, max_date)
@@ -167,12 +172,19 @@ class LeaveDetail < ActiveRecord::Base
   end
   
   def validate_leave_conflicts
-    latest_pending_leaves = @leave.leave_details.get_latest_pending_leaves
+    units_per_leave_date = @employee.leave_details.get_units_per_leave_date
     startDate = @leave_date_local
-    endDate = startDate + leave_unit.days
+    endDate = startDate + leave_unit.ceil.days
+    maxed_out_leaves = []
     leave_dates = (startDate ... endDate).to_a
-    conflict_leaves = latest_pending_leaves & leave_dates
+    units = ((leave_dates.count > 1)? 1 : leave_unit)
+    leave_dates.each do |day|
+      if (units_per_leave_date[day.to_s].to_f + units) > 1
+        maxed_out_leaves << day
+      end
+    end
     
+    conflict_leaves = maxed_out_leaves & leave_dates
     if !conflict_leaves.blank?
       dates = conflict_leaves.map { |d| format_date(d) }.compact.join(', ')
       errors[:base] << "You can no longer file leave(s) for
@@ -202,6 +214,15 @@ class LeaveDetail < ActiveRecord::Base
       if leave_unit != 0.5
         errors[:leave_unit] << "should be equal to 0.5 if applying
                                 for a half day leave."
+      end
+    end
+  end
+  
+  def validate_date_of_filing
+    if ["Sick Leave", "Emergency Leave"].include?(leave_type) && @end_date_local == Date.today
+      if [0, 2].include?(period) || (period == 1 && Time.now < Time.parse("12pm"))
+        errors[:base] << "Date of filing should always be after the
+                          availment of leave."
       end
     end
   end

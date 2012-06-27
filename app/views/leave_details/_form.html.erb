@@ -17,7 +17,7 @@
     <div class="control-group">
       <%= f.label :leave_type, :class => 'control-label' %>
       <div class="controls">
-        <%= f.select :leave_type, options_for_select(@employee.leaves.map(&:leave_type)) %>
+        <%= f.select :leave_type, options_for_select(@employee.leaves.leave_types) %>
       </div>
     </div>
     

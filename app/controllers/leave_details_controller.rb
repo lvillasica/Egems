@@ -16,7 +16,7 @@ class LeaveDetailsController < ApplicationController
   def create
     @leave_detail = @employee.leave_details.new(params[:leave_detail])
     if @leave_detail.save
-      redirect_to leave_details_path(:leave_type => params[:leave_detail][:leave_type])
+      redirect_to leave_details_path(:leave_type => @leave_detail.leave.leave_type)
     else
       render :action => "new"
     end

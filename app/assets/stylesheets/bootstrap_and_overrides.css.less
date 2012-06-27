@@ -28,10 +28,16 @@ body { padding-top: 180px; }
 // Example:
 // @linkColor: #ff0000;
 
+body { padding-top: 120px; }
+
 @media (max-width: 1200px) {
   .span5 {
     width: 445px;
   }
+}
+
+@media (max-width: 979px) {
+  body { padding-top: 0; }
 }
 
 @media (max-width: 730px) {
@@ -43,6 +49,6 @@ body { padding-top: 180px; }
   #digiclock {
     float: none;
   }
+  
+  body { padding-top: 0; }
 }
-
-body { padding-top: 120px; }
