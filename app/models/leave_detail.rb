@@ -21,13 +21,14 @@ class LeaveDetail < ActiveRecord::Base
   validates_presence_of :leave_type, :leave_unit, :details
   validates_numericality_of :leave_unit
   validates_inclusion_of :period, :in => 0 .. 2, :message => "period is invalid."
-  validate :invalid_leave
+  validate :invalid_leave, :unless => "self.leave_type == 'Absence Without Pay'"
   
   # -------------------------------------------------------
   # Callbacks
   # -------------------------------------------------------
   before_save :set_period
   before_create :set_leave
+  after_save :send_email_notification
   
   # -------------------------------------------------------
   # Namescopes
@@ -80,6 +81,21 @@ class LeaveDetail < ActiveRecord::Base
     end_date_local = end_date.to_date
     if (leave_date_local .. end_date_local).count > 1
       self.period = 3
+    end
+  end
+  
+  def send_email_notification
+    recipients = [employee]
+    recipients << employee.immediate_supervisor
+    recipients << employee.project_manager
+
+    recipients.compact.each do |recipient|
+      begin
+        LeaveDetailMailer.leave_approval(employee, self, recipient).deliver
+      rescue Net::SMTPAuthenticationError, Net::SMTPServerBusy, Net::SMTPSyntaxError, Net::SMTPFatalError, Net::SMTPUnknownError => e
+        errors[:base] << "Leave detail was saved however there was problem with email notification to #{recipient.email}: #{e.message}"
+        next
+      end
     end
   end
   

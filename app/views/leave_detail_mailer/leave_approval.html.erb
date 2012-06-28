@@ -1,0 +1,18 @@
+<p>Hi <%= @recipient.full_name %>,</p>
+<br/>
+<p><%= @receiver_sv %> sent a <%= @type %> request dated
+  { <%= @dated_at %> } for approval.</p>
+<p>The request has been sent to the following for appropriate action:</p>
+<ul style='list-style-type: none'>
+  <% @approvers.map(&:full_name).each do |approver| %>
+    <li><%= approver %></li>
+  <% end %>
+</ul>
+<br/>
+<p><%= @receiver_action %></p>
+<p><%= url_for(:action => 'index', :controller => 'leaves', :only_path => false, :protocol => 'https') %></p>
+<br/>
+<p>This is a system generated email. Please do not reply.</p>
+<br/>
+<p>Regards,</p>
+<p>eGEMs</p>
