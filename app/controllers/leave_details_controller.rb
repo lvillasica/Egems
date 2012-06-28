@@ -4,12 +4,12 @@ class LeaveDetailsController < ApplicationController
   before_filter :get_leave, :only => [:index]
   
   def index
-    redirect_to timesheets_path if params[:leave_type].blank? || @leave.nil?
+    redirect_to leaves_path if params[:leave_type].blank? || @leave.nil?
     @leave_details = @leave.leave_details.latest.asc if @leave
   end
   
   def new
-    redirect_to timesheets_path if @employee.leaves.empty?
+    redirect_to leaves_path if @employee.leaves.empty?
     @leave_detail = @employee.leave_details.new
   end
   

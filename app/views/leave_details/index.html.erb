@@ -2,7 +2,7 @@
 <h3><%= @leave.leave_type %></h3>
 <hr />
 <% if @leave_details.any? %>
-  <table class="table table-striped table-bordered table-condensed">
+  <table class="table timesheets">
     <thead>
       <tr>
         <th>Leave Date</th>
@@ -22,8 +22,8 @@
         <td><%= format_date ld.leave_date %></td>
         <td><%= ld.leave_type %></td>
         <td><%= ld.details %></td>
-        <td><%= ld.leave_unit %></td>
-        <td><%= ld.period %></td>
+        <td class="mins"><%= ld.leave_unit %></td>
+        <td class="mins"><%= ld.period %></td>
         <td>&nbsp;</td>
         <td><%= ld.status %></td>
         <td>&nbsp;</td>
@@ -33,5 +33,5 @@
     </tbody>
   </table>
 <% else %>
-  <p>No data found.</p>
+  <div class="well">No data found.</div>
 <% end %>

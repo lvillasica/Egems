@@ -22,8 +22,13 @@ Egems::Application.routes.draw do
     match '/timesheets/:time', to: 'timesheets#timesheets_nav', as: 'timesheets_nav', via: 'post'
     match '/timesheets/:time/week', to: 'timesheets#timesheets_nav_week', as: 'timesheets_nav_week', via: 'post'
     resources :leave_details
+    resources :leaves
     root :to => 'timesheets#index', :as => 'timesheets', :via => :get
   end
 
   match '*a', :to => 'application#render_404'
+end
+
+ActiveSupport::Inflector.inflections do |inflect|
+  inflect.irregular 'leave', 'leaves'
 end

@@ -1,0 +1,29 @@
+
+<h3>Leave Balances</h3>
+<hr />
+<% if @leaves.any? %>
+  <table class="table timesheets">
+    <thead>
+      <tr>
+        <th>Leave Type</th>
+        <th>Allocated</th>
+        <th>Consumed</th>
+        <th>Pending</th>
+        <th>Balance</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @leaves.each do |leave| %>
+      <tr>
+        <td><%= leave.leave_type %></td>
+        <td class="mins"><%= leave.leaves_allocated %></td>
+        <td class="mins"><%= leave.leaves_consumed %></td>
+        <td class="mins"><%= leave.total_pending %></td>
+        <td class="mins"><%= leave.remaining_balance %></td>
+      <tr>
+      <% end %>
+    </tbody>
+  </table>
+<% else %>
+  <div class="well">No data found.</div>
+<% end %>

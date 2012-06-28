@@ -167,7 +167,7 @@ private
   
   def validate_leave_balance(total, remaining)
     if total > remaining
-      errors[:base] << "Not enough leave balance."
+      errors[:base] << "You don't have enough leave credits."
     end
   end
   

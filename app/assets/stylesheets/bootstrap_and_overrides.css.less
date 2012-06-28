@@ -30,17 +30,25 @@ body { padding-top: 180px; }
 
 body { padding-top: 120px; }
 
-@media (max-width: 1200px) {
-  .span5 {
-    width: 445px;
+/* Landscape phones and down */
+@media (max-width: 480px) {
+  body { padding-top: 0; }
+  
+  input.span1 {
+    width: 60px !important;
+  }
+
+  input.span2 {
+    width: 160px !important;
+  }
+  
+  .offset2 {
+    margin-left: 3px;
   }
 }
 
-@media (max-width: 979px) {
-  body { padding-top: 0; }
-}
-
-@media (max-width: 730px) {
+/* Landscape phone to portrait tablet */
+@media (max-width: 767px) {
   .navbar .btn-navbar, .navbar .brand {
     display: inline;
     float: left;
@@ -51,4 +59,52 @@ body { padding-top: 120px; }
   }
   
   body { padding-top: 0; }
+  
+  input.span1 {
+    width: 60px !important;
+  }
+
+  input.span2 {
+    width: 160px !important;
+  }
+  
+  .row {
+    margin-left: 0;
+  }
+  
+  .offset2 {
+    margin-left: 5px;
+  }
+}
+
+/* Portrait tablet to landscape and desktop */
+@media (min-width: 768px) and (max-width: 979px) {
+  body { padding-top: 0; }
+  
+  input.span1 {
+    width: 60px !important;
+  }
+
+  input.span2 {
+    width: 160px !important;
+  }
+  
+  .row {
+    margin-left: 0;
+  }
+  
+  .offset2 {
+    margin-left: 50px;
+  }
+}
+
+/* Large desktop */
+@media (min-width: 1200px) {
+  .span5 {
+    width: 445px;
+  }
+  
+  .offset2 {
+    margin-left: 243px;
+  }
 }
