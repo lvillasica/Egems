@@ -93,7 +93,7 @@ class LeaveDetail < ActiveRecord::Base
       begin
         LeaveDetailMailer.leave_approval(employee, self, recipient).deliver
       rescue Net::SMTPAuthenticationError, Net::SMTPServerBusy, Net::SMTPSyntaxError, Net::SMTPFatalError, Net::SMTPUnknownError => e
-        errors[:base] << "Leave detail was saved however there was problem with email notification to #{recipient.email}: #{e.message}"
+        errors[:base] << "There was a problem on sending the email notification to #{recipient.email}: #{e.message}"
         next
       end
     end

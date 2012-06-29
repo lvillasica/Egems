@@ -16,8 +16,11 @@ class LeaveDetailsController < ApplicationController
   def create
     @leave_detail = @employee.leave_details.new(params[:leave_detail])
     if @leave_detail.save
+      flash_message(:notice, "#{@leave_detail.leave_type} was successfully created.")
+      flash_message(:warning, @leave_detail.errors.full_messages) if @leave_detail.errors.any?
       redirect_to leave_details_path(:leave_type => @leave_detail.leave.leave_type)
     else
+      flash_message(:error, @leave_detail.errors.full_messages) if @leave_detail.errors.any?
       render :action => "new"
     end
   end

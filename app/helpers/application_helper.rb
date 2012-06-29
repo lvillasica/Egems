@@ -6,14 +6,19 @@ module ApplicationHelper
 
   def flash_message
     flashes = ""
+    alert_classes = {
+      :alert => "error", :error => "error",
+      :notice => "success", :warning => "block",
+      :info => "info"
+    }
     flash.map do |name, msg|
       str = %Q{
-        <div class='alert alert-error' id='flash_#{name}'>
-           #{msg}
+        <div class='alert alert-#{alert_classes[name.to_sym]}'>
            <button class='close' data-dismiss='alert'>&times;</button>
+           #{msg}
         </div>
       }
-      flashes << str.html_safe if name.eql?(:alert)
+      flashes << str.html_safe
     end
     flashes.html_safe
   end
