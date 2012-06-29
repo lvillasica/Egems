@@ -5,15 +5,7 @@ class LeaveDetailMailer < BaseMailer
     @approvers = [requester.project_manager, requester.immediate_supervisor].compact
     @recipient = recipient
     @type = leave_detail.leave_type
-    start_date = leave_detail.leave_date.localtime.to_date
-    end_date = (start_date + leave_detail.leave_unit.ceil.days)
-    range = (start_date ... end_date).to_a
-    l_start_date = I18n.l(range.first, :format => :long_date_with_day)
-    l_end_date = I18n.l(range.last, :format => :long_date_with_day) unless range.count == 1
-    date = [l_start_date, l_end_date].compact.join(' to ')
-    am_pm = {1 => "AM", 2 => "PM"}
-    period = am_pm[leave_detail.period]
-    @dated_at = [date, period].compact.join(" ")
+    @dated_on = leave_detail.dated_on
 
     if recipient == (requester)
       @receiver_sv = 'You have'

@@ -21,7 +21,7 @@ class LeaveDetail < ActiveRecord::Base
   validates_presence_of :leave_type, :leave_unit, :details
   validates_numericality_of :leave_unit
   validates_inclusion_of :period, :in => 0 .. 2, :message => "period is invalid."
-  validate :invalid_leave, :unless => "self.leave_type == 'Absence Without Pay'"
+  validate :invalid_leave
   
   # -------------------------------------------------------
   # Callbacks
@@ -33,9 +33,7 @@ class LeaveDetail < ActiveRecord::Base
   # -------------------------------------------------------
   # Namescopes
   # -------------------------------------------------------
-  scope :latest, includes(:leave)
-    .where("employee_truancies.date_from >= ? and employee_truancies.date_to <= ?",
-            Time.now.beginning_of_year.utc, Time.now.end_of_year.utc)
+  scope :active, includes(:leave).where("employee_truancies.status = 1")
   scope :type, lambda { |type| where(:leave_type => type).order(:leave_date) }
   scope :pending, where(:status => 'Pending')
   scope :asc, order(:leave_date, :period)
@@ -49,7 +47,7 @@ class LeaveDetail < ActiveRecord::Base
   class << self
     def get_units_per_leave_date
       units_per_leave_date = {}
-      self.latest.each do |ld|
+      self.active.each do |ld|
         local_leave_date = ld.leave_date.localtime.to_date
         if ld.leave_unit > 1
           startDate = local_leave_date
@@ -72,6 +70,19 @@ class LeaveDetail < ActiveRecord::Base
   # -------------------------------------------------------
   # Instance Methods
   # -------------------------------------------------------
+  
+  # returns {<mm/dd/yyyy> to <mm/dd/yyyy> or <mm/dd/yyyy AM/PM> or <mm/dd/yyyy>}
+  def dated_on
+    start_date = leave_date.localtime.to_date
+    end_date = (start_date + leave_unit.ceil.days)
+    range = (start_date ... end_date).to_a
+    l_start_date = I18n.l(range.first, :format => :long_date_with_day)
+    l_end_date = I18n.l(range.last, :format => :long_date_with_day) unless range.count == 1
+    date = [l_start_date, l_end_date].compact.join(' to ')
+    am_pm = {1 => "AM", 2 => "PM"}[period]
+    [date, am_pm].compact.join(" ")
+  end
+  
   def set_leave
     self.leave = self.employee.leaves.type(self.leave_type).first
   end
@@ -107,25 +118,20 @@ class LeaveDetail < ActiveRecord::Base
     if validate_dates && validate_active
       allocated = @leave.leaves_allocated.to_f
       consumed = @leave.leaves_consumed.to_f
-      pending_leaves = @leave.leave_details.latest.pending
+      pending_leaves = @leave.leave_details.active.pending
       pending_leave_units = pending_leaves.sum(:leave_unit).to_f
       remaining_leaves = allocated - consumed
       total_leaves = leave_unit.to_f + consumed + pending_leave_units
       
-      validate_date_range(:leave_date, valid_range)
-      
-      validate_date_range(:end_date, valid_range)
-      
-      validate_leave_balance(total_leaves, remaining_leaves)
-      
+      if leave_type != "Absent Without Pay"
+        validate_date_range(:leave_date, valid_range)
+        validate_date_range(:end_date, valid_range)
+        validate_leave_balance(total_leaves, remaining_leaves)
+        validate_date_of_filing
+      end
       validate_leave_conflicts
-      
       validate_whole_day
-      
       validate_half_day
-      
-      validate_date_of_filing
-      
       validate_leave_unit
     end
   end
@@ -155,15 +161,13 @@ private
     
     case leave_type
     when "Vacation Leave"
-      min_date = Date.today + 1.day
-      max_date = date_to
-      range = Range.new(min_date, max_date)
+      min_date, max_date = Date.today + 1.day, date_to
     when "Sick Leave", "Emergency Leave"
-      min_date = date_from
-      max_date = Date.today
-      range = Range.new(min_date, max_date)
+      min_date, max_date = date_from, Date.today
+    else
+      min_date, max_date = date_from, date_to
     end
-    return range
+    return Range.new(min_date, max_date)
   end
   
   def validate_active
@@ -177,7 +181,7 @@ private
   def validate_date_range(date_attr, range)
     if range && !range.include?(self.send(date_attr).to_date)
       errors[date_attr] << "is invalid. Should be within
-                        #{range.first} and #{range.last}."
+                            #{range.first} and #{range.last}."
     end
   end
   
@@ -215,7 +219,7 @@ private
   end
   
   def validate_half_day
-    half_day = @leave.leave_details.find_half_day(leave_date, period).first
+    half_day = @employee.leave_details.find_half_day(leave_date, period).first
     if [1, 2].include?(period)
       if half_day
         errors[:base] << "You already have a #{period.ordinalize} period

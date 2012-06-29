@@ -12,8 +12,7 @@ class Leave < ActiveRecord::Base
   # -------------------------------------------------------
   # Namescopes
   # -------------------------------------------------------
-  scope :current, where("date_from >= ? and date_to <= ?",
-    Time.now.beginning_of_year.utc, Time.now.end_of_year.utc)
+  scope :active, where("status = 1")
   scope :type, lambda { |type|
     type = ((type == "Emergency Leave")? "Vacation Leave" : type)
     where(:leave_type => type).order(:id, :created_on)
@@ -42,7 +41,8 @@ class Leave < ActiveRecord::Base
   def remaining_balance
     allocated = leaves_allocated.to_f
     consumed = leaves_consumed.to_f
-    allocated - (consumed + total_pending)
+    balance = allocated - (consumed + total_pending)
+    (balance.to_f >= 0 ? balance.to_f : 0.0)
   end
   
   def total_pending

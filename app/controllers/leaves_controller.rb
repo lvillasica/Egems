@@ -3,7 +3,7 @@ class LeavesController < ApplicationController
   before_filter :get_employee
   
   def index
-    @leaves = @employee.leaves.current
+    @leaves = @employee.leaves.active
   end
   
 private

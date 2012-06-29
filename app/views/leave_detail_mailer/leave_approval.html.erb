@@ -1,7 +1,7 @@
 <p>Hi <%= @recipient.full_name %>,</p>
 <br/>
 <p><%= @receiver_sv %> sent a <%= @type %> request dated
-  { <%= @dated_at %> } for approval.</p>
+  { <%= @dated_on %> } for approval.</p>
 <p>The request has been sent to the following for appropriate action:</p>
 <ul style='list-style-type: none'>
   <% @approvers.map(&:full_name).each do |approver| %>
