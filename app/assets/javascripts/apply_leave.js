@@ -20,27 +20,33 @@ $(function () {
     case 'Vacation Leave':
       minDate = new Date().add(1).day();
       maxDate = new Date().getEndOfYear();
-      leaveDateFld.val(minDate.toString("yyyy-MM-dd"));
+      setDateFldVal(leaveDateFld, minDate);
+      setDateFldVal(endDateFld, minDate);
       break;
     case "Sick Leave": case "Emergency Leave":
       minDate = new Date().getStartOfYear();
       maxDate = new Date();
-      leaveDateFld.val(maxDate.toString("yyyy-MM-dd"));
+      setDateFldVal(leaveDateFld, maxDate);
+      setDateFldVal(endDateFld, maxDate);
       break;
     default:
-      minDate = '';
-      maxDate = '';
-      leaveDateFld.val(new Date().toString("yyyy-MM-dd"));
-    }
-    
-    if ( startDate != null && startDate > minDate ) {
-      leaveDateFld.val(startDate.toString("yyyy-MM-dd"));
-    } else {
-      endDateFld.val((endDate != null)? endDate.toString("yyyy-MM-dd") : leaveDateFld.val());
+      minDate = new Date().getStartOfYear();
+      maxDate = new Date().getEndOfYear();
+      setDateFldVal(leaveDateFld, new Date());
+      setDateFldVal(endDateFld, new Date());
     }
 
     dateSelector('leave_detail_leave_date', {minDate: minDate, maxDate: maxDate});
     leaveDateFld.trigger('change');
+  }
+  
+  var setDateFldVal = function ( dateFld, newDateVal ) {
+    var fldDateVal = Date.parse(dateFld.val()) || new Date();
+    if ( fldDateVal >= minDate && fldDateVal <= maxDate ) {
+      dateFld.val(fldDateVal.toString("yyyy-MM-dd"));
+    } else {
+      dateFld.val(newDateVal.toString("yyyy-MM-dd"));
+    }
   }
   
   var setNoOfDays = function () {
@@ -124,7 +130,7 @@ $(function () {
   }
   
   // if leave form is already loaded,
-  if ( newLeaveForm != undefined ) {
+  if ( newLeaveForm.length > 0 ) {
     // start validations -------------------------------------------------------
     setListeners();
     setFldsForLeaveType(leaveTypeSelect.val());

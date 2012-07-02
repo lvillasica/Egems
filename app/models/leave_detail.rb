@@ -1,7 +1,6 @@
 class LeaveDetail < ActiveRecord::Base
 
   self.table_name = 'employee_truancy_details'
-  attr_accessor :end_date
   attr_accessible :leave_type, :leave_date, :end_date, :leave_unit, :details, :period
   
   # -------------------------------------------------------
@@ -70,6 +69,13 @@ class LeaveDetail < ActiveRecord::Base
   # -------------------------------------------------------
   # Instance Methods
   # -------------------------------------------------------
+  def end_date=(date)
+    @end_date = Time.parse(date.to_s).utc rescue nil
+  end
+  
+  def end_date
+    @end_date
+  end
   
   # returns {<mm/dd/yyyy> to <mm/dd/yyyy> or <mm/dd/yyyy AM/PM> or <mm/dd/yyyy>}
   def dated_on
@@ -89,7 +95,7 @@ class LeaveDetail < ActiveRecord::Base
   
   def set_period
     leave_date_local = leave_date.localtime.to_date
-    end_date_local = end_date.to_date
+    end_date_local = end_date.localtime.to_date
     if (leave_date_local .. end_date_local).count > 1
       self.period = 3
     end
@@ -116,8 +122,6 @@ class LeaveDetail < ActiveRecord::Base
   def invalid_leave
     @employee = self.employee
     @leave = self.leave || @employee.leaves.type(self.leave_type).first
-    @leave_date_local = leave_date.localtime.to_date
-    @end_date_local = end_date.to_date
     if validate_dates && validate_active
       allocated = @leave.leaves_allocated.to_f
       consumed = @leave.leaves_consumed.to_f
@@ -125,7 +129,6 @@ class LeaveDetail < ActiveRecord::Base
       pending_leave_units = pending_leaves.sum(:leave_unit).to_f
       remaining_leaves = allocated - consumed
       total_leaves = leave_unit.to_f + consumed + pending_leave_units
-      
       if leave_type != "Absent Without Pay"
         validate_date_range(:leave_date, valid_range)
         validate_date_range(:end_date, valid_range)
@@ -141,11 +144,16 @@ class LeaveDetail < ActiveRecord::Base
   
 private
   def validate_dates
-    if valid_date?(:leave_date) && valid_date?(:end_date) && @leave_date_local > @end_date_local
-      errors[:base] << "Leave date shouldn't be later than End date."
-      return false
+    if valid_date?(:leave_date) && valid_date?(:end_date)
+      @leave_date_local = leave_date.localtime.to_date
+      @end_date_local = end_date.localtime.to_date
+      if @leave_date_local > @end_date_local
+        errors[:base] << "Leave date shouldn't be later than End date."
+        return false
+      else
+        return true
+      end
     end
-    return true
   end
   
   def valid_date?(date_attr)
@@ -174,11 +182,12 @@ private
   end
   
   def validate_active
-    unless @leave.active?
+    if !@leave.active?
       errors[:base] << "Leave credits has already been expired."
       return false
+    else
+      return true
     end
-    return true
   end
   
   def validate_date_range(date_attr, range)

@@ -6,7 +6,8 @@
     <div class="control-group">
       <%= f.label :leave_type, :class => 'control-label' %>
       <div class="controls">
-        <%= f.select :leave_type, options_for_select(@employee.leaves.leave_types) %>
+        <%= f.select :leave_type,
+            options_for_select(@employee.leaves.leave_types, @leave_detail.leave_type) %>
       </div>
     </div>
     
@@ -29,7 +30,8 @@
       <%= f.label :leave_date, :class => 'control-label' %>
       <div class="controls">
         <div class="input-append">
-          <%= f.text_field :leave_date, :value => '', :class => 'span2' %>
+          <%= f.text_field :leave_date,
+              :value => format_date(@leave_detail.leave_date), :class => 'span2' %>
         </div>
       </div>
     </div>
@@ -38,7 +40,8 @@
       <%= f.label :end_date, :class => 'control-label' %>
       <div class="controls">
         <div class="input-append">
-          <%= f.text_field :end_date, :value => '', :class => 'span2' %>
+          <%= f.text_field :end_date,
+              :value => format_date(@leave_detail.end_date), :class => 'span2' %>
         </div>
       </div>
     </div>
@@ -46,7 +49,7 @@
     <div class="control-group">
       <%= f.label :leave_unit, :class => 'control-label' %>
       <div class="controls">
-        <%= f.text_field :leave_unit, :value => '', :class => 'span1' %>
+        <%= f.text_field :leave_unit, :class => 'span1' %>
       </div>
     </div>
     
