@@ -2,7 +2,13 @@ class LeaveDetailMailer < BaseMailer
 
   def leave_approval(requester, leave_detail, recipient=requester)
     @requester = requester
-    @approvers = [requester.project_manager, requester.immediate_supervisor].compact
+
+    if requester.project_manager == requester.immediate_supervisor
+      @approvers = [requester.project_manager]
+    else
+      @approvers = [requester.project_manager, requester.immediate_supervisor].compact
+    end
+
     @recipient = recipient
     @type = leave_detail.leave_type
     @dated_on = leave_detail.dated_on

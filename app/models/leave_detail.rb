@@ -97,8 +97,11 @@ class LeaveDetail < ActiveRecord::Base
   
   def send_email_notification
     recipients = [employee]
-    recipients << employee.immediate_supervisor
-    recipients << employee.project_manager
+    if employee.immediate_supervisor == employee.project_manager
+      recipients << employee.project_manager
+    else
+      recipients.concat([employee.project_manager,employee.immediate_supervisor]).compact
+    end
 
     recipients.compact.each do |recipient|
       begin

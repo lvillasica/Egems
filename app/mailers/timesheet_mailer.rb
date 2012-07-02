@@ -2,7 +2,13 @@ class TimesheetMailer < BaseMailer
 
   def invalid_timesheet(requester, timesheet, type, recipient=requester)
     @requester = requester
-    @approvers = [requester.project_manager, requester.immediate_supervisor].compact
+
+    if requester.project_manager == requester.immediate_supervisor
+      @approvers = [requester.project_manager]
+    else
+      @approvers = [requester.project_manager, requester.immediate_supervisor].compact
+    end
+
     @recipient = recipient
     @type = type.capitalize.dasherize
     @date = timesheet.date
