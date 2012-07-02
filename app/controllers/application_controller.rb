@@ -7,7 +7,7 @@ class ApplicationController < ActionController::Base
   def after_sign_in_path_for(resource)
     employee = resource.employee
     begin
-      Timesheet.time_in!(employee, true)
+      Timesheet.time_in!(employee)
     rescue Timesheet::NoTimeoutError
       session[:invalid_timein_after_signin] = true
       flash_message(:alert, :no_timeout)

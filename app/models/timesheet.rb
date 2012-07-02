@@ -55,10 +55,8 @@ class Timesheet < ActiveRecord::Base
   # Class Methods
   # -------------------------------------------------------
   class << self
-    def time_in!(employee, force=false)
-      latest_invalid_timesheets = employee.timesheets.latest.no_timeout
-      raise NoTimeoutError if latest_invalid_timesheets.present?
-      raise NoTimeoutError if employee.timesheets.previous.no_timeout.present? and !force
+    def time_in!(employee)
+      raise NoTimeoutError if employee.timesheets.no_timeout.present?
       employee.timesheets.create!(:date => Time.now.beginning_of_day.utc,
                                   :time_in => Time.now.utc)
     end
