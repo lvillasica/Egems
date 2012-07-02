@@ -16,15 +16,18 @@ $(function () {
       minDate = null;
   
   var setFldsForLeaveType = function ( leaveType ) {
-    if ( leaveType == 'Vacation Leave' ) {
+    switch ( leaveType ) {
+    case 'Vacation Leave':
       minDate = new Date().add(1).day();
       maxDate = new Date().getEndOfYear();
       leaveDateFld.val(minDate.toString("yyyy-MM-dd"));
-    } else if ( $.inArray(leaveType, ["Sick Leave", "Emergency Leave"]) != -1 ) {
+      break;
+    case "Sick Leave": case "Emergency Leave":
       minDate = new Date().getStartOfYear();
       maxDate = new Date();
       leaveDateFld.val(maxDate.toString("yyyy-MM-dd"));
-    } else {
+      break;
+    default:
       minDate = '';
       maxDate = '';
       leaveDateFld.val(new Date().toString("yyyy-MM-dd"));
@@ -70,9 +73,7 @@ $(function () {
     }
   }
   
-  // if leave form is already loaded,
-  if ( newLeaveForm != undefined ) {
-  
+  var setListeners = function () {
     // set fields' listeners ---------------------------------------------------
     leaveTypeSelect.change ( function () {
       setFldsForLeaveType($(this).val());
@@ -120,8 +121,12 @@ $(function () {
       return false;
     });
     // -------------------------------------------------------------------------
-    
+  }
+  
+  // if leave form is already loaded,
+  if ( newLeaveForm != undefined ) {
     // start validations -------------------------------------------------------
+    setListeners();
     setFldsForLeaveType(leaveTypeSelect.val());
     setNoOfDays();
     checkIfHalfDay();
