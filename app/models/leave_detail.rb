@@ -141,14 +141,11 @@ class LeaveDetail < ActiveRecord::Base
     if validate_dates && validate_active
       allocated = @leave.leaves_allocated.to_f
       consumed = @leave.leaves_consumed.to_f
-      pending_leaves = @leave.leave_details.active.pending
-      pending_leave_units = pending_leaves.sum(:leave_unit).to_f
-      remaining_leaves = allocated - consumed
-      total_leaves = leave_unit.to_f + consumed + pending_leave_units
+      total_leaves = leave_unit.to_f + consumed + @leave.total_pending.to_f
       if leave_type != "Absent Without Pay"
         validate_date_range(:leave_date, valid_range)
         validate_date_range(:end_date, valid_range)
-        validate_leave_balance(total_leaves, remaining_leaves)
+        validate_leave_balance(total_leaves, allocated)
         validate_date_of_filing
       end
       validate_leave_conflicts
