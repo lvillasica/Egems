@@ -32,17 +32,17 @@ class Timesheet < ActiveRecord::Base
   # -------------------------------------------------------
   # Callbacks
   # -------------------------------------------------------
-  before_save :put_shift_details, :on => :create
-  before_save :set_minutes_late, :on => :create
-  before_save :update_shift_details, :on => :update
-  before_save :compute_minutes
+  before_create :put_shift_details
+  before_create :set_minutes_late
+  before_update :update_shift_details
+  before_update :compute_minutes
 
   # -------------------------------------------------------
   # Namescopes
   # -------------------------------------------------------
   scope :no_timeout,  :conditions => ["time_in is not null and time_out is null"]
-  scope :desc, :order => 'date desc, created_on desc'
-  scope :asc, :order => 'date asc, time_in asc'
+  scope :desc, :order => 'time_in desc, created_on desc'
+  scope :asc, :order => 'time_in asc'
   scope :within, lambda { |range|
     start_date, end_date = range
     asc
@@ -64,9 +64,9 @@ class Timesheet < ActiveRecord::Base
     end
 
     def time_out!(employee)
-      t_latest = employee.timesheets.latest.no_timeout
+      t_latest = employee.timesheets.no_timeout
       raise NoTimeinError if t_latest.empty?
-      timesheet = t_latest.desc.first
+      timesheet = t_latest.asc.first
       timesheet.time_out = Time.now.utc
       timesheet.save!
     end
@@ -76,7 +76,7 @@ class Timesheet < ActiveRecord::Base
       range = [time.monday, time.sunday]
       day = time.localtime.to_date.wday
       within(range).includes(:shift_schedule_detail)
-                   .where("shift_schedule_details.day_of_week = ?", day).asc
+                   .where("#{ShiftScheduleDetail.table_name}.day_of_week = ?", day).asc
     end
 
     def previous
@@ -88,11 +88,11 @@ class Timesheet < ActiveRecord::Base
   # Instance Methods
   # -------------------------------------------------------
   def time_in
+    #return localtime of valid_time_in value based on shift
     begin
-      shift = shift_schedule_detail
       time_in_original = read_attribute(:time_in).localtime
-      if shift.present? && shift.day_of_week == to_wday
-        shift_min = shift.valid_time_in(self).first
+      if shift_schedule_detail.present? && !is_holiday?(time_in_original)
+        shift_min = shift_schedule_detail.valid_time_in(date).first
         time_in_original < shift_min ? shift_min : time_in_original
       else
         time_in_original
@@ -103,6 +103,7 @@ class Timesheet < ActiveRecord::Base
   end
 
   def time_in_without_adjustment
+    #returns utc format of time_in as is from database
     read_attribute(:time_in)
   end
 
@@ -123,7 +124,7 @@ class Timesheet < ActiveRecord::Base
 
     begin
       if self.save!
-        # Time in after manual timeout only if Time in is clicked.
+        #Time in after manual timeout only if Time in is clicked.
         self.class.time_in!(employee) if type.eql?("time_out") && forced
         #send_invalid_timesheet_notification(type)
         return true
@@ -171,7 +172,7 @@ class Timesheet < ActiveRecord::Base
 
   def compute_minutes
     if time_out
-      @timesheets_today = employee.timesheets.latest(date.localtime)
+      @timesheets_today = employee.timesheets.latest(date.localtime).asc
                                   .reject{ |t| t.id == id || t.time_in > time_in }
       @first_timesheet = @timesheets_today.first || self
 
@@ -206,7 +207,7 @@ class Timesheet < ActiveRecord::Base
 
   def set_minutes_late
     if is_first_entry? && is_work_day? && is_within_shift?
-      max_time_in = shift_schedule_detail.valid_time_in(self).last
+      max_time_in = shift_schedule_detail.valid_time_in(date).last
       self.minutes_late = (time_in > max_time_in) ? ((time_in - max_time_in) / 60).floor : 0
     end
   end
@@ -223,34 +224,93 @@ class Timesheet < ActiveRecord::Base
   end
 
   def put_shift_details
-    # TODO: timein at 1AM tuesday, day_of_week
-    self.shift_schedule = employee.shift_schedule(date)
-    self.shift_schedule_detail = shift_schedule.detail(to_wday)
-    next_day = date.tomorrow
-    self.next_day_shift_schedule = employee.shift_schedule(next_day)
-    self.next_day_shift_schedule_detail = next_day_shift_schedule.detail(to_wday(next_day))
+    ldate = date.localtime
+    timein = time_in_without_adjustment.localtime
+    self.shift_schedule = employee.shift_schedule(ldate)
+    self.shift_schedule_detail = shift_schedule.detail(timein)
+    self.date = shift_schedule_detail.get_shift_date(ldate)
+
+    ldate = date.localtime
+    if employee.schedule_range(shift_schedule).detect { |s| s.cover?(ldate) }.nil?
+      self.shift_schedule = employee.shift_schedule(ldate)
+      self.shift_schedule_detail = shift_schedule.detail(timein)
+      self.date = shift_schedule_detail.get_shift_date(ldate)
+    end
+
+    next_date = date.localtime.to_time.tomorrow
+    adjust_next_day_shift(next_date)
+  end
+
+  def adjust_next_day_shift(ldate)
+    wday = shift_schedule_detail.day_of_week
+    next_wday = (wday == 6) ? 0 : (wday + 1)
+    self.next_day_shift_schedule = employee.shift_schedule(ldate)
+    self.next_day_shift_schedule_detail = next_day_shift_schedule.detail_by_day(next_wday)
   end
 
   def update_shift_details
-    shift_start = shift_schedule_detail.valid_time_in(self).first
-    shift_end =  next_day_shift_schedule_detail.valid_time_in(self).first
-    range = Range.new(shift_start, shift_end, true)
+    if time_out
+      ldate = date.localtime
+      timein = time_in_without_adjustment.localtime
+      timeout = time_out.localtime
+      shift_range = shift_schedule_detail.to_shift_range(ldate)
+      shift_start = shift_range.first
 
-    if !time_out.nil? && !range.cover?(time_out.localtime)
+      if !shift_range.cover?(timein) or (shift_range.cover?(timein) && !is_work_day?)
+        scheduled = employee.schedule_range(shift_schedule).detect { |s| s.cover?(ldate) }
+        if scheduled.nil?
+          shift = employee.shift_schedule(ldate)
+          shift_detail = shift.detail_by_day(shift_schedule_detail.day_of_week)
+          shift_start = shift_detail.valid_time_in(ldate).first
+        end
+
+        max_end = next_day_shift_schedule_detail.valid_time_in(ldate).first
+        diff = 0
+        if shift_range.cover?(timein)
+          diff -= 1 if timein < shift_start && timeout < shift_start
+        else
+          diff += 1 if timein > shift_start && timeout > max_end
+          diff -= 1 if timein < shift_start && timeout < shift_start
+        end
+
+        if diff != 0
+          self.date = ldate + diff.day
+          ldate = date.localtime
+          self.shift_schedule = employee.shift_schedule(ldate)
+          self.shift_schedule_detail = shift_schedule.detail_by_day(ldate.to_date.wday)
+          next_date = ldate.tomorrow
+          adjust_next_day_shift(next_date)
+        end
+      end
+    end
+  end
+
+  def update_shift_details_old
+    shift_start = shift_schedule_detail.valid_time_in(date).first
+    shift_end = shift_schedule_detail.valid_time_out(date).last
+    shift_max_end =  next_day_shift_schedule_detail.valid_time_in(date).first
+
+    max_range = Range.new(shift_start, shift_max_end)
+    shift_range = Range.new(shift_start, shift_end)
+    actual_in = time_in_without_adjustment.localtime
+
+    if !time_out.nil? && !max_range.cover?(time_out.localtime)
       diff = time_out.localtime >= shift_start ? 1 : -1
       day = shift_start.to_date + diff.days
-      self.shift_schedule = employee.shift_schedule(day)
-      self.shift_schedule_detail = shift_schedule.detail(day.to_date.wday)
-      self.date = day.to_time
-      next_day = day.tomorrow
-      self.next_day_shift_schedule = employee.shift_schedule(next_day)
-      self.next_day_shift_schedule_detail = next_day_shift_schedule.detail(next_day.to_date.wday)
+      if !shift_range.cover?(actual_in) or (shift_range.cover?(actual_in) and !is_work_day?)
+        self.date = day.to_time
+        self.shift_schedule = employee.shift_schedule(date)
+        self.shift_schedule_detail = shift_schedule.detail(date)
+        next_day = date.tomorrow
+        self.next_day_shift_schedule = employee.shift_schedule(next_day)
+        self.next_day_shift_schedule_detail = next_day_shift_schedule.detail(next_day)
+      end
     end
   end
 
   def get_valid_time_out
     if minutes_late > 0
-      shift_schedule_detail.valid_time_out(self).last
+      shift_schedule_detail.valid_time_out(date).last
     else
       time_in.localtime + shift_schedule_detail.shift_total_time.minutes
     end
@@ -258,12 +318,13 @@ class Timesheet < ActiveRecord::Base
 
   def is_within_shift?
     if is_work_day?
-      shift_date = shift_schedule_detail.valid_time_in(self).first
-      @timesheets_today ||= employee.timesheets.latest(shift_date.beginning_of_day)
+      @timesheets_today ||= employee.timesheets.latest(date.localtime)
                                     .reject{ |t| t.id == id || t.time_in > time_in }
       @first_timesheet ||= @timesheets_today.first || self
+      time_rendered = @timesheets_today.sum(&:duration)
+      return false if time_rendered >= shift_schedule_detail.shift_total_time
 
-      in_min, in_max = shift_schedule_detail.valid_time_in(self)
+      in_min, in_max = shift_schedule_detail.valid_time_in(@first_timesheet.date)
       shift_start = @first_timesheet.time_in
       shift_start = shift_start > in_max ? in_max : shift_start
       shift_end = shift_start + shift_schedule_detail.shift_total_time.minutes
@@ -274,20 +335,16 @@ class Timesheet < ActiveRecord::Base
   end
 
   def is_work_day?
-    # not holidays and rest days
-    shift_schedule_detail.am_time_start.present? && shift_schedule_detail.pm_time_start.present? &&
-    !is_holiday?
+    # not holiday and rest day
+    !shift_schedule_detail.is_day_off? and !is_holiday?
   end
 
-  def is_holiday?
-    !employee.branch.holidays.falls_on(date.localtime).first.nil?
+  def is_holiday?(ldate=nil)
+    ldate ||= date.localtime
+    !employee.branch.holidays.falls_on(ldate).first.nil?
   end
 
   def is_first_entry?
     employee.timesheets.latest(date.localtime).first.nil?
-  end
-
-  def to_wday(other_date=nil)
-    (other_date || date).localtime.to_date.wday
   end
 end

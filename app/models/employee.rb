@@ -30,9 +30,16 @@ class Employee < ActiveRecord::Base
   end
 
   def shift_schedule(date=Time.now)
+    date = date.beginning_of_day
     shift_schedules.where([
       "? between employee_shift_schedules.start_date and employee_shift_schedules.end_date",
-       date.beginning_of_day
+       (date + date.utc_offset).utc
     ]).first || ShiftSchedule.find_by_id(shift_schedule_id)
+  end
+
+  def schedule_range(shift)
+    range = shift_schedules.select("employee_shift_schedules.*")
+                           .where(["employee_shift_schedules.shift_schedule_id=?", shift.id])
+    range.map { |r| Range.new(r.start_date, r.end_date) }
   end
 end

@@ -55,7 +55,7 @@ class TimesheetsController < ApplicationController
     time = Time.parse(params[:time])
     @active_time = [time.monday, time.sunday]
     @employee_timesheets_active = @employee.timesheets.within(@active_time).asc
-                                           .group_by(&:shift_schedule_detail_id)
+                                           .group_by { |s| s.shift_schedule_detail.day_of_week }
     render :template => 'timesheets/weekly'
   end
 
