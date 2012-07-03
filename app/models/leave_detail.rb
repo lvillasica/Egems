@@ -13,6 +13,11 @@ class LeaveDetail < ActiveRecord::Base
   # -------------------------------------------------------
   belongs_to :employee
   belongs_to :leave, :class_name => 'Leave', :foreign_key => :employee_truancy_id
+  belongs_to :responder, :class_name => "Employee", :foreign_key => :responder_id
+  has_and_belongs_to_many :responders, :class_name => "Employee",
+                          :join_table => "employee_truancy_detail_responders",
+                          :foreign_key => :employee_truancy_detail_id,
+                          :association_foreign_key => :responder_id
   
   # -------------------------------------------------------
   # Validations
@@ -26,6 +31,7 @@ class LeaveDetail < ActiveRecord::Base
   # Callbacks
   # -------------------------------------------------------
   before_save :set_period
+  before_create :set_default_responders
   before_create :set_leave
   after_save :send_email_notification
   
@@ -39,6 +45,11 @@ class LeaveDetail < ActiveRecord::Base
   scope :find_half_day, lambda { |date, period|
     where("leave_date = ? AND period = ?", date, period)
   }
+  
+  # -------------------------------------------------------
+  #  Constants
+  # -------------------------------------------------------
+  LEAVE_PERIOD = ["Whole Day", "AM", "PM", "Range"]
   
   # -------------------------------------------------------
   #  Class Methods
@@ -99,6 +110,11 @@ class LeaveDetail < ActiveRecord::Base
     if (leave_date_local .. end_date_local).count > 1
       self.period = 3
     end
+  end
+  
+  def set_default_responders
+    managers = [employee.project_manager, employee.immediate_supervisor].compact.uniq
+    responders << managers
   end
   
   def send_email_notification

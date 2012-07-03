@@ -4,7 +4,7 @@
 <h3><%= @leave.leave_type %></h3>
 <hr />
 <% if @leave_details.any? %>
-  <table class="table timesheets">
+  <table class="table timesheets leave_details">
     <thead>
       <tr>
         <th>Leave Date</th>
@@ -25,8 +25,8 @@
         <td><%= ld.leave_type %></td>
         <td><%= ld.details %></td>
         <td class="mins"><%= ld.leave_unit %></td>
-        <td class="mins"><%= ld.period %></td>
-        <td>&nbsp;</td>
+        <td class="mins"><%= ld.class::LEAVE_PERIOD[ld.period] %></td>
+        <td><%= show_responders(ld) %></td>
         <td><%= ld.status %></td>
         <td>&nbsp;</td>
         <td>&nbsp;</td>
