@@ -71,16 +71,29 @@ class Timesheet < ActiveRecord::Base
       timesheet.save!
     end
 
-
-    def latest(time = Time.now)
-      range = [time.monday, time.sunday]
-      day = time.localtime.to_date.wday
-      within(range).includes(:shift_schedule_detail)
-                   .where("#{ShiftScheduleDetail.table_name}.day_of_week = ?", day).asc
+    def by_date(date)
+      where("Date(date) = Date(?)", date.utc)
     end
 
-    def previous
-      where("Date(date) < Date(?)", Time.now.yesterday.utc)
+    def latest(time = Time.now)
+      ids = all.map do |t|
+        if  time > t.shift_schedule_detail.valid_time_in(t.date).first and
+           (time < t.next_day_shift_schedule_detail.valid_time_in(t.date).first or
+            time < t.shift_schedule_detail.valid_time_out(t.date).last)
+          t.id
+        end
+      end
+      where(:id => ids.compact)
+    end
+
+    def previous(time = Time.now)
+      ids = all.map do |t|
+        if time > t.next_day_shift_schedule_detail.valid_time_in(t.date).first and
+           time > t.shift_schedule_detail.valid_time_out(t.date).last
+          t.id
+        end
+      end
+      where(:id => ids.compact)
     end
   end
 
@@ -172,7 +185,7 @@ class Timesheet < ActiveRecord::Base
 
   def compute_minutes
     if time_out
-      @timesheets_today = employee.timesheets.latest(date.localtime).asc
+      @timesheets_today = employee.timesheets.by_date(date.localtime).asc
                                   .reject{ |t| t.id == id || t.time_in > time_in }
       @first_timesheet = @timesheets_today.first || self
 
@@ -318,7 +331,7 @@ class Timesheet < ActiveRecord::Base
 
   def is_within_shift?
     if is_work_day?
-      @timesheets_today ||= employee.timesheets.latest(date.localtime)
+      @timesheets_today ||= employee.timesheets.by_date(date.localtime)
                                     .reject{ |t| t.id == id || t.time_in > time_in }
       @first_timesheet ||= @timesheets_today.first || self
       time_rendered = @timesheets_today.sum(&:duration)
@@ -345,6 +358,6 @@ class Timesheet < ActiveRecord::Base
   end
 
   def is_first_entry?
-    employee.timesheets.latest(date.localtime).first.nil?
+    employee.timesheets.by_date(date.localtime).first.nil?
   end
 end

@@ -66,7 +66,7 @@ private
 
   def active_timesheet(active_time = Time.now.beginning_of_day)
     @employee ||= get_employee
-    @employee_timesheets_active = @employee.timesheets.latest(active_time)
+    @employee_timesheets_active = @employee.timesheets.by_date(active_time)
   end
 
   def invalid_timesheet_prev
