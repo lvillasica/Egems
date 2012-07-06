@@ -1,7 +1,8 @@
 class LeaveDetailsController < ApplicationController
   before_filter :authenticate_user!, :except => [:index]
   before_filter :get_employee
-  before_filter :get_leave, :only => [:index]
+  before_filter :get_leave
+  before_filter :set_js_params, :only => [:new]
   
   def index
     redirect_to leaves_path if params[:leave_type].blank? || @leave.nil?
@@ -21,6 +22,7 @@ class LeaveDetailsController < ApplicationController
       redirect_to leave_details_path(:leave_type => @leave_detail.leave.leave_type)
     else
       flash_message(:error, @leave_detail.errors.full_messages) if @leave_detail.errors.any?
+      set_js_params
       render :action => "new"
     end
   end
@@ -31,7 +33,14 @@ private
   end
   
   def get_leave
-    @leave = @employee.leaves.type(params[:leave_type]).first
+    @leave = @employee.leaves.type(params[:leave_type]).first ||
+             @employee.leaves.first
+  end
+  
+  def set_js_params
+    leave_range = (@leave.date_from .. @leave.date_to)
+    js_params[:day_offs] = @employee.day_offs_within(leave_range)
+    js_params[:holidays] = @employee.holidays_within(leave_range)
   end
   
 end

@@ -48,4 +48,20 @@ module ApplicationHelper
   def format_long_date_with_time(time)
     time ? I18n.l(User.of_localtime(time), :format => :long_date_with_time) : "mmm dd, yyyy --:--"
   end
+  
+  def vars_to_js
+    str = ""
+    unless @js_params.blank?
+      str << %Q(
+        <script>
+        window.rb = {};
+      )
+      @js_params.each do |name, val|
+        var_name = name.to_s.camelize.sub(/\b\w/) { $&.downcase }
+        str << "rb.#{var_name} = #{val.to_json};"
+      end
+    str << "</script>"
+    end
+    str.html_safe
+  end
 end

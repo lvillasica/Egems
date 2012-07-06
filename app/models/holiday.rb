@@ -9,5 +9,10 @@ class Holiday < ActiveRecord::Base
   # Namescopes
   # -------------------------------------------------------
   scope :falls_on, lambda { |date| where(["Date(date) = Date(?)", (date.end_of_day).utc]) }
+  scope :within, lambda { |range|
+    from = range.first.localtime.beginning_of_day.utc
+    to   = range.last.localtime.end_of_day.utc
+    where(["Date(date) between ? and ?", from, to])
+  }
 
 end

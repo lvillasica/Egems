@@ -55,14 +55,17 @@ class LeaveDetail < ActiveRecord::Base
   #  Class Methods
   # -------------------------------------------------------
   class << self
-    def get_units_per_leave_date
+    def get_units_per_leave_date(non_working_dates)
       units_per_leave_date = {}
       self.active.each do |ld|
         local_leave_date = ld.leave_date.localtime.to_date
+        local_end_date = ld.optional_to_leave_date.localtime.to_date rescue
+                         (local_leave_date + ld.leave_unit.ceil.days) - 1.day
         if ld.leave_unit > 1
-          startDate = local_leave_date
-          endDate = startDate + ld.leave_unit.days
-          (startDate ... endDate).each do |day|
+          leave_start = local_leave_date
+          leave_end = local_end_date
+          leave_dates = (leave_start .. leave_end).to_a - non_working_dates
+          leave_dates.each do |day|
             units_per_leave_date[day.to_s] = 1.0
           end
         elsif ld.leave_unit < 1 && units_per_leave_date[local_leave_date.to_s]
@@ -81,18 +84,18 @@ class LeaveDetail < ActiveRecord::Base
   # Instance Methods
   # -------------------------------------------------------
   def end_date=(date)
-    @end_date = Time.parse(date.to_s).utc rescue nil
+    self[:optional_to_leave_date] = Time.parse(date.to_s).utc rescue nil
   end
   
   def end_date
-    @end_date
+    self[:optional_to_leave_date]
   end
   
   # returns {<mm/dd/yyyy> to <mm/dd/yyyy> or <mm/dd/yyyy AM/PM> or <mm/dd/yyyy>}
   def dated_on
-    start_date = leave_date.localtime.to_date
-    end_date = (start_date + leave_unit.ceil.days)
-    range = (start_date ... end_date).to_a
+    leave_start = leave_date.localtime.to_date
+    leave_end = end_date.localtime.to_date
+    range = (leave_start .. leave_end).to_a
     l_start_date = I18n.l(range.first, :format => :long_date_with_day)
     l_end_date = I18n.l(range.last, :format => :long_date_with_day) unless range.count == 1
     date = [l_start_date, l_end_date].compact.join(' to ')
@@ -142,6 +145,10 @@ class LeaveDetail < ActiveRecord::Base
       allocated = @leave.leaves_allocated.to_f
       consumed = @leave.leaves_consumed.to_f
       total_leaves = leave_unit.to_f + consumed + @leave.total_pending.to_f
+      @leave_dates = (@leave_date_local .. @end_date_local)
+      @day_offs = get_day_offs
+      @holidays = get_holidays
+      
       if leave_type != "Absent Without Pay"
         validate_date_range(:leave_date, valid_range)
         validate_date_range(:end_date, valid_range)
@@ -152,6 +159,7 @@ class LeaveDetail < ActiveRecord::Base
       validate_whole_day
       validate_half_day
       validate_leave_unit
+      validate_non_working
     end
   end
   
@@ -204,7 +212,7 @@ private
   end
   
   def validate_date_range(date_attr, range)
-    if range && !range.include?(self.send(date_attr).to_date)
+    if range && !range.include?(self.send(date_attr).localtime.to_date)
       errors[date_attr] << "is invalid. Should be within
                             #{range.first} and #{range.last}."
     end
@@ -217,19 +225,17 @@ private
   end
   
   def validate_leave_conflicts
-    units_per_leave_date = @employee.leave_details.get_units_per_leave_date
-    startDate = @leave_date_local
-    endDate = startDate + leave_unit.ceil.days
+    nwd = @day_offs + @holidays
+    units_per_leave_date = @employee.leave_details.get_units_per_leave_date(nwd)
     maxed_out_leaves = []
-    leave_dates = (startDate ... endDate).to_a
-    units = ((leave_dates.count > 1)? 1 : leave_unit)
-    leave_dates.each do |day|
+    units = ((@leave_dates.count > 1)? 1 : leave_unit)
+    @leave_dates.each do |day|
       if (units_per_leave_date[day.to_s].to_f + units) > 1
         maxed_out_leaves << day
       end
     end
     
-    conflict_leaves = maxed_out_leaves & leave_dates
+    conflict_leaves = maxed_out_leaves & @leave_dates.to_a
     if !conflict_leaves.blank?
       dates = conflict_leaves.map { |d| format_date(d) }.compact.join(', ')
       errors[:base] << "You can no longer file leave(s) for
@@ -273,10 +279,49 @@ private
   end
   
   def validate_leave_unit
-    total_days = (@leave_date_local .. @end_date_local).count
-    if !leave_unit == total_days
+    total_days = @leave_dates.count - (@day_offs + @holidays).uniq.count
+    total_days = 0.0 if total_days < 0
+    if leave_unit != total_days
       errors[:leave_unit] << "is invalid."
     end
+  end
+  
+  def validate_non_working
+    nwd = @day_offs + @holidays
+    if (@leave_dates.to_a - nwd).empty?
+      errors[:base] << "You cannot file leave within non-working days."
+    end
+  end
+  
+  def get_day_offs
+    day_offs = []
+    day_offs_per_shift = @employee.day_offs_within(@leave.date_from .. @leave.date_to)
+    
+    day_offs_per_shift.each do | day_off |
+      from = Date.parse(day_off[:from]) rescue nil
+      to = Date.parse(day_off[:to]) rescue nil
+      days = day_off[:days]
+      
+      @leave_dates.each do | date |
+        if date >= from && date <= to && days.include?(date.wday)
+          day_offs << date
+        end
+      end if from && to
+    end
+    day_offs
+  end
+  
+  def get_holidays
+    holidays = []
+    emp_holidays = @employee.holidays_within(@leave.date_from .. @leave.date_to)
+    holiday_dates = emp_holidays.map { | h | h.date.localtime.to_date }
+    
+    @leave_dates.each do | date |
+      if holiday_dates.include?(date)
+        holidays << date
+      end
+    end
+    holidays
   end
 
 end

@@ -54,7 +54,37 @@ $(function () {
     if ( checkIfHalfDay() == true ) offset = 0.5;
     setDates();
     var diff = (endDate - startDate) / 1000 / 60 / 60 / 24;
-    leaveUnitFld.val(parseFloat(diff + offset).toFixed(1));
+    var leaveUnit = parseFloat((diff + offset) - nonWorkingDays().length).toFixed(1)
+    leaveUnitFld.val((leaveUnit >= 0)? leaveUnit : parseFloat(0.0).toFixed(1));
+  }
+  
+  var nonWorkingDays = function () {
+    var current = startDate.clone(),
+        result = new Array();
+    
+    while ( current <= endDate ) {
+      var tmpDay = current.clone();
+      
+      for ( var i = 0; i < rb.dayOffs.length; i++ ) {
+        var from = Date.parse(rb.dayOffs[i].from),
+            to = Date.parse(rb.dayOffs[i].to),
+            days = rb.dayOffs[i].days;
+        if ( tmpDay >= from && tmpDay <= to && $.inArray(tmpDay.getDay(), days) != -1 ) {
+          result.push(tmpDay);
+        }
+      }
+      
+      for ( var i = 0; i < rb.holidays.length; i++ ) {
+        var holidayDate = new Date(rb.holidays[i].date);
+        if ( (tmpDay.getDateOnly() - holidayDate.getDateOnly()) == 0 ) {
+          if ( $.inArray(tmpDay, result) == -1 ) result.push(tmpDay);
+        }
+      }
+      
+      current.addDays(1);
+    }
+    
+    return result;
   }
   
   var setDates = function () {
@@ -141,12 +171,19 @@ $(function () {
   
 });
 
-Date.prototype.getStartOfYear = function() {
+Date.prototype.getStartOfYear = function () {
   var year = this.getFullYear();
   return new Date(year, 0, 1);
 }
 
-Date.prototype.getEndOfYear = function() {
+Date.prototype.getEndOfYear = function () {
   var year = this.getFullYear();
   return new Date(year, 11, 31);
+}
+
+Date.prototype.getDateOnly = function () {
+  var year = this.getFullYear(),
+      mon  = this.getMonth(),
+      day  = this.getDate();
+  return new Date(year, mon, day);
 }

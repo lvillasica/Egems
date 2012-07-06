@@ -13,6 +13,7 @@ class Leave < ActiveRecord::Base
   # Namescopes
   # -------------------------------------------------------
   scope :active, where("status = 1")
+  scope :order_by_id, order(:id)
   scope :type, lambda { |type|
     type = ((type == "Emergency Leave")? "Vacation Leave" : type)
     where(:leave_type => type).order(:id, :created_on)

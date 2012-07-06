@@ -42,4 +42,33 @@ class Employee < ActiveRecord::Base
                            .where(["employee_shift_schedules.shift_schedule_id=?", shift.id])
     range.map { |r| Range.new(r.start_date, r.end_date) }
   end
+  
+  def holidays_within(date_range)
+    branch.holidays.within(date_range)
+  end
+  
+  def day_offs_within(date_range)
+    day_offs_per_range = []
+    scheds = shift_schedules.select("employee_shift_schedules.*").where([
+      "employee_shift_schedules.start_date >= ? and employee_shift_schedules.end_date <= ?
+      or employee_shift_schedules.shift_schedule_id = ?",
+      date_range.first.localtime.utc, date_range.last.localtime.utc, shift_schedule_id
+    ])
+    
+    scheds.each do | sched |
+      day_offs = ShiftScheduleDetail.includes(:shift_schedule).where([
+        "shift_schedules.id = ? and (shift_schedule_details.am_time_start is null
+        or shift_schedule_details.pm_time_start is null) and
+        (shift_schedule_details.am_time_duration = 0 or
+        shift_schedule_details.pm_time_duration = 0)",
+        sched.shift_schedule_id
+      ])
+      day_offs_per_range << {
+        :from => sched.start_date,
+        :to => sched.end_date,
+        :days => day_offs.map(&:day_of_week)
+      }
+    end
+    day_offs_per_range
+  end
 end

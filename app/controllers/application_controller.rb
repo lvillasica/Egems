@@ -29,5 +29,9 @@ protected
                   else nil
                   end
   end
+  
+  def js_params
+    @js_params ||= {}
+  end
 
 end
