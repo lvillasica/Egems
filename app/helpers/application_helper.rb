@@ -19,6 +19,7 @@ module ApplicationHelper
         </div>
       }
       flashes << str.html_safe
+      flash.delete(name.to_sym)
     end
     flashes.html_safe
   end

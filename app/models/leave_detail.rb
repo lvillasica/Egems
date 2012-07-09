@@ -279,7 +279,8 @@ private
   end
   
   def validate_leave_unit
-    total_days = @leave_dates.count - (@day_offs + @holidays).uniq.count
+    units = ([1, 2].include?(period) ? 0.5 : @leave_dates.count)
+    total_days = units - (@day_offs + @holidays).uniq.count
     total_days = 0.0 if total_days < 0
     if leave_unit != total_days
       errors[:leave_unit] << "is invalid."

@@ -22,12 +22,12 @@ class ApplicationController < ActionController::Base
 
 protected
   def flash_message(type,symbol_or_string)
-    flash.now[type] = case symbol_or_string
-                      when Symbol then t("views.flash.#{type.to_s}.#{symbol_or_string}")
-                      when String then symbol_or_string
-                      when Array then symbol_or_string.join("</br>")
-                      else nil
-                      end
+    flash[type] = case symbol_or_string
+                  when Symbol then t("views.flash.#{type.to_s}.#{symbol_or_string}")
+                  when String then symbol_or_string
+                  when Array then symbol_or_string.join("</br>")
+                  else nil
+                  end
   end
   
   def js_params
