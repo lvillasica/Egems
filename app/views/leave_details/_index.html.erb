@@ -1,0 +1,49 @@
+<div class="accordion-container">
+  <div class="accordion-heading">
+    <div class="btn-group">
+      <%= content_tag :button, leave.leave_type, class: "btn btn-info span2" %>
+      <button class="btn btn-info acc-toggle">
+        <i class="icon-chevron-down"></i>
+      </button>
+    </div>
+  </div> <!-- End of accordion-heading -->
+
+  <div class="accordion-body collapse" id="leave">
+    <div class="accordion-inner">
+      <% if leave.leave_details.any? %>
+        <table class="table timesheets leave_details">
+          <thead> 
+            <tr>
+              <th>Leave Date</th>
+              <th>Leave Type</th>
+              <th>Details</th>
+              <th>Day(s)</th>
+              <th>Period</th>
+              <th>Responder</th>
+              <th>Status</th>
+              <th>Response Date</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% leave.leave_details.each do |ld| %>
+            <tr>
+              <td><%= format_date ld.leave_date %></td>
+              <td><%= ld.leave_type %></td>
+              <td><%= ld.details %></td>
+              <td class="mins"><%= ld.leave_unit %></td>
+              <td class="mins"><%= ld.class::LEAVE_PERIOD[ld.period] %></td>
+              <td><%= show_responders(ld) %></td>
+              <td><%= ld.status %></td>
+              <td>&nbsp;</td>
+              <td>&nbsp;</td>
+            <tr>
+            <% end %>
+          </tbody>
+        </table>
+    <% else %>
+      <div class="well">No data found.</div>
+    <% end %>
+    </div>
+  </div> <!-- End of .accordion-body -->
+</div> <!-- End of .accordion-container -->

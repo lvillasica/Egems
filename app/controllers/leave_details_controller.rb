@@ -19,7 +19,7 @@ class LeaveDetailsController < ApplicationController
     if @leave_detail.save
       flash_message(:notice, "#{@leave_detail.leave_type} dated on #{@leave_detail.dated_on} was successfully created.")
       flash_message(:warning, @leave_detail.errors.full_messages) if @leave_detail.errors.any?
-      redirect_to leave_details_path(:leave_type => @leave_detail.leave.leave_type)
+      redirect_to leaves_path
     else
       flash_message(:error, @leave_detail.errors.full_messages) if @leave_detail.errors.any?
       set_js_params

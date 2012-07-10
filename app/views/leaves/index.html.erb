@@ -1,3 +1,4 @@
+<%= flash_message %>
 
 <h3>Leave Balances</h3>
 <hr />
@@ -27,3 +28,10 @@
 <% else %>
   <div class="well">No data found.</div>
 <% end %>
+<br><br>
+<% @leaves.each do |leave| %>
+  <div class="accordion" id="accordion2">
+    <%= render partial: "leave_details/index", locals: { leave: leave } %>
+  </div>
+<% end %>
+
