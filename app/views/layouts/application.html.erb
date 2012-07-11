@@ -79,9 +79,11 @@
         </div>
       </div>
 
-      <div id="main-container" class="row">
-        <div class="span9 offset2">
-          <%= yield %>
+      <div class="row">
+        <div id = "main-container" class = "span9 offset2"
+          data-employee-timesheets-active = "<%= @employee_timesheets_active.to_json(
+          :methods => [:time_in_without_adjustment]) %>">
+          Loading...
         </div>
       </div>
       <footer class="footer">

@@ -1,4 +1,6 @@
 class TimesheetsController < ApplicationController
+  respond_to :json
+  
   before_filter :authenticate_user!, :except => [:index]
   before_filter :get_employee, :except => [:manual_timeout, :timesheets_nav]
   before_filter :active_timesheet, :only => [:index]
