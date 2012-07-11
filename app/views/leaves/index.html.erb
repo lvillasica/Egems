@@ -16,7 +16,8 @@
     <tbody>
       <% @leaves.each do |leave| %>
       <tr>
-        <td><%= link_to leave.leave_type, leave_details_path(:leave_type => leave.leave_type) %></td>
+        <td><%=link_to leave.leave_type, "#collapse#{leave.id}", html: { class: "accordion-toggle" }, data: { parent: "#accordion2", toggle: "collapse", target: "#collapse#{ leave.id }" } %>
+        </td>
         <td class="mins"><%= leave.leaves_allocated %></td>
         <td class="mins"><%= leave.leaves_consumed %></td>
         <td class="mins"><%= leave.total_pending %></td>
@@ -29,9 +30,9 @@
   <div class="well">No data found.</div>
 <% end %>
 <br><br>
-<% @leaves.each do |leave| %>
-  <div class="accordion" id="accordion2">
-    <%= render partial: "leave_details/index", locals: { leave: leave } %>
-  </div>
-<% end %>
 
+<div class="accordion" id="accordion2">
+  <% @leaves.each do |leave| %>
+      <%= render partial: "leave_details/index", locals: { leave: leave } %>
+  <% end %>
+</div>
