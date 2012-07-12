@@ -6,8 +6,13 @@ class Egems.Views.TimesheetsIndex extends Backbone.View
     @collection.on('reset', @render, this)
   
   render: ->
-    $(@el).html(@template(
-      employee_timesheets_active: @collection
-      mixins: $.extend(Egems.Mixins.Defaults, Egems.Mixins.Timesheets)
-    ))
+    $(@el).html(@template())
+    @collection.each(@appendTimeEntry)
     this
+  
+  appendTimeEntry: (timeEntry) =>
+    view = new Egems.Views.TimeEntry(
+      model: timeEntry
+      collection: @collection
+    )
+    @$('#time-entries tbody').append(view.render().el)
