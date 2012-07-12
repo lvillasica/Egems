@@ -16,8 +16,7 @@
     <tbody>
       <% @leaves.each do |leave| %>
       <tr>
-        <td><%=link_to leave.leave_type, "#collapse#{leave.id}", html: { class: "accordion-toggle" }, data: { parent: "#accordion2", toggle: "collapse", target: "#collapse#{ leave.id }" } %>
-        </td>
+        <td><%= leave.leave_type %></td>
         <td class="mins"><%= leave.leaves_allocated %></td>
         <td class="mins"><%= leave.leaves_consumed %></td>
         <td class="mins"><%= leave.total_pending %></td>

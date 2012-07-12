@@ -1,15 +1,14 @@
   <div class="accordion-group">
     <div class="accordion-heading">
-      <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion2" href="#collapse<%= leave.id %>" data-target="#collapse<%= leave.id %>">
+      <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion2" data-target="#<%= leave.leave_type %>" href="#<%= leave.leave_type %>" >
           <%= leave.leave_type %>
           <i class="icon-chevron-down pull-right"></i>
       </a>
     </div> <!-- End of accordion-heading -->
 
-    <div id="collapse<%= leave.id %>" class="accordion-body collapse">
+    <div id="<%= leave.leave_type %>" class="accordion-body collapse">
       <div class="accordion-inner">
         <% if leave.leave_details.any? %>
-          <section id="collapse<%= leave.id %>">
           <table class="table timesheets leave_details">
             <thead> 
               <tr>
