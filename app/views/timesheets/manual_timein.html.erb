@@ -22,10 +22,9 @@
         <%= text_field 'timein', 'min', :placeholder => 'mm', :size => 2, :maxlength => 2, :class => 'time' %>
         <%= select 'timein', 'meridian', ['AM', 'PM'], {}, { :class => 'time' } %>
       <%= text_field 'timein', 'date', :value => format_date(@invalid_timesheet.date), :class => 'time', :style => 'width: 100px;' %>
-        <%= f.submit 'Time in' %>
+        <%= f.submit 'Time in', class: "btn-info" %>
       <% end -%>
       </td>
-      <td><%= format_long_time @invalid_timesheet.time_out %></td>
-    </tr>
+      <td><%= format_long_time @employee.timesheets.order("id DESC").first.time_out %></td>
   </tbody>
 </table>

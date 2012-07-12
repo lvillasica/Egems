@@ -24,7 +24,7 @@
       <%= text_field 'timeout', 'min', :placeholder => 'mm', :size => 2, :maxlength => 2, :class => 'time' %>
       <%= select 'timeout', 'meridian', ['AM', 'PM'], {}, { :class => 'time' } %>
       <%= text_field 'timeout', 'date', :value => format_date(timesheet.date), :class => 'time', :style => 'width: 100px;' %>
-      <%= f.submit 'Time out' %>
+      <%= f.submit 'Time out', class: "btn-info" %>
     <% end -%>
     </td>
   </tr>

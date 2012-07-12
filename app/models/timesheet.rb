@@ -137,7 +137,7 @@ class Timesheet < ActiveRecord::Base
       if self.save!
         #Time in after manual timeout only if Time in is clicked.
         self.class.time_in!(employee) if type.eql?("time_out") && forced
-        #send_invalid_timesheet_notification(type)
+        send_invalid_timesheet_notification(type)
         return true
       end
     rescue ActiveRecord::RecordInvalid
