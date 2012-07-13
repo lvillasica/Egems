@@ -27,13 +27,13 @@
         <div class="navbar-inner">
           <div class="container">
             <a class="brand" href="#">Egems</a>
-            
+
             <button class="btn btn-navbar">
               <span class="icon-bar"></span>
               <span class="icon-bar"></span>
               <span class="icon-bar"></span>
             </button>
-            
+
             <div class="nav-collapse collapse">
               <% current_uri = request.env['PATH_INFO'] %>
               <ul class="nav">
@@ -80,15 +80,11 @@
       </div>
 
       <div class="row">
-        <div class = "span9 offset2">
-          <div id="date-nav-container"></div>
-          <div id = "main-container"
-            data-employee-timesheets-active = "<%= @employee_timesheets_active.to_json(
-            :methods => [:time_in_without_adjustment]) %>">
-            <div class="progress progress-striped active">
-              <div class="bar" style="width: 100%;"></div>
-            </div>
+        <div class = "span9 offset2" id="main-container">
+          <div class="progress progress-striped active">
+            <div class="bar" style="width: 100%;"></div>
           </div>
+        </div>
         </div>
       </div>
       <footer class="footer">

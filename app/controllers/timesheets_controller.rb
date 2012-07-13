@@ -1,6 +1,6 @@
 class TimesheetsController < ApplicationController
   respond_to :json
-  
+
   before_filter :authenticate_user!, :except => [:index]
   before_filter :get_employee, :except => [:manual_timeout, :timesheets_nav]
   before_filter :active_timesheet, :only => [:index]
@@ -8,8 +8,10 @@ class TimesheetsController < ApplicationController
 
   def index
     if user_signed_in?
-      # template = (@invalid_timesheets.present? ? 'manual_timeout' : 'index')
-      init_backbone_data
+      respond_to do | format |
+        format.html { render :template => "layouts/application" }
+        format.json { render :json => with_original_time_in.to_json }
+      end
     else
       redirect_to signin_url
     end
@@ -101,13 +103,19 @@ private
       render :template => "timesheets/manual_#{type}"
     end
   end
-  
+
   def init_backbone_data
     js_params[:employee_timesheets_active] = @employee_timesheets_active
     js_params[:invalid_timesheets] = @invalid_timesheets
     respond_to do | format |
       format.html { render :template => "layouts/application" }
       format.json { render :json => js_params_json(:methods => :time_in_without_adjustment) }
+    end
+  end
+
+  def with_original_time_in
+    @employee_timesheets_active.map do |t|
+      t.attributes.merge({ :time_in => t.time_in_without_adjustment })
     end
   end
 

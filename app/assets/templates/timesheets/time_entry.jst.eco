@@ -1,7 +1,7 @@
 <% collection = @timeEntry.collection %>
 <% if collection.models[0] is @timeEntry: %>
   <td class='mins' rowspan="<%= @size %>"><%= @mixins.format_date @timeEntry.get('date') %></td>
-  <td><%= @mixins.format_long_time @timeEntry.get('time_in_without_adjustment') %></td>
+  <td><%= @mixins.format_long_time @timeEntry.get('time_in') %></td>
   <td><%= @mixins.format_long_time @timeEntry.get('time_out') %></td>
   <td class='mins' rowspan="<%= @size %>">
     <%= @mixins.format_in_hours collection.sum_minutes('duration') %>
@@ -16,6 +16,6 @@
     <%= @mixins.format_in_hours collection.sum_minutes('minutes_excess') %>
   </td>
 <% else: %>
-  <td><%= @mixins.format_long_time @timeEntry.get('time_in_without_adjustment') %></td>
+  <td><%= @mixins.format_long_time @timeEntry.get('time_in') %></td>
   <td><%= @mixins.format_long_time @timeEntry.get('time_out') %></td>
 <% end %>

@@ -1,4 +1,14 @@
-<div class="tab-content">
+
+
+<p class="btn-group">
+  <a href="#" class="btn btn-large">Time In</a>
+  <a href="#" class="btn btn-large">Time Out</a>
+</p>
+<br/>
+
+<div id="date-nav-container"></div>
+
+<div class="tab-content" id="timesheets-tab">
   <div class="tab-pane active" id="monday">
     <table id="time-entries" class="table timesheets daily">
       <thead>
