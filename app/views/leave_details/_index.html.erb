@@ -1,49 +1,51 @@
-  <div class="accordion-group">
-    <div class="accordion-heading">
-      <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion2" data-target="#<%= leave.leave_type %>" href="#<%= leave.leave_type %>" >
-          <%= leave.leave_type %>
-          <i class="icon-chevron-down pull-right"></i>
-      </a>
-    </div> <!-- End of accordion-heading -->
-
-    <div id="<%= leave.leave_type %>" class="accordion-body collapse in">
-      <div class="accordion-inner">
-        <% if leave.leave_details.any? %>
-          <table class="table timesheets leave_details">
-            <thead> 
-              <tr>
-                <th>Leave Date</th>
-                <th>Leave Type</th>
-                <th>Details</th>
-                <th>Day(s)</th>
-                <th>Period</th>
-                <th>Responder</th>
-                <th>Status</th>
-                <th>Response Date</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              <% leave.leave_details.each do |ld| %>
-              <tr>
-                <td><%= format_date ld.leave_date %></td>
-                <td><%= ld.leave_type %></td>
-                <td><%= ld.details %></td>
-                <td class="mins"><%= ld.leave_unit %></td>
-                <td class="mins"><%= ld.class::LEAVE_PERIOD[ld.period] %></td>
-                <td><%= show_responders(ld) %></td>
-                <td><%= ld.status %></td>
-                <td>&nbsp;</td>
-                <td>&nbsp;</td>
-              <tr>
-              <% end %>
-            </tbody>
-          </table>
-             </section>
-      <% else %>
-        <div class="well">No data found.</div>
-      <% end %>
-     
+<div class="accordion" id="accordion2">
+  <% @leaves.each do |leave| %> 
+    <div class="accordion-group">
+        <div class="accordion-heading">
+           <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion2" href="#<%= leave.leave_type.delete(' ') %>" data-target="#<%= leave.leave_type.delete(' ') %>" >
+            <i class="icon-chevron-down"></i>
+            <%= leave.leave_type %>
+           </a>
+        </div>
+        <div id="<%= leave.leave_type.delete(' ') %>" class="accordion-body in collapse" style="height: auto; ">
+          <div class="accordion-inner">
+          <% if leave.leave_details.any? %>
+            <table class="table timesheets leave_details">
+              <thead> 
+                <tr>
+                  <th>Leave Date</th>
+                  <th>Leave Type</th>
+                  <th>Details</th>
+                  <th>Day(s)</th>
+                  <th>Period</th>
+                  <th>Responder</th>
+                  <th>Status</th>
+                  <th>Response Date</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% leave.leave_details.each do |ld| %>
+                <tr>
+                  <td><%= format_date ld.leave_date %></td>
+                  <td><%= ld.leave_type %></td>
+                  <td><%= ld.details %></td>
+                  <td class="mins"><%= ld.leave_unit %></td>
+                  <td class="mins"><%= ld.class::LEAVE_PERIOD[ld.period] %></td>
+                  <td><%= show_responders(ld) %></td>
+                  <td><%= ld.status %></td>
+                  <td>&nbsp;</td>
+                  <td>&nbsp;</td>
+                <tr>
+                <% end %>
+              </tbody>
+            </table>
+               </section>
+        <% else %>
+          <div class="well">No data found.</div>
+        <% end %>
+          </div>
+        </div>
       </div>
-    </div> <!-- End of .accordion-body -->
-  </div> <!-- End of .accordion-container -->
+  <% end %>
+</div> <!-- end of accordion -->

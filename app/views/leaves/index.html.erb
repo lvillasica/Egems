@@ -30,8 +30,4 @@
 <% end %>
 <br><br>
 
-<div class="accordion" id="accordion2">
-  <% @leaves.each do |leave| %>
-      <%= render partial: "leave_details/index", locals: { leave: leave } %>
-  <% end %>
-</div>
+<%= render partial: "leave_details/index" %>
