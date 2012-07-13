@@ -5,6 +5,6 @@ jQuery ->
   $(".btn-navbar").click ->
     $(".nav-collapse").collapse("toggle")
   $(".leaves-lnk").dropdown()
-  $(".collapse").collapse("hide")
+  $(".collapse").collapse()
   $(".accordion-toggle").click ->
   	$(this).parents(".accordion-group").children(".accordion-body").collapse("toggle")
