@@ -80,10 +80,15 @@
       </div>
 
       <div class="row">
-        <div id = "main-container" class = "span9 offset2"
-          data-employee-timesheets-active = "<%= @employee_timesheets_active.to_json(
-          :methods => [:time_in_without_adjustment]) %>">
-          Loading...
+        <div class = "span9 offset2">
+          <div id="date-nav-container"></div>
+          <div id = "main-container"
+            data-employee-timesheets-active = "<%= @employee_timesheets_active.to_json(
+            :methods => [:time_in_without_adjustment]) %>">
+            <div class="progress progress-striped active">
+              <div class="bar" style="width: 100%;"></div>
+            </div>
+          </div>
         </div>
       </div>
       <footer class="footer">

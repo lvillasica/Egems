@@ -8,8 +8,8 @@ class TimesheetsController < ApplicationController
 
   def index
     if user_signed_in?
-      template = (@invalid_timesheets.present? ? 'manual_timeout' : 'index')
-      render :template => "timesheets/#{template}"
+      # template = (@invalid_timesheets.present? ? 'manual_timeout' : 'index')
+      init_backbone_data
     else
       redirect_to signin_url
     end
@@ -50,11 +50,11 @@ class TimesheetsController < ApplicationController
   def timesheets_nav
     @active_time = (params[:time].blank? ? Time.now.beginning_of_day : Time.parse(params[:time]))
     active_timesheet(@active_time)
-    render :action => :index
+    init_backbone_data
   end
 
   def timesheets_nav_week
-    time = Time.parse(params[:time])
+    time = Time.parse(params['time'])
     @active_time = [time.monday, time.sunday]
     @employee_timesheets_active = @employee.timesheets.within(@active_time).asc
                                            .group_by { |s| s.shift_schedule_detail.day_of_week }
@@ -99,6 +99,15 @@ private
         @force = forced
       end
       render :template => "timesheets/manual_#{type}"
+    end
+  end
+  
+  def init_backbone_data
+    js_params[:employee_timesheets_active] = @employee_timesheets_active
+    js_params[:invalid_timesheets] = @invalid_timesheets
+    respond_to do | format |
+      format.html { render :template => "layouts/application" }
+      format.json { render :json => js_params_json(:methods => :time_in_without_adjustment) }
     end
   end
 

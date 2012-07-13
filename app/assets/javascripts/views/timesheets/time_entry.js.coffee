@@ -8,8 +8,7 @@ class Egems.Views.TimeEntry extends Backbone.View
   render: ->
     $(@el).html(@template(
       timeEntry: @model
-      collection: @collection
       mixins: $.extend(Egems.Mixins.Defaults, Egems.Mixins.Timesheets)
-      size: @collection.length
+      size: @model.collection.length
     ))
     this

@@ -1,0 +1,11 @@
+
+<ul id="date-nav-tab" class="nav nav-tabs">
+  <li class="week pull-right"><a id="week-tab" href="#">Week</a></li>
+  <li class="day sun pull-right"><a href="#">Sun</a></li>
+  <li class="day sat pull-right"><a href="#">Sat</a></li>
+  <li class="day fri pull-right"><a href="#">Fri</a></li>
+  <li class="day thu pull-right"><a href="#">Thu</a></li>
+  <li class="day wed pull-right"><a href="#">Wed</a></li>
+  <li class="day tue pull-right"><a href="#">Tue</a></li>
+  <li class="day mon pull-right"><a href="#">Mon</a></li>
+</ul>
