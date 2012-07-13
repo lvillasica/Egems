@@ -3,6 +3,7 @@ class Egems.Views.DateNavs extends Backbone.View
   
   events:
     'click #date-nav-tab li.day a': 'gotoDate'
+    'click #date-nav-tab li.week a': 'gotoWeek'
   
   initialize: ->
     _.extend(this, Egems.Mixins.Timesheets)
@@ -19,7 +20,7 @@ class Egems.Views.DateNavs extends Backbone.View
   
   gotoDate: (event) ->
     event.preventDefault()
-    activeTime = Date.today()
+    activeTime = Date.today() # TODO: use date-pickers selected date
     time = @getActiveDay(activeTime)[$(event.target).text().toLowerCase()]
     path = "/timesheets/#{time}"
     $.ajax
@@ -29,3 +30,7 @@ class Egems.Views.DateNavs extends Backbone.View
       success: (data) =>
         @collection.reset(data.employee_timesheets_active)
         @setActiveDateTab(new Date(time))
+
+  gotoWeek: (event) ->
+    event.preventDefault()
+    alert "go to week!"

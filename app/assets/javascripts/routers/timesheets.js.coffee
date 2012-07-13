@@ -7,8 +7,10 @@ class Egems.Routers.Timesheets extends Backbone.Router
     @collection.fetch()
 
   index: ->
-    view = new Egems.Views.TimesheetsIndex(collection: @collection)
+    index = new Egems.Views.TimesheetsIndex(collection: @collection)
     navs = new Egems.Views.DateNavs(collection: @collection)
-    $('#main-container').html(view.render().el).load ->
-      $('#date-nav-container').html(navs.render().el)
+    time_entries = new Egems.Views.TimeEntries(collection: @collection)
+    $('#main-container').html(index.render().el)
+    $('#date-nav-container').html(navs.render().el)
+    $('#time-entries-container').html(time_entries.render().el)
     navs.trigger('rendered')

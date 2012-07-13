@@ -1,5 +1,3 @@
-
-
 <p class="btn-group">
   <a href="#" class="btn btn-large">Time In</a>
   <a href="#" class="btn btn-large">Time Out</a>
@@ -8,21 +6,4 @@
 
 <div id="date-nav-container"></div>
 
-<div class="tab-content" id="timesheets-tab">
-  <div class="tab-pane active" id="monday">
-    <table id="time-entries" class="table timesheets daily">
-      <thead>
-      <tr>
-        <th>Date</th>
-        <th>Time In</th>
-        <th>Time Out</th>
-        <th>Total Hours</th>
-        <th>Late</th>
-        <th>Undertime</th>
-        <th>Excess</th>
-      </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-  </div>
-</div>
+<div class="tab-content" id="time-entries-container"></div>

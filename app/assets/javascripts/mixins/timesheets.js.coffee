@@ -17,10 +17,10 @@ Egems.Mixins.Timesheets =
     thu: @getDay(date.clone().thursday())
     fri: @getDay(date.clone().friday())
     sat: @getDay(date.clone().saturday())
-    sun: @getDay(date.clone().saturday().addDays(1))
+    sun: @getDay(date.clone().sunday())
   
   getDay: (date) ->
-    if date > Date.today().clone().saturday().addDays(1)
+    if date > Date.today().clone().sunday() || date is Date.today()
       return date.clone().addDays(-7)
     else
       return date.clone()

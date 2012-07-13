@@ -1,0 +1,17 @@
+
+<div class="tab-pane active" id="monday">
+  <table id="time-entries" class="table timesheets daily">
+    <thead>
+    <tr>
+      <th>Date</th>
+      <th>Time In</th>
+      <th>Time Out</th>
+      <th>Total Hours</th>
+      <th>Late</th>
+      <th>Undertime</th>
+      <th>Excess</th>
+    </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</div>
