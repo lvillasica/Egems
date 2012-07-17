@@ -74,6 +74,13 @@ module TimesheetsHelper
     last_timeout = @employee.timesheets.asc.last.time_out
   end
 
+  def get_last_timein
+    last_timein = @employee.timesheets.asc.last.time_in
+  end
+
+#----------------------------------------------------------------
+# Autopopulate manual timein entry
+#----------------------------------------------------------------
   def get_new_shift_am_date
     date_today            = Time.now.strftime("%F").split("-")
     day_of_week           = Time.now.wday
@@ -83,29 +90,51 @@ module TimesheetsHelper
     shift_am_new_datetime = Time.parse((date_today + shift_time_start).join)
   end
 
-  def get_default_time  
+  def get_default_timein_value 
     default_value = Time.now.advance(hours: - 9)
     am_shift      = get_new_shift_am_date
-    last_timeout  = get_last_timeout.to_datetime.new_offset Rational(8,24)
+    last_timeout  = get_last_timeout.to_datetime.new_offset Rational(8,24) #set it to +8:00
 
-    if default_value < last_timeout
-      last_timeout < am_shift ? default_value = am_shift : default_value = last_timeout + 1.minutes
-    else
-      last_timeout < am_shift ? default_value = am_shift : default_value 
-    end
-    default_value
+      if default_value < last_timeout
+        last_timeout < am_shift ? default_value = am_shift : default_value = last_timeout + 1.minutes
+      else
+        last_timeout < am_shift ? default_value = am_shift : default_value 
+      end
   end
 
-  def get_default_time_hours
-    get_default_time.strftime("%I")
+  def get_default_timein_hours
+    get_default_timein_value .strftime("%I")
   end
 
-  def get_default_time_minutes
-    get_default_time.strftime("%M")
+  def get_default_timein_minutes
+    get_default_timein_value .strftime("%M")
   end 
 
-  def get_meridian_indicator
-    get_default_time.strftime("%p")
+  def get_default_timein_meridian
+    get_default_timein_value .strftime("%p")
+  end
+
+#----------------------------------------------------------------
+# Autopopulate manual timeout entry
+#----------------------------------------------------------------
+  def get_default_timeout_value
+    current_time  = Time.now
+    last_timein   = get_last_timein.to_datetime.new_offset Rational(8,24) #set it to +8:00
+    default_value = last_timein.advance(hours: + 9)
+
+    default_value > current_time ? default_value = current_time : default_value
+  end
+
+  def get_default_timeout_hours
+    get_default_timeout_value.strftime("%I")
+  end
+
+  def get_default_timeout_minutes
+    get_default_timeout_value.strftime("%M")
   end 
+
+  def get_default_timeout_meridian
+    get_default_timeout_value.strftime("%p")
+  end
 
 end
