@@ -69,4 +69,43 @@ module TimesheetsHelper
   def sum_excess(timesheets)
     timesheets.sum(&:minutes_excess)
   end
+
+  def get_last_timeout
+    last_timeout = @employee.timesheets.asc.last.time_out
+  end
+
+  def get_new_shift_am_date
+    date_today            = Time.now.strftime("%F").split("-")
+    day_of_week           = Time.now.wday
+    am_time_allowance     = @employee.shift_schedule.details[day_of_week].am_time_allowance
+    am_time_start         = @employee.shift_schedule.details[day_of_week].am_time_start
+    shift_time_start      = (am_time_start - am_time_allowance.minutes).strftime("%I-%M-%S").split("-")
+    shift_am_new_datetime = Time.parse((date_today + shift_time_start).join)
+  end
+
+  def get_default_time  
+    default_value = Time.now.advance(hours: - 9)
+    am_shift      = get_new_shift_am_date
+    last_timeout  = get_last_timeout.to_datetime.new_offset Rational(8,24)
+
+    if default_value < last_timeout
+      last_timeout < am_shift ? default_value = am_shift : default_value = last_timeout + 1.minutes
+    else
+      last_timeout < am_shift ? default_value = am_shift : default_value 
+    end
+    default_value
+  end
+
+  def get_default_time_hours
+    get_default_time.strftime("%I")
+  end
+
+  def get_default_time_minutes
+    get_default_time.strftime("%M")
+  end 
+
+  def get_meridian_indicator
+    get_default_time.strftime("%p")
+  end 
+
 end
