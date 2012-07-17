@@ -39,20 +39,20 @@ var weekPicker = function() {
     buttonText: "<i class='icon-calendar'></i>",
     firstDay: 1,
     dateFormat: 'yy-mm-dd',
-    defaultDate: new Date($('#week-picker').val().split(" ")[0]),
     maxDate: getWeekRange(new Date()).sunday,
     showButtonPanel: true,
     currentText: 'Today',
     closeText: '&times;',
     onSelect: function(dateText, inst) {
       var date = $(this).datepicker('getDate');
-      var href="/timesheets/" + date + "/week";
       setCurrentWeek($(this), date, inst);
       selectCurrentWeek();
-      $("#week_tab").attr("href", href).trigger('click');
+      $('#date-nav-tab li.week').trigger('click');
     },
     beforeShow: function(input, inst) {
       var date = new Date($(input).val().split(" ")[0]);
+      $(this).datepicker( "option", "defaultDate", date );
+      $('.ui-datepicker-trigger').addClass("btn");
       setCurrentWeek($(this), date, inst);
       selectCurrentWeek();
     },

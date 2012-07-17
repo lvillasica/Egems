@@ -5,6 +5,7 @@ class TimesheetsController < ApplicationController
   before_filter :get_employee, :except => [:manual_timeout, :timesheets_nav]
   before_filter :active_timesheet, :only => [:index]
   before_filter :invalid_timesheet_prev, :only => [:index, :timesheets_nav]
+  before_filter :init_data, :only => [:index]
 
   def index
     if user_signed_in?
@@ -50,9 +51,12 @@ class TimesheetsController < ApplicationController
   end
 
   def timesheets_nav
-    @active_time = (params[:time].blank? ? Time.now.beginning_of_day : Time.parse(params[:time]))
+    @active_time = (params['time'].blank? ? Time.now.beginning_of_day : Time.parse(params['time']))
     active_timesheet(@active_time)
-    init_backbone_data
+    respond_to do | format |
+      format.html { render :template => "layouts/application" }
+      format.json { render :json => with_original_time_in.to_json }
+    end
   end
 
   def timesheets_nav_week
@@ -60,7 +64,10 @@ class TimesheetsController < ApplicationController
     @active_time = [time.monday, time.sunday]
     @employee_timesheets_active = @employee.timesheets.within(@active_time).asc
                                            .group_by { |s| s.shift_schedule_detail.day_of_week }
-    render :template => 'timesheets/weekly'
+    respond_to do | format |
+      format.html { render :template => "layouts/application" }
+      format.json { render :json => with_original_time_in.to_json }
+    end
   end
 
 private
@@ -104,19 +111,25 @@ private
     end
   end
 
-  def init_backbone_data
-    js_params[:employee_timesheets_active] = @employee_timesheets_active
-    js_params[:invalid_timesheets] = @invalid_timesheets
-    respond_to do | format |
-      format.html { render :template => "layouts/application" }
-      format.json { render :json => js_params_json(:methods => :time_in_without_adjustment) }
-    end
+  def init_data
+    @data = with_original_time_in
   end
 
   def with_original_time_in
-    @employee_timesheets_active.map do |t|
-      t.attributes.merge({ :time_in => t.time_in_without_adjustment })
+    if @employee_timesheets_active.is_a?(Hash)
+      timesheets = @employee_timesheets_active.map do |k, timesheets|
+        timesheets.map do |t|
+          t.attributes.merge({ :time_in => t.time_in_without_adjustment })
+        end
+      end
+    else
+      timesheets = @employee_timesheets_active.map do |t|
+        t.attributes.merge({ :time_in => t.time_in_without_adjustment })
+      end
     end
+    js_params[:employee_timesheets_active] = timesheets
+    js_params[:invalid_timesheets] = @invalid_timesheets
+    return js_params
   end
 
 end

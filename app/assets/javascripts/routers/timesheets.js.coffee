@@ -4,7 +4,7 @@ class Egems.Routers.Timesheets extends Backbone.Router
 
   initialize: ->
     @collection = new Egems.Collections.Timesheets()
-    @collection.fetch()
+    @collection.reset($('#data-container').data('employee-timesheets-active'))
 
   index: ->
     index = new Egems.Views.TimesheetsIndex(collection: @collection)
@@ -14,3 +14,4 @@ class Egems.Routers.Timesheets extends Backbone.Router
     $('#date-nav-container').html(navs.render().el)
     $('#time-entries-container').html(time_entries.render().el)
     navs.trigger('rendered')
+    weekPicker() if $('#week-picker').length is 1

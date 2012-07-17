@@ -10,17 +10,24 @@ Egems.Mixins.Timesheets =
     else
       return "0"
 
-  getActiveDay: (date) ->
-    mon: @getDay(date.clone().monday())
-    tue: @getDay(date.clone().tuesday())
-    wed: @getDay(date.clone().wednesday())
-    thu: @getDay(date.clone().thursday())
-    fri: @getDay(date.clone().friday())
-    sat: @getDay(date.clone().saturday())
-    sun: @getDay(date.clone().sunday())
+  getDayOfWeek: (date) ->
+    dateOnly = date.clone().clearTime()
+    mon: @getDay(dateOnly, dateOnly.clone().monday())
+    tue: @getDay(dateOnly, dateOnly.clone().tuesday())
+    wed: @getDay(dateOnly, dateOnly.clone().wednesday())
+    thu: @getDay(dateOnly, dateOnly.clone().thursday())
+    fri: @getDay(dateOnly, dateOnly.clone().friday())
+    sat: @getDay(dateOnly, dateOnly.clone().saturday())
+    sun: @getDay(dateOnly, dateOnly.clone().sunday())
   
-  getDay: (date) ->
-    if date > Date.today().clone().sunday() || date is Date.today()
+  getDay: (current, date) ->
+    if date > current.clone().sunday() || date is Date.today()
       return date.clone().addDays(-7)
     else
       return date.clone()
+
+  weekPickerVal: (date) ->
+    day = @getDayOfWeek(date)
+    mon = Egems.Mixins.Defaults.format_date(day.mon)
+    sun = Egems.Mixins.Defaults.format_date(day.sun)
+    return [mon, sun].join(' to ')
