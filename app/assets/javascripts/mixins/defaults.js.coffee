@@ -11,3 +11,6 @@ Egems.Mixins.Defaults =
     
   format_day_only: (date) ->
     res = I18n.strftime(new Date(date), '%a')
+  
+  format_float: (num) ->
+    parseFloat(num).toFixed(1)
