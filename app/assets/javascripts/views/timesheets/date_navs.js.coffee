@@ -4,6 +4,7 @@ class Egems.Views.DateNavs extends Backbone.View
   events:
     'click #date-nav-tab li.day': 'gotoDate'
     'click #date-nav-tab li.week': 'gotoWeek'
+    'click #week-tab-trigger': 'gotoWeek'
   
   initialize: ->
     _.extend(this, Egems.Mixins.Timesheets)

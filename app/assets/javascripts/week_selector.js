@@ -47,7 +47,7 @@ var weekPicker = function() {
       var date = $(this).datepicker('getDate');
       setCurrentWeek($(this), date, inst);
       selectCurrentWeek();
-      $('#date-nav-tab li.week').trigger('click');
+      $('#week-tab-trigger').trigger('click');
     },
     beforeShow: function(input, inst) {
       var date = new Date($(input).val().split(" ")[0]);

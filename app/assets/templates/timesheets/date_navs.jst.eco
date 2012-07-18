@@ -3,7 +3,10 @@
   <li class="input-append">
     <input type="text" id="week-picker" class="span2 disabled" value="<%= @weekPickerVal %>" />
   </li>
-  <li class="week pull-right"><a id="week-tab" href="#">Week</a></li>
+  <li class="week pull-right">
+    <button id="week-tab-trigger" style="display: none;"></button>
+    <a id="week-tab" href="#">Week</a>
+  </li>
   <li class="day sun pull-right"><a href="#">Sun</a></li>
   <li class="day sat pull-right"><a href="#">Sat</a></li>
   <li class="day fri pull-right"><a href="#">Fri</a></li>
