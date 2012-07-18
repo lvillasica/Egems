@@ -13,6 +13,8 @@
     </thead>
     <tbody></tbody>
   </table>
+  <br />
+  <div id="leave_details_container"></div>
 <% else: %>
   <div class="well">No data found.</div>
 <% end %>
