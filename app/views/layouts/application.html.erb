@@ -56,7 +56,7 @@
                     <i class="icon-user"></i> <%= current_user.employee.full_name %>
                   </a>
                 </li> 
-                <%= render partial: "layouts/notification" unless leave_unit_sum.eql? 0 %>
+                <%= render partial: "layouts/notification" unless leave_unit_sum.zero? || leave_unit_sum.nil? %>
                 <li class="divider-vertical"></li>
                 <li>
                 <%= link_to "<i class=\"icon-off\"></i> Signout".html_safe,

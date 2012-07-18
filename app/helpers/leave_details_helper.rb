@@ -13,7 +13,7 @@ module LeaveDetailsHelper
   end
 
   def leave_unit_sum
-  	total_units = get_pending_leaves.inject(0) { |sum,leave| sum + leave.leave_unit }.to_i
+  	total_units = get_pending_leaves.inject(0) { |sum,leave| sum + leave.leave_unit }
   end
   
 end

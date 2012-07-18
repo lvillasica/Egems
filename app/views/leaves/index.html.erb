@@ -11,6 +11,7 @@
         <th>Consumed</th>
         <th>Pending</th>
         <th>Balance</th>
+        <th>Validity</th>
       </tr>
     </thead>
     <tbody>
@@ -21,6 +22,7 @@
         <td class="mins"><%= leave.leaves_consumed %></td>
         <td class="mins"><%= leave.total_pending %></td>
         <td class="mins"><%= leave.remaining_balance %></td>
+        <td><%= "#{ leave.date_from.to_date }   TO   #{ leave.date_to.to_date }" %></td>
       <tr>
       <% end %>
     </tbody>
