@@ -29,11 +29,11 @@ protected
                   else nil
                   end
   end
-  
+
   def js_params
     @js_params ||= {}
   end
-  
+
   def js_params_json(options = {})
     js_params.to_json(options)
   end

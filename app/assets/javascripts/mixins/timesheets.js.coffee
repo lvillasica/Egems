@@ -19,15 +19,42 @@ Egems.Mixins.Timesheets =
     fri: @getDay(dateOnly, dateOnly.clone().friday())
     sat: @getDay(dateOnly, dateOnly.clone().saturday())
     sun: @getDay(dateOnly, dateOnly.clone().sunday())
-  
+
   getDay: (current, date) ->
     if date > current.clone().sunday() || date is Date.today()
       return date.clone().addDays(-7)
     else
       return date.clone()
 
+  getHour: (time) ->
+    I18n.strftime(new Date(time), "%I").toLowerCase()
+
+  getMinute: (time) ->
+    I18n.strftime(new Date(time), "%M").toLowerCase()
+
+  getMeridian: (time) ->
+    I18n.strftime(new Date(time), "%p").toLowerCase()
+
   weekPickerVal: (date) ->
     day = @getDayOfWeek(date)
     mon = Egems.Mixins.Defaults.format_date(day.mon)
     sun = Egems.Mixins.Defaults.format_date(day.sun)
     return [mon, sun].join(' to ')
+
+  getDefaultTimeoutValue: (timein) ->
+    current_time = new Date()
+    time_in = new Date(timein)
+    default_value = new Date(time_in.setHours(time_in.getHours() + 9))
+    if default_value > current_time
+      return current_time
+    else
+      return default_value
+
+  getDefaultTimein: (timein) ->
+    current_time = new Date()
+    time_in = new Date(timein)
+    default_value = new Date(time_in.setHours(time_in.getHours() + 9))
+    if default_value > current_time
+      return current_time
+    else
+      return default_value

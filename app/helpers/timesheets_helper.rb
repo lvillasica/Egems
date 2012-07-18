@@ -90,7 +90,7 @@ module TimesheetsHelper
     shift_am_new_datetime = Time.parse((date_today + shift_time_start).join)
   end
 
-  def get_default_timein_value 
+  def get_default_timein_value
     default_value = Time.now.advance(hours: - 9)
     am_shift      = get_new_shift_am_date
     last_timeout  = get_last_timeout.to_datetime.new_offset Rational(8,24) #set it to +8:00
@@ -98,7 +98,7 @@ module TimesheetsHelper
       if default_value < last_timeout
         last_timeout < am_shift ? default_value = am_shift : default_value = last_timeout + 1.minutes
       else
-        default_value < am_shift ? default_value = am_shift : default_value 
+        default_value < am_shift ? default_value = am_shift : default_value
       end
   end
 
@@ -108,7 +108,7 @@ module TimesheetsHelper
 
   def get_default_timein_minutes
     get_default_timein_value .strftime("%M")
-  end 
+  end
 
   def get_default_timein_meridian
     get_default_timein_value .strftime("%p")
@@ -131,7 +131,7 @@ module TimesheetsHelper
 
   def get_default_timeout_minutes
     get_default_timeout_value.strftime("%M")
-  end 
+  end
 
   def get_default_timeout_meridian
     get_default_timeout_value.strftime("%p")

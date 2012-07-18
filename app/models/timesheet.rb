@@ -118,7 +118,7 @@ class Timesheet < ActiveRecord::Base
     read_attribute(:time_in)
   end
 
-  def manual_update(attrs={}, forced=nil)
+  def manual_update(attrs={})
     #TODO: invalid date & time format
     begin
       t_date = attrs[:date] ? Time.parse(attrs[:date]) : date.localtime.to_date
@@ -136,7 +136,7 @@ class Timesheet < ActiveRecord::Base
     begin
       if self.save!
         #Time in after manual timeout only if Time in is clicked.
-        self.class.time_in!(employee) if type.eql?("time_out") && forced
+        self.class.time_in!(employee) if type.eql?("time_out")
         send_invalid_timesheet_notification(type)
         return true
       end
