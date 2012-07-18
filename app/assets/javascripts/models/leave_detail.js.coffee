@@ -17,3 +17,6 @@ class Egems.Models.LeaveDetail extends Backbone.Model
   
   status: ->
     @get 'status'
+  
+  getResponders: ->
+    @get 'get_responders'

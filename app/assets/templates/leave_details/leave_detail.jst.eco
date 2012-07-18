@@ -3,7 +3,7 @@
 <td><%= @leave_detail.details() %></td>
 <td class="mins"><%= @mixins.format_float @leave_detail.leaveUnit() %></td>
 <td class="mins"><%= @leave_detail.period() %></td>
-<td>&nbsp;</td>
+<td><%= __safe @leave_detail.getResponders().join("<br />") %></td>
 <td><%= @leave_detail.status() %></td>
 <td>&nbsp;</td>
 <td>&nbsp;</td>

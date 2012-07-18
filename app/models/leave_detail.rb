@@ -103,6 +103,14 @@ class LeaveDetail < ActiveRecord::Base
     [date, am_pm].compact.join(" ")
   end
   
+  def get_responders
+    if responder
+      [responder.full_name]
+    else
+      responders.map(&:full_name)
+    end
+  end
+  
   def set_leave
     self.leave = self.employee.leaves.type(self.leave_type).first
   end

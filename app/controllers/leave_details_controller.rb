@@ -51,8 +51,14 @@ private
   end
   
   def init_data
-    js_params[:leave_details] = @leave_details
+    js_params[:leave_details] = leave_details_with_responders
     @data = js_params
+  end
+  
+  def leave_details_with_responders
+    @leave_details.map do | ld |
+      ld.attributes.merge({:get_responders => ld.get_responders})
+    end
   end
   
 end
