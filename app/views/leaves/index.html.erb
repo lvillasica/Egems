@@ -22,7 +22,7 @@
         <td class="mins"><%= leave.leaves_consumed %></td>
         <td class="mins"><%= leave.total_pending %></td>
         <td class="mins"><%= leave.remaining_balance %></td>
-        <td><%= "#{ leave.date_from.to_date }   TO   #{ leave.date_to.to_date }" %></td>
+        <td><%= leave.leave_type != "Absent Without Pay" ? "#{ leave.date_from.to_date } to #{ leave.date_to.to_date }" : "Not Applicable"  %></td>
       <tr>
       <% end %>
     </tbody>
