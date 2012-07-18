@@ -7,5 +7,13 @@ module LeaveDetailsHelper
       leave_detail.responders.map(&:full_name).join("<br />").html_safe
     end
   end
+
+  def get_pending_leaves
+  	leaves = @employee.leave_details.select("leave_unit").where("status='Pending'")
+  end
+
+  def leave_unit_sum
+  	total_units = get_pending_leaves.inject(0) { |sum,leave| sum + leave.leave_unit }.to_i
+  end
   
 end
