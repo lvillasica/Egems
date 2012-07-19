@@ -120,7 +120,7 @@ module TimesheetsHelper
   def get_default_timeout_value
     current_time  = Time.now
     last_timein   = get_last_timein.to_datetime.new_offset Rational(8,24) #set it to +8:00
-    default_value = last_timein.advance(hours: + 9)
+    default_value = last_timein.advance(hours: 9, minutes: 1)
 
     default_value > current_time ? default_value = current_time : default_value
   end
