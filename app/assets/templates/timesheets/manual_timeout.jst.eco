@@ -11,29 +11,27 @@
   </thead>
 
   <tbody>
-    <% for timesheet in @invalidTimesheets: %>
-      <% default_timeout = @mixins.getDefaultTimeoutValue(timesheet.time_in) %>
-      <td><%= @mixins.format_date timesheet.date %></td>
-      <td><%= @mixins.format_long_time timesheet.time_in %></td>
-      <td>
-        <form id="manual-timeout-form">
-          <input name="id" type="hidden" value="<%= timesheet.id %>">
-          <input name="timeout[hour]" class="time" maxlength="2" size="2" type="text" value="<%= @mixins.getHour(default_timeout) %>">
-          <input name="timeout[min]" class="time" maxlength="2" size="2" type="text" value="<%= @mixins.getMinute(default_timeout) %>">
-          <select name="timeout[meridian]" class="time">
-            <% meridian = @mixins.getMeridian(default_timeout) %>
-            <% if meridian == 'am' :%>
-              <option value="AM" selected="selected">AM</option>
-              <option value="PM">PM</option>
-            <% else :%>
-              <option value="AM">AM</option>
-              <option value="PM" selected="selected">PM</option>
-            <% end %>
-          </select>
-          <input name="timeout[date]" class="time" size="30" type="text" style="width: 100px;" value="<%= @mixins.format_date(default_timeout) %>">
-          <input class="btn-info" type="submit" value="Time out">
-        </form>
-      </td>
-    <% end %>
+    <% default_timeout = @mixins.getDefaultTimeoutValue(@invalidTimesheet.time_in) %>
+    <td><%= @mixins.format_date @invalidTimesheet.date %></td>
+    <td><%= @mixins.format_long_time @invalidTimesheet.time_in %></td>
+    <td>
+      <form id="manual-timeout-form">
+        <input name="id" type="hidden" value="<%= @invalidTimesheet.id %>">
+        <input name="timeout[hour]" class="time" maxlength="2" size="2" type="text" value="<%= @mixins.getHour(default_timeout) %>">
+        <input name="timeout[min]" class="time" maxlength="2" size="2" type="text" value="<%= @mixins.getMinute(default_timeout) %>">
+        <select name="timeout[meridian]" class="time">
+          <% meridian = @mixins.getMeridian(default_timeout) %>
+          <% if meridian == 'am' :%>
+            <option value="AM" selected="selected">AM</option>
+            <option value="PM">PM</option>
+          <% else :%>
+            <option value="AM">AM</option>
+            <option value="PM" selected="selected">PM</option>
+          <% end %>
+        </select>
+        <input name="timeout[date]" class="time" size="30" type="text" style="width: 100px;" value="<%= @mixins.format_date(default_timeout) %>">
+        <input class="btn-info" type="submit" value="Time out">
+      </form>
+    </td>
   </tbody>
 </table>

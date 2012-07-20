@@ -50,11 +50,8 @@ Egems.Mixins.Timesheets =
     else
       return default_value
 
-  getDefaultTimein: (timein) ->
+  getDefaultTimeinValue: (timeout) ->
     current_time = new Date()
-    time_in = new Date(timein)
-    default_value = new Date(time_in.setHours(time_in.getHours() + 9))
-    if default_value > current_time
-      return current_time
-    else
-      return default_value
+    time_out = new Date(timeout)
+    default_value = new Date(time_out.setHours(time_out.getHours() - 9))
+    return default_value

@@ -5,7 +5,6 @@ class TimesheetsController < ApplicationController
   before_filter :get_employee, :except => [:manual_timeout, :timesheets_nav]
   before_filter :get_active_timesheets, :only => [:index]
   before_filter :invalid_timesheet_prev, :only => [:index, :timesheets_nav]
-  before_filter :init_data, :only => [:index]
 
   def index
     if user_signed_in?
@@ -19,8 +18,10 @@ class TimesheetsController < ApplicationController
     begin
       Timesheet.time_in!(@employee)
     rescue Timesheet::NoTimeoutError
-      @invalid_timesheets = @employee.timesheets.latest.no_timeout +
-                            @employee.timesheets.previous.no_timeout
+      invalid_timesheets = @employee.timesheets.latest.no_timeout +
+                           @employee.timesheets.previous.no_timeout
+      @invalid_timesheet = invalid_timesheets.first
+      js_params[:error] = ['error', flash_message(:alert, :no_timeout)]
     end
     get_active_timesheets
     respond_with_json
@@ -30,7 +31,8 @@ class TimesheetsController < ApplicationController
     begin
       Timesheet.time_out!(@employee)
     rescue Timesheet::NoTimeinError
-      @invalid_timesheets = @employee.timesheets.new(:date => Time.now.beginning_of_day)
+      @invalid_timesheet = @employee.timesheets.new(:date => Time.now.beginning_of_day)
+      js_params[:error] = ['error', flash_message(:alert, :no_timein)]
     end
     get_active_timesheets
     respond_with_json
@@ -73,7 +75,7 @@ private
   def invalid_timesheet_prev
     @employee ||= get_employee
     if session[:invalid_timein_after_signin]
-      @invalid_timesheets = @employee.timesheets.no_timeout
+      @invalid_timesheet = @employee.timesheet.asc.no_timeout.first
     end
     session.delete(:invalid_timein_after_signin)
   end
@@ -81,33 +83,30 @@ private
   # TODO: Refactor
   def save_manual_timeentry(type, attrs)
     @employee ||= get_employee
-    if @timesheet.manual_update(attrs)
-      get_active_timesheets
-      respond_with_json
-    else
-      errors = @timesheet.errors
-      flash_message(:alert, errors.full_messages) if errors.any?
+    unless @timesheet.manual_update(attrs)
+      if (errors = @timesheet.errors).any?
+        js_params[:error] = ['error', flash_message(:alert, errors.full_messages)]
+      end
+
       if type.eql?('timein')
         date = Time.now.beginning_of_day
         @invalid_timesheet = @employee.timesheets.new(:date => date)
       else
-        @invalid_timesheets = @employee.timesheets.previous.no_timeout
-        if @invalid_timesheets.blank?
-          @invalid_timesheets = @employee.timesheets.latest.no_timeout
-        end
+        invalid_timesheets = @employee.timesheets.previous.no_timeout +
+                             @employee.timesheets.latest.no_timeout
+        @invalid_timesheet = invalid_timesheets.first
       end
-      render :template => "timesheets/manual_#{type}"
     end
-  end
-
-  def init_data
-    @data = with_original_time_in
+    get_active_timesheets
+    respond_with_json
   end
 
   def respond_with_json
+    js_params[:invalid_timesheet] = @invalid_timesheet
+    js_params[:employee_timesheets_active] = with_original_time_in
     respond_to do | format |
       format.html { render :template => "layouts/application" }
-      format.json { render :json => with_original_time_in.to_json }
+      format.json { render :json => js_params.to_json }
     end
   end
 
@@ -123,9 +122,7 @@ private
         t.attributes.merge({ :time_in => t.time_in_without_adjustment })
       end
     end
-    js_params[:employee_timesheets_active] = timesheets
-    js_params[:invalid_timesheets] = @invalid_timesheets
-    return js_params
+    timesheets
   end
 
 end

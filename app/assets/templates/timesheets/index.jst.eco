@@ -3,7 +3,3 @@
   <a href="#" class="btn btn-large" id="time-out-btn">Time Out</a>
 </p>
 <br/>
-
-<div id="date-nav-container"></div>
-
-<div class="tab-content" id="time-entries-container"></div>

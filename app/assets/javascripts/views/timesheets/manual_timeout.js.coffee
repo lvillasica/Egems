@@ -2,15 +2,24 @@ class Egems.Views.ManualTimeout extends Backbone.View
   template: JST['timesheets/manual_timeout']
 
   events: ->
-    "click #cancel-manual" : "cancelManual"
+    "click #cancel-manual" : "renderEntries"
     "submit form" : "sendTimesheet"
 
-  render: ->
+  render: (options = {}) ->
     $(@el).html(@template(
-      invalidTimesheets: @collection
+      invalidTimesheet: @model
       mixins: $.extend(Egems.Mixins.Defaults, Egems.Mixins.Timesheets)
     ))
+    @flashError(options.error)
     this
+
+  flashError: (msg) ->
+    msg ||= this.options.error
+    if msg != null
+      str = "<div class='alert alert-#{msg[0]}'>" +
+            "<button class='close' data-dismiss='alert'>&times;</button>" +
+            "#{msg[1]}</div>"
+      $(@el).prepend(str)
 
   sendTimesheet: ->
     event.preventDefault()
@@ -21,11 +30,12 @@ class Egems.Views.ManualTimeout extends Backbone.View
       type: 'POST'
       data: timeoutData
       success: (data) =>
-        window.location = ""
-      error: (data) =>
-        console.log data
+        if data.invalid_timesheet != null
+          @render(model: data.invalid_timesheet, error: data.error)
+        else
+          @renderEntries()
 
-  cancelManual: ->
+  renderEntries: (event) ->
     event.preventDefault()
     home = new Egems.Routers.Timesheets()
     home.index()

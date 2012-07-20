@@ -55,7 +55,7 @@
                   <a href="#">
                     <i class="icon-user"></i> <%= current_user.employee.full_name %>
                   </a>
-                </li> 
+                </li>
                 <%= render partial: "layouts/notification" unless leave_unit_sum.zero? || leave_unit_sum.nil? %>
                 <li class="divider-vertical"></li>
                 <li>
@@ -80,7 +80,6 @@
       </div>
 
       <div class="row">
-        <%= content_tag "div", "", :id => "data-container", :data => @data %>
         <div class = "span9 offset2" id="main-container">
           <div class="progress progress-striped active">
             <div class="bar" style="width: 100%;"></div>

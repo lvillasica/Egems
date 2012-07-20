@@ -2,20 +2,40 @@ class Egems.Views.ManualTimein extends Backbone.View
   template: JST['timesheets/manual_timein']
 
   events: ->
-    "click #cancel-manual" : "cancelManual"
+    "click #cancel-manual" : "renderEntries"
     "submit form" : "sendTimesheet"
 
-  render: ->
+  render: (options = {}) ->
     $(@el).html(@template(
-      invalidTimesheets: @collection
+      invalidTimesheet: @model
       mixins: $.extend(Egems.Mixins.Defaults, Egems.Mixins.Timesheets)
     ))
+    @flashError(options.error)
     this
 
-  sendTimesheet: ->
-    alert "send timesheet"
+  flashError: (msg) ->
+    msg ||= this.options.error
+    if msg != null
+      str = "<div class='alert alert-#{msg[0]}'>" +
+            "<button class='close' data-dismiss='alert'>&times;</button>" +
+            "#{msg[1]}</div>"
+      $(@el).prepend(str)
 
-  cancelManual: ->
+  sendTimesheet: ->
+    event.preventDefault()
+    timeoutData = $("#manual-timein-form").serialize()
+    $.ajax
+      url: '/timein/manual'
+      dataType: 'JSON'
+      type: 'POST'
+      data: timeoutData
+      success: (data) =>
+        if data.invalid_timesheet != null
+          @render(model: data.invalid_timesheet, error: data.error)
+        else
+          @renderEntries()
+
+  renderEntries: (event) ->
     event.preventDefault()
     home = new Egems.Routers.Timesheets()
     home.index()

@@ -1,28 +1,28 @@
 class Egems.Views.DateNavs extends Backbone.View
   template: JST['timesheets/date_navs']
-  
+  id: "date-container"
+
   events:
     'click #date-nav-tab li.day': 'gotoDate'
     'click #date-nav-tab li.week': 'gotoWeek'
     'click #week-tab-trigger': 'gotoWeek'
-  
+
   initialize: ->
     _.extend(this, Egems.Mixins.Timesheets)
-    @on('rendered', @activateDateTab, this)
-  
+
   render: ->
     $(@el).html(@template(weekPickerVal: @weekPickerVal(Date.today().clone())))
     this
-  
+
   activateDateTab: (current = Date.today()) ->
     cwday = I18n.strftime(current, '%a')
     $("#date-nav-tab li").removeClass('active')
     $("#date-nav-tab li.#{cwday.toLowerCase()}").addClass('active')
-  
+
   activateWeekTab: ->
     $("#date-nav-tab li").removeClass('active')
     $("#date-nav-tab li.week").addClass('active')
-  
+
   gotoDate: (event) ->
     event.preventDefault()
     activeTime = new Date($('#week-picker').val().split(" ")[0])
@@ -34,8 +34,6 @@ class Egems.Views.DateNavs extends Backbone.View
       url: path
       success: (data) =>
         @collection.reset(data.employee_timesheets_active)
-        view = new Egems.Views.TimeEntries(collection: @collection)
-        $('#time-entries-container').html(view.render().el)
         @activateDateTab(new Date(time))
 
   gotoWeek: (event) ->
