@@ -98,7 +98,7 @@ module TimesheetsHelper
       if default_value < last_timeout
         last_timeout < am_shift ? default_value = am_shift : default_value = last_timeout + 1.minutes
       else
-        last_timeout < am_shift ? default_value = am_shift : default_value 
+        default_value < am_shift ? default_value = am_shift : default_value 
       end
   end
 
