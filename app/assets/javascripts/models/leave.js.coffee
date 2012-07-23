@@ -14,3 +14,16 @@ class Egems.Models.Leave extends Backbone.Model
   
   remainingBalance: ->
     @get 'remaining_balance'
+  
+  dateFrom: ->
+    @get 'date_from'
+  
+  dateTo: ->
+    @get 'date_to'
+  
+  validity: ->
+    format_date = Egems.Mixins.Defaults.format_date
+    if @leaveType() != "Absent Without Pay"
+      return "#{ format_date @dateFrom() } to #{ format_date @dateTo() }"
+    else
+      return "Not Applicable"

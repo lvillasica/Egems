@@ -9,6 +9,7 @@
         <th>Consumed</th>
         <th>Pending</th>
         <th>Balance</th>
+        <th>Validity</th>
       </tr>
     </thead>
     <tbody></tbody>

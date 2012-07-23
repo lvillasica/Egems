@@ -3,3 +3,4 @@
 <td class="mins"><%= @mixins.format_float @leave.leavesConsumed() %></td>
 <td class="mins"><%= @mixins.format_float @leave.totalPending() %></td>
 <td class="mins"><%= @mixins.format_float @leave.remainingBalance() %></td>
+<td><%= @leave.validity() %></td>
