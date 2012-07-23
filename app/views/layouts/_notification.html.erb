@@ -3,7 +3,7 @@
 <li>
   <a id="notif" href="/leaves" rel="popover" title="Notifications" data-placement="bottom" data-content="<%= "You have #{"%g" % leave_unit_sum } leaves waiting for approval." %>">
 	<span class="badge badge-important">
-	  <%= "%g" % leave_unit_sum %>
+	  <span id='total_pending_leaves'><%= "%g" % leave_unit_sum %></span>
 	  <i class="icon-flag icon-white"></i>
 	</span>
   </a>

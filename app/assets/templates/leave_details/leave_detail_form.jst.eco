@@ -1,0 +1,73 @@
+<form method="post" id="leave_detail_form" class="well form-horizontal" accept-charset="UTF-8">
+  <div id="flash_messages"></div>
+  <fieldset>
+    <div class="control-group">
+      <label for="leave_detail_leave_type" class="control-label">Leave type</label>
+      <div class="controls">
+        <select name="leave_detail[leave_type]" id="leave_detail_leave_type">
+          <% for leave in @leave_detail.employeeLeaves(): %>
+          <option <%= __safe("selected = 'selected'") if @leave_detail.leaveType() is leave %>
+           value="<%= leave %>"><%= leave %></option>
+          <% end %>
+        </select>
+      </div>
+    </div>
+    
+    <div class="control-group">
+      <label for="leave_detail_period" class="control-label">Half Day</label>
+      <div class="controls">
+        <label class="radio inline">
+          <input type="radio" value="1" name="leave_detail[period]" id="leave_detail_period_1"> AM
+        </label>&nbsp;
+        <label class="radio inline">
+          <input type="radio" value="2" name="leave_detail[period]" id="leave_detail_period_2"> PM
+        </label>
+        <label class="radio inline">
+          <button id="radio-reset-btn" class="btn btn-mini"><i class="icon-remove"></i></button>
+        </label>
+      </div>
+    </div>
+    
+    <div class="control-group">
+      <label for="leave_detail_leave_date" class="control-label">Leave date</label>
+      <div class="controls">
+        <div class="input-append">
+          <input type="text" value="1970-01-01" size="30"
+           name="leave_detail[leave_date]" id="leave_detail_leave_date" class="span2">
+        </div>
+      </div>
+    </div>
+    
+    <div class="control-group">
+      <label for="leave_detail_end_date" class="control-label">End date</label>
+      <div class="controls">
+        <div class="input-append">
+          <input type="text" value="yyyy-mm-dd" size="30"
+           name="leave_detail[end_date]" id="leave_detail_end_date" class="span2">
+        </div>
+      </div>
+    </div>
+    
+    <div class="control-group">
+      <label for="leave_detail_leave_unit" class="control-label">No. of Days</label>
+      <div class="controls">
+        <input type="text" size="30" name="leave_detail[leave_unit]" id="leave_detail_leave_unit" class="span1">
+      </div>
+    </div>
+    
+    <div class="control-group">
+      <label for="leave_detail_details" class="control-label">Details</label>
+      <div class="controls">
+        <textarea rows="3" placeholder="This field is required." name="leave_detail[details]"
+         id="leave_detail_details" cols="40" class="input-xlarge"></textarea>
+      </div>
+    </div>
+    
+    <div class="form-actions no-padding-bottom no-margin-bottom">
+      <input type="submit" value="Create" name="commit" class="btn btn-primary" />
+      <a class="btn cancel" href="#">Cancel</a>
+    </div>
+    
+  </fieldset>
+
+</form>

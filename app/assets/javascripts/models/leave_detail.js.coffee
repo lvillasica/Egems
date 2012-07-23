@@ -3,6 +3,9 @@ class Egems.Models.LeaveDetail extends Backbone.Model
   leaveDate: ->
     @get 'leave_date'
   
+  endDate: ->
+    @get 'end_date'
+  
   leaveType: ->
     @get 'leave_type'
   
@@ -20,3 +23,18 @@ class Egems.Models.LeaveDetail extends Backbone.Model
   
   getResponders: ->
     @get 'get_responders'
+  
+  leaveStartDate: ->
+    @get 'leave_start_date'
+  
+  leaveEndDate: ->
+    @get 'leave_end_date'
+  
+  dayOffs: ->
+    @get 'day_offs'
+  
+  holidays: ->
+    @get 'holidays'
+  
+  employeeLeaves: ->
+    @get 'employee_leaves'

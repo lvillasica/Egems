@@ -19,7 +19,6 @@
 //= require digiclock
 //= require week_selector
 //= require date_selector
-//= require apply_leave
 //= require underscore
 //= require backbone
 //= require egems

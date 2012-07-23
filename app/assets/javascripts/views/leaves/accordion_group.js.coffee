@@ -9,4 +9,5 @@ class Egems.Views.AccordionGroup extends Backbone.View
     this
   
   toggleAccordion: (event) ->
-    $(event.target).parent().next(".accordion-body").slideToggle('fast')
+    event.preventDefault()
+    $(event.target).parent().next(".accordion-body").slideToggle('slow')

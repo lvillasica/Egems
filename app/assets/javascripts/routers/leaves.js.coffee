@@ -4,7 +4,14 @@ class Egems.Routers.Leaves extends Backbone.Router
   
   initialize: ->
     @collection = new Egems.Collections.Leaves()
-    @collection.reset($('#data-container').data('leaves'))
+    data = $('#data-container').data('leaves')
+    if data is not undefined
+      @collection.reset(data)
+    else
+      @collection.fetch
+        async: false
+        success: (collection, response) =>
+          @collection.reset(response.leaves)
   
   index: ->
     index = new Egems.Views.LeavesIndex(collection: @collection)

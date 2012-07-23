@@ -11,4 +11,4 @@ window.Egems =
     Backbone.history.start(pushState: true)
 
 $(document).ready ->
-  Egems.init()
+  Egems.init() unless $('#sessions-form-container').length is 1

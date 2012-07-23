@@ -7,18 +7,15 @@ class LeaveDetailsController < ApplicationController
   before_filter :set_js_params, :only => [:new]
   
   def index
-    # redirect_to leaves_path if params['leave_type'].blank? || @leave.nil?
     @leave_details = @leave.leave_details.active.asc if @leave
     init_data
-    respond_to do | format |
-      format.html { render :template => "layouts/application" }
-      format.json { render :json => @data.to_json }
-    end
+    respond_with_json
   end
   
   def new
-    redirect_to leaves_path if @employee.leaves.empty?
     @leave_detail = @employee.leave_details.new
+    leave_detail_attrs
+    respond_with_json
   end
   
   def create
@@ -26,12 +23,12 @@ class LeaveDetailsController < ApplicationController
     if @leave_detail.save
       flash_message(:notice, "#{@leave_detail.leave_type} dated on #{@leave_detail.dated_on} was successfully created.")
       flash_message(:warning, @leave_detail.errors.full_messages) if @leave_detail.errors.any?
-      redirect_to leaves_path
+      js_params[:total_pending] = @employee.total_pending_leaves
     else
       flash_message(:error, @leave_detail.errors.full_messages) if @leave_detail.errors.any?
-      set_js_params
-      render :action => "new"
     end
+    leave_detail_attrs
+    respond_with_json
   end
   
 private
@@ -58,6 +55,27 @@ private
   def leave_details_with_responders
     @leave_details.map do | ld |
       ld.attributes.merge({:get_responders => ld.get_responders})
+    end
+  end
+  
+  def leave_detail_attrs
+    leave_range = (@leave.date_from .. @leave.date_to)
+    js_params[:leave_detail] = @leave_detail.attributes.merge({
+      :leave_start_date => @leave.date_from,
+      :leave_end_date => @leave.date_to,
+      :employee_leaves => @employee.leaves.leave_types,
+      :day_offs => @employee.day_offs_within(leave_range),
+      :holidays => @employee.holidays_within(leave_range)
+    })
+    js_params[:flash_messages] = flash.to_hash
+    flash.discard # make sure error msgs don't show on other page
+    @data = js_params
+  end
+  
+  def respond_with_json
+    respond_to do | format |
+      format.html { render :template => "layouts/application" }
+      format.json { render :json => @data.to_json }
     end
   end
   

@@ -14,3 +14,32 @@ Egems.Mixins.Defaults =
 
   format_float: (num) ->
     parseFloat(num).toFixed(1)
+  
+  flash_messages: (flash) ->
+    flashes = ""
+    alert_classes =
+      alert: "error"
+      error: "error"
+      notice: "success"
+      warning: "block"
+      info: "info"
+    for name, msg of flash
+      str = """
+            <div class='alert alert-#{alert_classes[name]}'>
+               <button class='close' data-dismiss='alert'>&times;</button>
+               #{msg}
+            </div>
+            """
+      flashes += str
+    flashes
+  
+  loadingIndicator: ->
+    str = """
+          <div id="loading-indicator" class="modal hide">
+            <div class="modal-body" style="padding:0; margin:0">
+              <div class="progress progress-striped active" style="padding:0; margin:0">
+                <div class="bar" style="width: 100%;">Loading...</div>
+              </div>
+            </div>
+          </div>
+          """

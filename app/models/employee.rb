@@ -43,6 +43,10 @@ class Employee < ActiveRecord::Base
     range.map { |r| Range.new(r.start_date, r.end_date) }
   end
   
+  def total_pending_leaves
+    leave_details.pending.sum(:leave_unit)
+  end
+  
   def holidays_within(date_range)
     branch.holidays.within(date_range)
   end
