@@ -81,9 +81,13 @@
 
       <div class="row">
         <%= content_tag "div", "", :id => "data-container", :data => @data %>
-        <div class = "span9 offset2" id="main-container">
-          <div class="progress progress-striped active">
-            <div class="bar" style="width: 100%;"></div>
+        <div class = "span9 offset2" id="main-container" style="min-height: 100px">
+          <div class="modal">
+            <div class="modal-body" style="padding:0; margin:0">
+              <div class="progress progress-striped active" style="padding:0; margin:0; height:25px;">
+                <div class="bar" style="width:100%; height:100%;"><i>Loading...</i></div>
+              </div>
+            </div>
           </div>
         </div>
       </div>

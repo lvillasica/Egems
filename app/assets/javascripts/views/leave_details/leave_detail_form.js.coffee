@@ -202,29 +202,29 @@ class Egems.Views.LeaveDetailForm extends Backbone.View
   
   navigateLeaves: (event) ->
     event.preventDefault()
-    leaves = new Egems.Routers.Leaves()
     if @inModal()
       if $('#leave_detail_form .cancel').attr('disabled') is undefined
         $('#apply-leave-modal').modal('hide')
-        leaves.index() if event.type is 'submit'
+        if event.type is 'submit'
+          leaves = new Egems.Routers.Leaves()
+          leaves.index()
     else
+      leaves = new Egems.Routers.Leaves()
       leaves.navigate('leaves', true)
   
   showLoadingIndicator: ->
     if @inModal()
-      $('#apply-leave-modal .modal-body').append(@loadingIndicator())
       $('#leave_detail_form .cancel').attr('disabled', true)
       $('#loading-indicator').show()
     else
-      $('#main-container').prepend(@loadingIndicator())
       $('#loading-indicator').modal(backdrop: 'static', 'show')
   
   hideLoadingIndicator: ->
     if @inModal()
-      $('#loading-indicator').remove()
+      $('#loading-indicator').hide()
       $('#leave_detail_form .cancel').removeAttr('disabled')
     else
-      $('#loading-indicator').modal('hide').remove()
+      $('#loading-indicator').modal('hide')
   
   inModal: ->
     $('#leave_detail_form').parents('#apply-leave-modal').length == 1
