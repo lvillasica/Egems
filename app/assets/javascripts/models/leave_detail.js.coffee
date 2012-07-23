@@ -38,3 +38,7 @@ class Egems.Models.LeaveDetail extends Backbone.Model
   
   employeeLeaves: ->
     @get 'employee_leaves'
+  
+  periodInWords: ->
+    periods = ["Whole Day", "AM", "PM", "Range"]
+    periods[@period()]
