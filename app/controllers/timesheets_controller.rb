@@ -33,6 +33,8 @@ class TimesheetsController < ApplicationController
     rescue Timesheet::NoTimeinError
       @invalid_timesheet = @employee.timesheets.new(:date => Time.now.beginning_of_day)
       js_params[:error] = ['error', flash_message(:alert, :no_timein)]
+      js_params[:shift] = @employee.shift_schedule.details[Time.now.wday].valid_time_in.first
+      js_params[:lastTimesheet] = @employee.timesheets.desc.first
     end
     get_active_timesheets
     respond_with_json
@@ -75,7 +77,7 @@ private
   def invalid_timesheet_prev
     @employee ||= get_employee
     if session[:invalid_timein_after_signin]
-      @invalid_timesheet = @employee.timesheet.asc.no_timeout.first
+      @invalid_timesheet = @employee.timesheets.asc.no_timeout.first
     end
     session.delete(:invalid_timein_after_signin)
   end
@@ -111,6 +113,7 @@ private
   end
 
   def with_original_time_in
+    return nil if @employee_timesheets_active.nil?
     if @employee_timesheets_active.is_a?(Hash)
       timesheets = @employee_timesheets_active.map do |k, timesheets|
         timesheets.map do |t|

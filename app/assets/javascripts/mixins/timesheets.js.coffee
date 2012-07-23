@@ -44,14 +44,25 @@ Egems.Mixins.Timesheets =
   getDefaultTimeoutValue: (timein) ->
     current_time = new Date()
     time_in = new Date(timein)
-    default_value = new Date(time_in.setHours(time_in.getHours() + 9))
+    advance = new Date(time_in.setHours(time_in.getHours() + 9))
+    default_value = new Date(advance.setMinutes(advance.getMinutes() + 1))
     if default_value > current_time
       return current_time
     else
       return default_value
 
-  getDefaultTimeinValue: (timeout) ->
-    current_time = new Date()
-    time_out = new Date(timeout)
-    default_value = new Date(time_out.setHours(time_out.getHours() - 9))
-    return default_value
+  getDefaultTimeinValue: (timeout, shift) ->
+    current = new Date()
+    shift = new Date(shift)
+    lastOut = new Date(timeout)
+    default_value = new Date(current.setHours(current.getHours() - 9))
+    if default_value < lastOut
+      if lastOut < shift
+        return shift
+      else
+        return new Date(lastOut.setMinutes(lastOut.getMinutes() + 1))
+    else
+      if default_value < shift
+        return shift
+      else
+        return default_value

@@ -8,6 +8,8 @@ class Egems.Views.ManualTimein extends Backbone.View
   render: (options = {}) ->
     $(@el).html(@template(
       invalidTimesheet: @model
+      lastTimesheet: this.options.lastTimesheet
+      shift: this.options.shift
       mixins: $.extend(Egems.Mixins.Defaults, Egems.Mixins.Timesheets)
     ))
     @flashError(options.error)
@@ -21,19 +23,19 @@ class Egems.Views.ManualTimein extends Backbone.View
             "#{msg[1]}</div>"
       $(@el).prepend(str)
 
-  sendTimesheet: ->
+  sendTimesheet: (event) ->
     event.preventDefault()
-    timeoutData = $("#manual-timein-form").serialize()
+    timeinData = $("#manual-timein-form").serialize()
     $.ajax
       url: '/timein/manual'
       dataType: 'JSON'
       type: 'POST'
-      data: timeoutData
+      data: timeinData
       success: (data) =>
         if data.invalid_timesheet != null
           @render(model: data.invalid_timesheet, error: data.error)
         else
-          @renderEntries()
+          @renderEntries(event)
 
   renderEntries: (event) ->
     event.preventDefault()

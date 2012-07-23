@@ -7,18 +7,20 @@ class Egems.Views.TimesheetsIndex extends Backbone.View
     "click #time-out-btn" : "timeout"
 
   initialize: ->
-    this.dateNavs = new Egems.Views.DateNavs(collection: @collection)
-    this.timeEntries = new Egems.Views.TimeEntries(collection: @collection)
+    _.extend(this, Egems.Mixins.Timesheets)
+    @dateNavs = new Egems.Views.DateNavs(collection: @collection)
+    @timeEntries = new Egems.Views.TimeEntries(collection: @collection)
 
   render: ->
     $(@el).html(@template())
-    $(@el).append(this.dateNavs.render().el)
-    $(@el).append(this.timeEntries.render().el)
+    $(@el).append(@dateNavs.render().el)
+    $(@el).append(@timeEntries.render().el)
     this
 
   updateDateTabs: ->
     this.dateNavs.activateDateTab()
     weekPicker()
+    $('#week-picker').val(@weekPickerVal(new Date()))
 
   timein: (event) ->
     event.preventDefault()
@@ -40,8 +42,7 @@ class Egems.Views.TimesheetsIndex extends Backbone.View
       url: '/timeout'
       success: (data) =>
         if data.invalid_timesheet != null
-          console.log data
-          #@manualTimein(data.invalid_timesheet, data.error)
+          @manualTimein(data)
         else
           @updateEntriesView(data.employee_timesheets_active)
 
@@ -49,8 +50,13 @@ class Egems.Views.TimesheetsIndex extends Backbone.View
     @collection.reset(timesheets)
     @updateDateTabs()
 
-  manualTimein: (timesheet, error) ->
-    view = new Egems.Views.ManualTimein(model: timesheet, error: error)
+  manualTimein: (data) ->
+    view = new Egems.Views.ManualTimein(
+      model: data.invalid_timesheet
+      error: data.error
+      lastTimesheet: data.lastTimesheet
+      shift: data.shift
+    )
     $('#main-container').html(view.render().el)
 
   manualTimeout: (timesheet, error) ->

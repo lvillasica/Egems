@@ -21,7 +21,7 @@ class Egems.Views.ManualTimeout extends Backbone.View
             "#{msg[1]}</div>"
       $(@el).prepend(str)
 
-  sendTimesheet: ->
+  sendTimesheet: (event) ->
     event.preventDefault()
     timeoutData = $("#manual-timeout-form").serialize()
     $.ajax
@@ -33,7 +33,7 @@ class Egems.Views.ManualTimeout extends Backbone.View
         if data.invalid_timesheet != null
           @render(model: data.invalid_timesheet, error: data.error)
         else
-          @renderEntries()
+          @renderEntries(event)
 
   renderEntries: (event) ->
     event.preventDefault()
