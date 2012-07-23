@@ -92,11 +92,17 @@
       </footer>
 
     </div> <!-- /container -->
-
     <!-- Javascripts
     ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->
     <%= javascript_include_tag "application" %>
     <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.14/jquery-ui.min.js"></script>
+    <div id="loading-indicator" class="modal hide">
+      <div class="modal-body" style="padding:0; margin:0">
+        <div class="progress progress-striped active" style="padding:0; margin:0; height:25px;">
+          <div class="bar" style="width:100%; height:100%;"><i>Loading...</i></div>
+        </div>
+      </div>
+    </div>
   </body>
 </html>

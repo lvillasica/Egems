@@ -5,11 +5,17 @@ class Egems.Views.ManualTimein extends Backbone.View
     "click #cancel-manual" : "renderEntries"
     "submit form" : "sendTimesheet"
 
+  initialize: ->
+    if this.options.lastTimesheet == null
+      @lastTimeout = null
+    else
+      @lastTimeout = this.options.lastTimesheet.time_out
+
   render: (options = {}) ->
     $(@el).html(@template(
       invalidTimesheet: @model
-      lastTimesheet: this.options.lastTimesheet
       shift: this.options.shift
+      lastTimeout: @lastTimeout
       mixins: $.extend(Egems.Mixins.Defaults, Egems.Mixins.Timesheets)
     ))
     @flashError(options.error)

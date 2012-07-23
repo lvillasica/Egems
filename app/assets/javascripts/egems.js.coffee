@@ -12,3 +12,8 @@ window.Egems =
 
 $(document).ready ->
   Egems.init() unless $('#sessions-form-container').length is 1
+  $('#loading-indicator')
+    .ajaxStart (event) ->
+      $(this).modal(backdrop: 'static', 'show')
+    .ajaxStop (event) ->
+      $(this).modal('hide')

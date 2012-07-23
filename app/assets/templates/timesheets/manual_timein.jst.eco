@@ -11,9 +11,9 @@
   </thead>
 
   <tbody>
-    <% default_timein = @mixins.getDefaultTimeinValue(@lastTimesheet.time_out, @shift) %>
+    <% default_timein = @mixins.getDefaultTimeinValue(@lastTimeout, @shift) %>
     <td><%= @mixins.format_date @invalidTimesheet.date %></td>
-    <td><%= @mixins.format_long_time @lastTimesheet.time_out %></td>
+    <td><%= @mixins.format_long_time @lastTimeout %></td>
     <td>
       <form id="manual-timein-form">
         <input name="id" type="hidden" value="<%= @invalidTimesheet.id %>">
