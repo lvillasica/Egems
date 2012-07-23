@@ -1,8 +1,8 @@
 <% leaveTypeTrimmed = @leaveType.replace(/\s/g, "") %>
 <div class="accordion-group">
   <div class="accordion-heading">
-    <a class="accordion-toggle" href="#<%= leaveTypeTrimmed %>">
-      <i class="icon-chevron-down"></i> <%= @leaveType %>
+    <a class="accordion-toggle icon-chevron-down" href="#<%= leaveTypeTrimmed %>">
+      &nbsp;<%= @leaveType %>
     </a>
   </div>
   <div id="<%= leaveTypeTrimmed %>" class="accordion-body" style="display: none;">

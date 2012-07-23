@@ -1,4 +1,9 @@
-<h3>Leave Balances</h3>
+<div id="leaves-page-header" style="display:inline-block; width:100%;">
+  <h3 style="width:50%; display:inline-block">Leave Balances</h3>
+  <span style="width:50%;">
+    <button id="apply-leave-btn" class="btn pull-right">Apply for Leave</button>
+  </span>
+</div>
 <hr />
 <% if @leaves.length >= 1: %>
   <table id="leaves_tbl" class="table timesheets leave_details">

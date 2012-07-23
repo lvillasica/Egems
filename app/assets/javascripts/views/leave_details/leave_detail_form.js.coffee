@@ -176,8 +176,6 @@ class Egems.Views.LeaveDetailForm extends Backbone.View
   
   submitForm: (event) ->
     event.preventDefault()
-    $('#main-container').prepend(@loadingIndicator())
-    $('#loading-indicator').modal(backdrop: 'static', 'show')
     attributes =
       'leave_type': @leaveTypeFld.val()
       'period': (@periodFld.filter(':checked').val() or 0)
@@ -191,8 +189,9 @@ class Egems.Views.LeaveDetailForm extends Backbone.View
       data: {'leave_detail': attributes}
       dataType: 'json'
       type: 'POST'
+      beforeSend: (jqXHR, settings) => @showLoadingIndicator()
       success: (data) =>
-        $('#loading-indicator').modal('hide').remove()
+        @hideLoadingIndicator()
         flash_messages = data.flash_messages
         if flash_messages.error is undefined
           @navigateLeaves(event)
@@ -204,7 +203,31 @@ class Egems.Views.LeaveDetailForm extends Backbone.View
   navigateLeaves: (event) ->
     event.preventDefault()
     leaves = new Egems.Routers.Leaves()
-    leaves.navigate('leaves', true)
+    if @inModal()
+      if $('#leave_detail_form .cancel').attr('disabled') is undefined
+        $('#apply-leave-modal').modal('hide')
+        leaves.index() if event.type is 'submit'
+    else
+      leaves.navigate('leaves', true)
+  
+  showLoadingIndicator: ->
+    if @inModal()
+      $('#apply-leave-modal .modal-body').append(@loadingIndicator())
+      $('#leave_detail_form .cancel').attr('disabled', true)
+      $('#loading-indicator').show()
+    else
+      $('#main-container').prepend(@loadingIndicator())
+      $('#loading-indicator').modal(backdrop: 'static', 'show')
+  
+  hideLoadingIndicator: ->
+    if @inModal()
+      $('#loading-indicator').remove()
+      $('#leave_detail_form .cancel').removeAttr('disabled')
+    else
+      $('#loading-indicator').modal('hide').remove()
+  
+  inModal: ->
+    $('#leave_detail_form').parents('#apply-leave-modal').length == 1
 
   updateNotif: (totalPending) ->
     popoverContent = "You have #{ totalPending } leaves waiting for approval."
