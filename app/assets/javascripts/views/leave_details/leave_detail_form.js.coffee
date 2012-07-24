@@ -189,9 +189,11 @@ class Egems.Views.LeaveDetailForm extends Backbone.View
       data: {'leave_detail': attributes}
       dataType: 'json'
       type: 'POST'
-      beforeSend: (jqXHR, settings) => @showLoadingIndicator()
+      beforeSend: (jqXHR, settings) =>
+        $('#leave_detail_form .cancel').attr('disabled', true) if @inModal()
+      complete: (jqXHR, textStatus) =>
+        $('#leave_detail_form .cancel').removeAttr('disabled') if @inModal()
       success: (data) =>
-        @hideLoadingIndicator()
         flash_messages = data.flash_messages
         if flash_messages.error is undefined
           @navigateLeaves(event)
@@ -211,20 +213,6 @@ class Egems.Views.LeaveDetailForm extends Backbone.View
     else
       leaves = new Egems.Routers.Leaves()
       leaves.navigate('leaves', true)
-  
-  showLoadingIndicator: ->
-    if @inModal()
-      $('#leave_detail_form .cancel').attr('disabled', true)
-      $('#loading-indicator').show()
-    else
-      $('#loading-indicator').modal(backdrop: 'static', 'show')
-  
-  hideLoadingIndicator: ->
-    if @inModal()
-      $('#loading-indicator').hide()
-      $('#leave_detail_form .cancel').removeAttr('disabled')
-    else
-      $('#loading-indicator').modal('hide')
   
   inModal: ->
     $('#leave_detail_form').parents('#apply-leave-modal').length == 1
