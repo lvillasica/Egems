@@ -28,7 +28,3 @@ Egems::Application.routes.draw do
 
   match '*a', :to => 'application#render_404'
 end
-
-ActiveSupport::Inflector.inflections do |inflect|
-  inflect.irregular 'leave', 'leaves'
-end
