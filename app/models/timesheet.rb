@@ -32,10 +32,10 @@ class Timesheet < ActiveRecord::Base
   # -------------------------------------------------------
   # Callbacks
   # -------------------------------------------------------
-  before_create :put_shift_details
-  before_create :set_minutes_late
-  before_update :update_shift_details
-  before_update :compute_minutes
+  before_save :put_shift_details, :on => [:create]
+  before_save :set_minutes_late, :on => [:create]
+  before_save :update_shift_details, :on => [:create, :update]
+  before_save :compute_minutes, :on => [:create, :update]
 
   # -------------------------------------------------------
   # Namescopes
@@ -292,29 +292,6 @@ class Timesheet < ActiveRecord::Base
           next_date = ldate.tomorrow
           adjust_next_day_shift(next_date)
         end
-      end
-    end
-  end
-
-  def update_shift_details_old
-    shift_start = shift_schedule_detail.valid_time_in(date).first
-    shift_end = shift_schedule_detail.valid_time_out(date).last
-    shift_max_end =  next_day_shift_schedule_detail.valid_time_in(date).first
-
-    max_range = Range.new(shift_start, shift_max_end)
-    shift_range = Range.new(shift_start, shift_end)
-    actual_in = time_in_without_adjustment.localtime
-
-    if !time_out.nil? && !max_range.cover?(time_out.localtime)
-      diff = time_out.localtime >= shift_start ? 1 : -1
-      day = shift_start.to_date + diff.days
-      if !shift_range.cover?(actual_in) or (shift_range.cover?(actual_in) and !is_work_day?)
-        self.date = day.to_time
-        self.shift_schedule = employee.shift_schedule(date)
-        self.shift_schedule_detail = shift_schedule.detail(date)
-        next_day = date.tomorrow
-        self.next_day_shift_schedule = employee.shift_schedule(next_day)
-        self.next_day_shift_schedule_detail = next_day_shift_schedule.detail(next_day)
       end
     end
   end
