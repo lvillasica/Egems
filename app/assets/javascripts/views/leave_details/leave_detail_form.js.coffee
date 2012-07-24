@@ -191,9 +191,8 @@ class Egems.Views.LeaveDetailForm extends Backbone.View
       type: 'POST'
       beforeSend: (jqXHR, settings) =>
         $('#leave_detail_form .cancel').attr('disabled', true) if @inModal()
-      complete: (jqXHR, textStatus) =>
-        $('#leave_detail_form .cancel').removeAttr('disabled') if @inModal()
       success: (data) =>
+        $('#leave_detail_form .cancel').removeAttr('disabled') if @inModal()
         flash_messages = data.flash_messages
         if flash_messages.error is undefined
           @navigateLeaves(event)
