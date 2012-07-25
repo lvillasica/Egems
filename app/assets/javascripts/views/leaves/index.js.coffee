@@ -17,14 +17,17 @@ class Egems.Views.LeavesIndex extends Backbone.View
   showApplyLeaveModal: (event) ->
     event.preventDefault()
     $('#main-container').append('<div id="apply-leave-modal" class="modal h‪ide fade" />')
-    $('#apply-leave-modal').append('<div class="modal-body" style="max-height:550px"></div>')
     $.ajax
       url: 'leave_details/new'
       dataType: 'json'
       success: (data) ->
         model = new Egems.Models.LeaveDetail(data.leave_detail)
         newLeaveDetail = new Egems.Views.NewLeaveDetail(model: model)
-        $('#apply-leave-modal .modal-body').html(newLeaveDetail.render().el)
+        $('#apply-leave-modal').append(newLeaveDetail.render().el)
+        $('#new-leave-application-header').wrap('<div class="modal-header" />')
+        $('.modal-header').next('hr').remove()
+        $('#new-leave-application-container').addClass('modal-body')
+        $('#leave-detail-form-actions').addClass('modal-footer')
         $('#apply-leave-modal').modal(backdrop: 'static', 'show')
         $('#apply-leave-modal').on 'hidden', ->
           $(this).remove()

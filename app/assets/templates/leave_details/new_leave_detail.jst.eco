@@ -1,3 +1,7 @@
-<h3>New Leave Application</h3>
+<h3 id="new-leave-application-header">New Leave Application</h3>
 <hr />
-<div id="leave_detail_form"></div>
+<div id="new-leave-application-container"></div>
+<div id="leave-detail-form-actions" class="form-actions">
+  <button class="btn btn-primary submit">Create</button>
+  <a class="btn cancel" href="#">Cancel</a>
+</div>

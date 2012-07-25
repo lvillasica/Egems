@@ -4,7 +4,6 @@ class Egems.Views.LeaveDetailForm extends Backbone.View
   
   events:
     'click #radio-reset-btn': 'resetPeriod'
-    'click #leave_detail_form .cancel': 'navigateLeaves'
     'submit #leave_detail_form': 'submitForm'
   
   initialize: ->
@@ -185,14 +184,14 @@ class Egems.Views.LeaveDetailForm extends Backbone.View
       'details': @detailsFld.val()
     @model.set attributes
     $.ajax
-      url: '/leave_details'
+      url: @$("#leave_detail_form").attr('action')
       data: {'leave_detail': attributes}
       dataType: 'json'
       type: 'POST'
       beforeSend: (jqXHR, settings) =>
-        $('#leave_detail_form .cancel').attr('disabled', true) if @inModal()
+        $('#leave-detail-form-actions .cancel').attr('disabled', true) if @inModal()
       success: (data) =>
-        $('#leave_detail_form .cancel').removeAttr('disabled') if @inModal()
+        $('#leave-detail-form-actions .cancel').removeAttr('disabled') if @inModal()
         flash_messages = data.flash_messages
         if flash_messages.error is undefined
           @navigateLeaves(event)
@@ -204,7 +203,7 @@ class Egems.Views.LeaveDetailForm extends Backbone.View
   navigateLeaves: (event) ->
     event.preventDefault()
     if @inModal()
-      if $('#leave_detail_form .cancel').attr('disabled') is undefined
+      if $('#leave-detail-form-actions .cancel').attr('disabled') is undefined
         $('#apply-leave-modal').modal('hide')
         if event.type is 'submit'
           leaves = new Egems.Routers.Leaves()
