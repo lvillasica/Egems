@@ -15,6 +15,18 @@ Egems.Mixins.Defaults =
   format_float: (num) ->
     parseFloat(num).toFixed(1)
   
+  # Returns a method to translate an activerecord attribute
+  # through I18n translations.
+  # eg. l = Egems.Mixins.Defaults.attrTranslations('leave_detail')
+  #     l 'leave_unit'
+  attrTranslations: (activerecord_name) ->
+    method = (name) ->
+      l = I18n.t("activerecord.attributes.#{activerecord_name}.#{name}")
+      unless l.match(/missing/) is null
+        l = _.map(name.split('_'), (x) -> x[0].toUpperCase() + x.substring(1)).join(' ')
+      return l
+    return method
+  
   flash_messages: (flash) ->
     flashes = ""
     alert_classes =
