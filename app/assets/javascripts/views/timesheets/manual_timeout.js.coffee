@@ -5,6 +5,12 @@ class Egems.Views.ManualTimeout extends Backbone.View
     "click #cancel-manual" : "renderEntries"
     "submit form" : "sendTimesheet"
 
+  initialize: ->
+    $.ajax
+      url: '/delete/autotimein'
+      data: 'session=invalid_timein_after_signin'
+      type: 'POST'
+
   render: (options = {}) ->
     $(@el).html(@template(
       invalidTimesheet: @model

@@ -4,7 +4,7 @@ class TimesheetsController < ApplicationController
   before_filter :authenticate_user!, :except => [:index]
   before_filter :get_employee, :except => [:manual_timeout, :timesheets_nav]
   before_filter :get_active_timesheets, :only => [:index]
-  before_filter :invalid_timesheet_prev, :only => [:index, :timesheets_nav]
+  before_filter :get_invalid_timesheet, :only => [:index]
 
   def index
     if user_signed_in?
@@ -74,12 +74,12 @@ private
     @employee_timesheets_active = @employee.timesheets.by_date(active_time).asc
   end
 
-  def invalid_timesheet_prev
+  def get_invalid_timesheet
     @employee ||= get_employee
     if session[:invalid_timein_after_signin]
       @invalid_timesheet = @employee.timesheets.asc.no_timeout.first
+      js_params[:error] = ['error', flash_message(:alert, :no_timeout)]
     end
-    session.delete(:invalid_timein_after_signin)
   end
 
   # TODO: Refactor

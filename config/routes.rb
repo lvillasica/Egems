@@ -26,5 +26,6 @@ Egems::Application.routes.draw do
     root :to => 'timesheets#index', :as => 'timesheets', :via => :get
   end
 
+  match '/delete/autotimein', :to => 'application#delete_session', :via => :post
   match '*a', :to => 'application#render_404'
 end

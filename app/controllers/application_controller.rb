@@ -10,7 +10,6 @@ class ApplicationController < ActionController::Base
       Timesheet.time_in!(employee)
     rescue Timesheet::NoTimeoutError
       session[:invalid_timein_after_signin] = true
-      flash_message(:alert, :no_timeout)
     end if params[:commit].eql?('Time in')
     return request.env['omniauth.origin'] || stored_location_for(resource) || timesheets_path
   end
@@ -18,6 +17,11 @@ class ApplicationController < ActionController::Base
   def render_404
     #temporary 404 action
     redirect_to timesheets_path
+  end
+
+  def delete_session
+    session.delete(params[:session].to_sym)
+    render :nothing => true
   end
 
 protected
