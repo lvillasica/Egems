@@ -182,7 +182,6 @@ class Egems.Views.LeaveDetailForm extends Backbone.View
       'end_date': @endDateFld.val()
       'leave_unit': @leaveUnitFld.val()
       'details': @detailsFld.val()
-    @model.set attributes
     $.ajax
       url: @$("#leave_detail_form").attr('action')
       data: {'leave_detail': attributes}

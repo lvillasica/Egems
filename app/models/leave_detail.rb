@@ -133,10 +133,6 @@ class LeaveDetail < ActiveRecord::Base
     responders << managers
   end
   
-  def recompute_timesheets
-    # TODO
-  end
-  
   def is_whole_day?
     period == 0 && leave_unit == 1
   end
@@ -361,6 +357,24 @@ private
       end
     end
     holidays
+  end
+  
+  def recompute_timesheets
+    # In-progress
+    if is_whole_day? || is_range?
+      dates = @leave_dates.to_a - (@day_offs + @holidays)
+      active_timesheet = dates.map { |date| @employee.timesheets.by_date(date.to_time).asc }
+      active_timesheet.flatten.compact.each do |entry|
+        entry.update_column(:minutes_late, 0)
+        entry.update_column(:duration, 0)
+        entry.update_column(:minutes_excess, 0)
+        entry.update_column(:minutes_undertime, 0)
+      end
+    elsif is_half_day? && period == 1
+      # TODO
+    elsif is_half_day? && period == 2
+      # TODO
+    end
   end
 
 end
