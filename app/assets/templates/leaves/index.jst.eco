@@ -20,7 +20,11 @@
     <tbody></tbody>
   </table>
   <br />
-  <div id="leave_details_container"></div>
+  <div id="leave_details_container">
+    <div class="small-ajax-loader-container">
+      <img src="/assets/ajax-loader.gif" alt="Loading..." height="10" width="20" />
+    </div>
+  </div>
 <% else: %>
   <div class="well">No data found.</div>
 <% end %>

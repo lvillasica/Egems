@@ -33,6 +33,7 @@ class LeaveDetail < ActiveRecord::Base
   before_save :set_period
   before_create :set_default_responders
   before_create :set_leave
+  after_save :recompute_timesheets
   after_save :send_email_notification
   
   # -------------------------------------------------------
@@ -83,6 +84,10 @@ class LeaveDetail < ActiveRecord::Base
   # -------------------------------------------------------
   # Instance Methods
   # -------------------------------------------------------
+  def leave_date=(date)
+    self[:leave_date] = Time.parse(date.to_s).utc rescue nil
+  end
+  
   def end_date=(date)
     self[:optional_to_leave_date] = Time.parse(date.to_s).utc rescue nil
   end
@@ -126,6 +131,22 @@ class LeaveDetail < ActiveRecord::Base
   def set_default_responders
     managers = [employee.project_manager, employee.immediate_supervisor].compact.uniq
     responders << managers
+  end
+  
+  def recompute_timesheets
+    # TODO
+  end
+  
+  def is_whole_day?
+    period == 0 && leave_unit == 1
+  end
+  
+  def is_range?
+    period == 3 && leave_unit > 1
+  end
+  
+  def is_half_day?
+    [1, 2].include?(period) && leave_unit == 0.5
   end
   
   def send_email_notification
@@ -243,11 +264,11 @@ private
   
   def validate_leave_conflicts
     nwd = @day_offs + @holidays
-    units_per_leave_date = @employee.leave_details.get_units_per_leave_date(nwd)
+    @units_per_leave_date = @employee.leave_details.get_units_per_leave_date(nwd)
     maxed_out_leaves = []
     units = ((@leave_dates.count > 1)? 1 : leave_unit)
     @leave_dates.each do |day|
-      if (units_per_leave_date[day.to_s].to_f + units) > 1
+      if (@units_per_leave_date[day.to_s].to_f + units) > 1
         maxed_out_leaves << day
       end
     end
