@@ -10,6 +10,10 @@ Egems.Mixins.Timesheets =
     else
       return "0"
 
+  showRemarks: (remarks) ->
+    return "" if remarks == null
+    remarks.split(",")
+
   getDayOfWeek: (date) ->
     dateOnly = date.clone().clearTime()
     mon: @getDay(dateOnly, dateOnly.clone().monday())

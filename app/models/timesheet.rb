@@ -36,6 +36,7 @@ class Timesheet < ActiveRecord::Base
   before_save :set_minutes_late, :on => [:create]
   before_save :update_shift_details, :on => [:create, :update]
   before_save :compute_minutes, :on => [:create, :update]
+  before_save :put_remarks, :on => [:create, :update]
 
   # -------------------------------------------------------
   # Namescopes
@@ -216,6 +217,23 @@ class Timesheet < ActiveRecord::Base
     end
   end
 
+  def put_remarks
+    @first_timesheet ||= employee.timesheets.by_date(date.localtime).asc.first
+    remarks_ = (@first_timesheet.remarks || String.new).split(',')
+
+    remarks_ << 'Undertime' if minutes_undertime > 0
+    remarks_.delete 'Undertime' if time_out && minutes_undertime <= 0
+
+    if @first_timesheet.new_record?
+      # TODO: update late remark on leave scenario
+      remarks_ << 'Late' if minutes_late > 0
+      remarks_ << 'Leave Filed' if employee.leave_details.filed_for(date.localtime).present?
+      @first_timesheet.remarks = remarks_.uniq.compact.join(',')
+    else
+      @first_timesheet.update_column(:remarks, remarks_.uniq.compact.join(','))
+    end
+  end
+
   def set_minutes_late
     if is_first_entry? && is_work_day? && is_within_shift?
       max_time_in = shift_schedule_detail.valid_time_in(date).last
@@ -323,7 +341,6 @@ class Timesheet < ActiveRecord::Base
   end
 
   def is_work_day?
-    # not holiday and rest day
     !shift_schedule_detail.is_day_off? and !is_holiday?
   end
 

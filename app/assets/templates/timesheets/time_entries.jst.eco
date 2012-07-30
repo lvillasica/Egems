@@ -4,6 +4,7 @@
     <thead>
     <tr>
       <th>Date</th>
+      <th>Remarks</th>
       <th>Time In</th>
       <th>Time Out</th>
       <th>Total Hours</th>
