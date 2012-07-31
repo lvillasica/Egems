@@ -60,7 +60,9 @@ class TimesheetsController < ApplicationController
     time = Time.parse(params['time'])
     @active_time = [time.monday, time.sunday]
     @employee_timesheets_active = @employee.timesheets.within(@active_time).asc
-                                           .group_by { |s| s.shift_schedule_detail.day_of_week }
+                                           .unemptize(@employee, @active_time) do |s|
+                                              s.shift_schedule_detail.day_of_week
+                                            end
     respond_with_json
   end
 
@@ -72,6 +74,7 @@ private
   def get_active_timesheets(active_time = Time.now.beginning_of_day)
     @employee ||= get_employee
     @employee_timesheets_active = @employee.timesheets.by_date(active_time).asc
+                                           .unemptize(@employee, active_time)
   end
 
   def get_invalid_timesheet
@@ -113,7 +116,7 @@ private
   end
 
   def with_original_time_in
-    return nil if @employee_timesheets_active.nil?
+    return nil if @employee_timesheets_active.nil? or @employee_timesheets_active.empty?
     if @employee_timesheets_active.is_a?(Hash)
       timesheets = @employee_timesheets_active.map do |k, timesheets|
         timesheets.map do |t|

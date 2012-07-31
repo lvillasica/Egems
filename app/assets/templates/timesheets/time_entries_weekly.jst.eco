@@ -5,6 +5,7 @@
       <tr>
         <th>Day</th>
         <th>Date</th>
+        <th>Remarks</th>
         <th>Time In</th>
         <th>Time Out</th>
         <th>Total Hours</th>
@@ -23,6 +24,7 @@
         <% last_timesheet = models[models.length - 1] %>
         <td class="day"><%= @mixins.format_day_only first_timesheet.date() %></td>
         <td class="mins"><%= @mixins.format_date first_timesheet.date() %></td>
+        <td class="remarks"><%= @mixins.showRemarks first_timesheet.remarks() %>
         <td><%= @mixins.format_long_time first_timesheet.timeIn() %></td>
         <td><%= @mixins.format_long_time last_timesheet.timeOut() %></td>
         <td class="mins"><%= @mixins.format_in_hours collection.sum_minutes('duration') %></td>

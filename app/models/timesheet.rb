@@ -94,6 +94,43 @@ class Timesheet < ActiveRecord::Base
       end
       where(:id => ids.compact)
     end
+
+    def unemptize(employee, time)
+      return all if all.present? && !block_given?
+      if block_given? && time.is_a?(Array)
+        tgroup = Hash.new
+        all.each do |timesheet|
+          wday = yield(timesheet)
+          if tgroup.has_key?(wday)
+            tgroup[wday] << timesheet
+          else
+            tgroup[wday] = [timesheet]
+          end
+        end
+
+        monday = time.first.localtime
+        (0...7).map do |w|
+          weekday = monday + w.days
+          unless tgroup[weekday.wday]
+            tgroup[weekday.wday] = [empty_new(employee, weekday)].compact
+          end
+        end
+        tgroup = ActiveSupport::OrderedHash[tgroup.sort]
+        tgroup.delete_if { |k,v| v.empty? }
+      else
+        timesheet = [empty_new(employee, time)].compact
+      end
+    end
+
+    def empty_new(employee, time)
+      shift = employee.shift_schedule.detail(time)
+      valid_time_out = shift.valid_time_out(time).last
+      if !shift.is_day_off? && Time.now > valid_time_out
+        timesheet = employee.timesheets.new({ :date => time })
+        timesheet.put_remarks
+      end
+      timesheet
+    end
   end
 
   # -------------------------------------------------------
@@ -218,7 +255,7 @@ class Timesheet < ActiveRecord::Base
   end
 
   def put_remarks
-    @first_timesheet ||= employee.timesheets.by_date(date.localtime).asc.first
+    @first_timesheet ||= employee.timesheets.by_date(date.localtime).asc.first || self
     remarks_ = (@first_timesheet.remarks || String.new).split(',')
 
     remarks_ << 'Undertime' if minutes_undertime > 0
@@ -227,11 +264,23 @@ class Timesheet < ActiveRecord::Base
     if @first_timesheet.new_record?
       # TODO: update late remark on leave scenario
       remarks_ << 'Late' if minutes_late > 0
-      remarks_ << 'Leave Filed' if employee.leave_details.filed_for(date.localtime).present?
+      if employee.leave_details.filed_for(date.localtime).present?
+        remarks_ << 'Leave Filed'
+      else
+        remarks_ << 'AWOL' if is_awol?
+      end
       @first_timesheet.remarks = remarks_.uniq.compact.join(',')
     else
       @first_timesheet.update_column(:remarks, remarks_.uniq.compact.join(','))
     end
+  end
+
+  def is_awol?
+    ldate = date.localtime
+    shift = employee.shift_schedule.detail_by_day(ldate.wday)
+    valid_time_out = shift.valid_time_out(ldate).last
+    return true if !time_in && !time_out && !shift.is_day_off? && (Time.now > valid_time_out)
+    return false
   end
 
   def set_minutes_late
