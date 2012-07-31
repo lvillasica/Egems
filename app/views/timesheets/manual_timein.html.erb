@@ -20,9 +20,9 @@
       <td><%= format_long_time get_last_timeout %></td>
       <td>
       <%= form_for(@invalid_timesheet, :url => { :action => 'manual_timein', :id => @invalid_timesheet.id }) do |f| %>
-        <%= text_field 'timein', 'hour', :value => get_default_timein_hours, :size => 2, :maxlength => 2, :class => 'time' %>
-        <%= text_field 'timein', 'min', :value => get_default_timein_minutes, :size => 2, :maxlength => 2, :class => 'time' %>
-        <%= select 'timein', 'meridian', ['AM', 'PM'], { selected: get_default_timein_meridian }, { :class => 'time' } %>
+        <%= text_field 'timein', 'hour', :value => get_hours(get_default_timein_value), :size => 2, :maxlength => 2, :class => 'time' %>
+        <%= text_field 'timein', 'min', :value => get_minutes(get_default_timein_value), :size => 2, :maxlength => 2, :class => 'time' %>
+        <%= select 'timein', 'meridian', ['AM', 'PM'], { selected: get_meridian(get_default_timein_value) }, { :class => 'time' } %>
       <%= text_field 'timein', 'date', :value => format_date(@invalid_timesheet.date), :class => 'time', :style => 'width: 100px;' %>
         <%= f.submit 'Time in', class: "btn-info" %>
       <% end -%>

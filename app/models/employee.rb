@@ -29,6 +29,12 @@ class Employee < ActiveRecord::Base
     Employee.find_by_id(employee_project_manager_id)
   end
 
+  def hr_personnel
+    emp_branch_id = self.branch_id
+    hr = Employee.joins('LEFT OUTER JOIN departments d on d.id = employees.current_department_id').
+         where("employees.branch_id = #{ emp_branch_id } and d.code='HR'")
+  end
+
   def shift_schedule(date=Time.now)
     date = date.beginning_of_day
     shift_schedules.where([

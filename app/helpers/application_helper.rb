@@ -1,5 +1,5 @@
 module ApplicationHelper
-
+  
   def email_logo
     '/public/images/logo.png'
   end

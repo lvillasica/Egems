@@ -102,17 +102,7 @@ module TimesheetsHelper
       end
   end
 
-  def get_default_timein_hours
-    get_default_timein_value .strftime("%I")
-  end
-
-  def get_default_timein_minutes
-    get_default_timein_value .strftime("%M")
-  end
-
-  def get_default_timein_meridian
-    get_default_timein_value .strftime("%p")
-  end
+ 
 
 #----------------------------------------------------------------
 # Autopopulate manual timeout entry
@@ -125,16 +115,17 @@ module TimesheetsHelper
     default_value > current_time ? default_value = current_time : default_value
   end
 
-  def get_default_timeout_hours
-    get_default_timeout_value.strftime("%I")
+
+  def get_hours(default_time)
+    default_time.strftime("%I")
   end
 
-  def get_default_timeout_minutes
-    get_default_timeout_value.strftime("%M")
+  def get_minutes(default_time)
+    default_time.strftime("%M")
   end
 
-  def get_default_timeout_meridian
-    get_default_timeout_value.strftime("%p")
+  def get_meridian(default_time)
+    default_time.strftime("%p")
   end
 
 end

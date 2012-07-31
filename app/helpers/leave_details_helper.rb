@@ -9,11 +9,15 @@ module LeaveDetailsHelper
   end
 
   def get_pending_leaves
-  	leaves = @employee.leave_details.select("leave_unit").where("status='Pending'")
+  	leaves = @employee.leave_details.select(:leave_unit).pending
   end
 
   def leave_unit_sum
   	total_units = get_pending_leaves.inject(0) { |sum,leave| sum + leave.leave_unit }
+  end
+
+  def leaves_for_hr_approval
+    leaves = ["Paternity Leave", "Solo Parent Leave", "Violence Against Women", "Maternity Leave", "Magna Carta"]
   end
   
 end
