@@ -123,13 +123,18 @@ class Timesheet < ActiveRecord::Base
     end
 
     def empty_new(employee, time)
-      shift = employee.shift_schedule.detail(time)
-      valid_time_out = shift.valid_time_out(time).last
-      if !shift.is_day_off? && Time.now > valid_time_out
-        timesheet = employee.timesheets.new({ :date => time })
-        timesheet.put_remarks
+      date_hired = employee.date_hired.localtime
+      unless time < (date_hired - date_hired.utc_offset)
+        shift = employee.shift_schedule.detail(time)
+        valid_time_out = shift.valid_time_out(time).last
+        if Time.now > valid_time_out
+          timesheet = employee.timesheets.new({ :date => time })
+          timesheet.shift_schedule_detail = shift
+          return nil unless timesheet.is_work_day?
+          timesheet.put_remarks
+        end
+        timesheet
       end
-      timesheet
     end
   end
 
@@ -269,9 +274,9 @@ class Timesheet < ActiveRecord::Base
       else
         remarks_ << 'AWOL' if is_awol?
       end
-      @first_timesheet.remarks = remarks_.uniq.compact.join(',')
+      @first_timesheet.remarks = remarks_.uniq.compact.join(', ')
     else
-      @first_timesheet.update_column(:remarks, remarks_.uniq.compact.join(','))
+      @first_timesheet.update_column(:remarks, remarks_.uniq.compact.join(', '))
     end
   end
 
@@ -279,7 +284,10 @@ class Timesheet < ActiveRecord::Base
     ldate = date.localtime
     shift = employee.shift_schedule.detail_by_day(ldate.wday)
     valid_time_out = shift.valid_time_out(ldate).last
-    return true if !time_in && !time_out && !shift.is_day_off? && (Time.now > valid_time_out)
+    date_hired = employee.date_hired.localtime
+    is_past = Time.now > valid_time_out
+    is_after_hiring = date.localtime >= (date_hired - date_hired.utc_offset)
+    return true if !time_in && !time_out && is_work_day? && is_past && is_after_hiring
     return false
   end
 
