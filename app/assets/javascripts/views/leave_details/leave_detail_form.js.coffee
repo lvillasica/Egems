@@ -61,7 +61,7 @@ class Egems.Views.LeaveDetailForm extends Backbone.View
   
   setFormValues: ->
     switch @leaveTypeFld.val()
-      when "Vacation Leave"
+      when "Vacation Leave","Maternity Leave"
         @minDate = new Date().addDays(1)
         @maxDate = new Date(@model.leaveEndDate())
         @setDateFldVal(@leaveDateFld, @minDate)

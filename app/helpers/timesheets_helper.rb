@@ -91,7 +91,7 @@ module TimesheetsHelper
   end
 
   def get_default_timein_value
-    default_value = Time.now.advance(hours: - 9)
+    default_value = Time.now.advance(hours: - 9, minutes: -1)
     am_shift      = get_new_shift_am_date
     last_timeout  = get_last_timeout.to_datetime.new_offset Rational(8,24) #set it to +8:00
 

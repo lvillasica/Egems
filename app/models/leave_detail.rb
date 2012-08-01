@@ -133,8 +133,12 @@ class LeaveDetail < ActiveRecord::Base
   end
   
   def set_default_responders
-    managers = [employee.project_manager, employee.immediate_supervisor].compact.uniq
-    responders << managers
+    if leaves_for_hr_approval.include?(self.leave_type)
+      responders << @employee.hr_personnel
+    else
+      managers = [employee.project_manager, employee.immediate_supervisor].compact.uniq
+      responders << managers
+    end
   end
   
   def is_whole_day?

@@ -64,7 +64,7 @@ Egems.Mixins.Timesheets =
       if lastOut < shift
         return shift
       else
-        return new Date(lastOut.setMinutes(lastOut.getMinutes() + 1))
+        return new Date(lastOut.setMinutes(lastOut.getMinutes() - 1))
     else
       if default_value < shift
         return shift

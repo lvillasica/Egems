@@ -20,7 +20,7 @@ class LeaveDetailMailer < BaseMailer
       @receiver_sv = 'You have'
       @receiver_action = 'To view/edit request, please go to:'
     elsif leaves_for_hr_approval.include?(@type)
-      requester.hr_personnel.include?(@recipient) ?  @receiver_action = 'To take action, please go to:' : @receiver_action = 'To view/edit request, please go to:' 
+      requester.hr_personnel.include?(@recipient) ?  @receiver_action = 'To take action, please go to:' : @receiver_action = 'To view request, please go to:' 
       @receiver_sv = "#{requester.full_name} has"
     else
       @receiver_sv = "#{requester.full_name} has"
