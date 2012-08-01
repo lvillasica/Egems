@@ -298,13 +298,16 @@ class Timesheet < ActiveRecord::Base
     end
   end
 
-  def get_minutes_undertime
+  def get_minutes_undertime(valid_time_out = nil)
+    @valid_time_out ||= valid_time_out
     t_undertime = ((@valid_time_out - time_out) / 1.minute).ceil
     t_undertime > 0 ? t_undertime : 0
   end
 
-  def get_minutes_excess
-    return 0 if minutes_undertime > 0
+  def get_minutes_excess(valid_time_out = nil, t_undertime = nil)
+    t_undertime ||= minutes_undertime
+    return 0 if t_undertime > 0
+    @valid_time_out ||= valid_time_out
     t_excess = ((time_out - @valid_time_out) / 1.minute).floor
     t_excess > 0 ? t_excess : 0
   end

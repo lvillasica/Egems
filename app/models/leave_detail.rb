@@ -372,9 +372,9 @@ private
   
   def recompute_timesheets
     # In-progress
+    dates = @leave_dates.to_a - (@day_offs + @holidays)
+    active_timesheet = dates.map { |date| @employee.timesheets.by_date(date.to_time).asc }
     if is_whole_day? || is_range?
-      dates = @leave_dates.to_a - (@day_offs + @holidays)
-      active_timesheet = dates.map { |date| @employee.timesheets.by_date(date.to_time).asc }
       active_timesheet.flatten.compact.each do |entry|
         entry.update_column(:minutes_late, 0)
         entry.update_column(:duration, 0)
@@ -382,7 +382,31 @@ private
         entry.update_column(:minutes_undertime, 0)
       end
     elsif is_half_day? && period == 1
-      # TODO
+      active_timesheet.select { |entries| !entries.blank? }.each do |entries|
+        first_entry = entries.first
+        last_entry = entries.last
+        shift_schedule_detail = first_entry.shift_schedule_detail
+        am_valid_timein = shift_schedule_detail.valid_time_in(first_entry.date)
+        pm_valid_timein = shift_schedule_detail.valid_time_in(first_entry.date, false)
+        min_timein = am_valid_timein.first - shift_schedule_detail.am_time_duration.minutes
+        max_timein = pm_valid_timein.last
+        first_timein = first_entry.time_in_without_adjustment.localtime
+        pm_start = pm_valid_timein.first + shift_schedule_detail.pm_time_allowance.minutes
+        late = (first_timein > max_timein ? ((first_timein - max_timein) / 1.minute).floor : 0)
+        total_break = (first_timein <= (pm_start - 1.hour) ? 1.hour : 0.hours)
+        shift_total_time = shift_schedule_detail.shift_total_time(total_break)
+        shift_total_time_half = shift_total_time - shift_schedule_detail.am_time_duration
+        valid_timeout = if late > 0
+          max_timein + shift_total_time_half.minutes
+        else
+          ((total_break == 1.hour ? first_timein : pm_start) + shift_total_time_half.minutes)
+        end
+        undertime = last_entry.get_minutes_undertime(valid_timeout)
+        excess = last_entry.get_minutes_excess(valid_timeout, undertime)
+        last_entry.update_column(:minutes_late, late)
+        last_entry.update_column(:minutes_undertime, undertime)
+        last_entry.update_column(:minutes_excess, excess)
+      end
     elsif is_half_day? && period == 2
       # TODO
     end

@@ -34,8 +34,8 @@ class ShiftScheduleDetail < ActiveRecord::Base
     shift_schedule.details.detect { |d| d.day_of_week == wday }
   end
 
-  def shift_total_time
-    am_time_duration + pm_time_duration + (1.hour/1.minute)
+  def shift_total_time(total_break = 1.hour)
+    am_time_duration + pm_time_duration + (total_break / 1.minute)
   end
 
   def to_shift_range(datetime)
@@ -44,15 +44,20 @@ class ShiftScheduleDetail < ActiveRecord::Base
     Range.new(shift_start, shift_end)
   end
 
-  def valid_time_in(datetime=Time.now)
+  def valid_time_in(datetime=Time.now, am = true)
+    time_start, time_allowance = if am
+      [am_time_start, am_time_allowance]
+    else
+      [pm_time_start, pm_time_allowance]
+    end
     date = get_shift_date(datetime)
     if is_day_off?
       date = date.to_time
       [date, date + 1.day]
     else
-      start = Time.local(date.year, date.month, date.day, am_time_start.hour, am_time_start.min)
-      time_start = start - am_time_allowance.minutes
-      time_end = start + am_time_allowance.minutes
+      start = Time.local(date.year, date.month, date.day, time_start.hour, time_start.min)
+      time_start = start - time_allowance.minutes
+      time_end = start + time_allowance.minutes
       [time_start, time_end]
     end
   end
