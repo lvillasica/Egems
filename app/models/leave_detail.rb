@@ -46,6 +46,9 @@ class LeaveDetail < ActiveRecord::Base
   scope :asc, order(:leave_date, :period)
   scope :find_half_day, lambda { |date, period|
     where("leave_date = ? AND period = ?", date, period)
+  }  
+  scope :filed_for, lambda {|date = Time.now.beginning_of_day|
+    where(["leave_date <= ? and optional_to_leave_date >= ?", date.utc, date.utc])
   }
   
   # -------------------------------------------------------
