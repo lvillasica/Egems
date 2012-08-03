@@ -66,6 +66,27 @@ class TimesheetsController < ApplicationController
     respond_with_json
   end
 
+  def new_leave
+    if request.post?
+      # create
+    else
+      leave = @employee.leaves.first
+      leave_detail = @employee.leave_details.new
+      leave_range = Range.new(leave.date_from, leave.date_to)
+      leave_date = (params[:date] || Date.today).to_time
+      js_params[:leave_detail] = leave_detail.attributes.merge({
+        :leave_start_date => leave.date_from,
+        :leave_end_date => leave.date_to,
+        :leave_date => leave_date,
+        :end_date => leave_date,
+        :employee_leaves => @employee.leaves.from_timesheets.leave_types,
+        :day_offs => @employee.day_offs_within(leave_range),
+        :holidays => @employee.holidays_within(leave_range)
+      })
+      respond_with_json
+    end
+  end
+
 private
   def get_employee
     @employee = current_user.employee

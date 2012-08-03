@@ -13,7 +13,7 @@
         </select>
       </div>
     </div>
-    
+
     <div class="control-group">
       <label for="leave_detail_period" class="control-label"><%= l 'period' %></label>
       <div class="controls">
@@ -28,34 +28,34 @@
         </label>
       </div>
     </div>
-    
+
     <div class="control-group">
       <label for="leave_detail_leave_date" class="control-label"><%= l 'leave_date' %></label>
       <div class="controls">
         <div class="input-append">
-          <input type="text" value="1970-01-01" size="30"
+          <input type="text" value="<%= @mixins.format_date @leave_detail.leaveDate() %>" size="30"
            name="leave_detail[leave_date]" id="leave_detail_leave_date" class="span2">
         </div>
       </div>
     </div>
-    
+
     <div class="control-group">
       <label for="leave_detail_end_date" class="control-label"><%= l 'end_date' %></label>
       <div class="controls">
         <div class="input-append">
-          <input type="text" value="yyyy-mm-dd" size="30"
+          <input type="text" value="<%= @mixins.format_date @leave_detail.endDate() %>" size="30"
            name="leave_detail[end_date]" id="leave_detail_end_date" class="span2">
         </div>
       </div>
     </div>
-    
+
     <div class="control-group">
       <label for="leave_detail_leave_unit" class="control-label"><%= l 'leave_unit' %></label>
       <div class="controls">
         <input type="text" size="30" name="leave_detail[leave_unit]" id="leave_detail_leave_unit" class="span1">
       </div>
     </div>
-    
+
     <div class="control-group">
       <label for="leave_detail_details" class="control-label"><%= l 'details' %></label>
       <div class="controls">

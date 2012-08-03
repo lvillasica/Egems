@@ -12,7 +12,34 @@ Egems.Mixins.Timesheets =
 
   showRemarks: (remarks) ->
     return "" if remarks == null
-    remarks.split(",")
+    _.map(remarks.split(","), (x) ->
+      return x.toUpperCase())
+
+  titleRemarks: (remarks) ->
+    if remarks != null and @isLeaveFileable(remarks)
+      return "File for Leave"
+    else
+      return ""
+
+  classRemarks: (remarks) ->
+    if remarks != null and @isLeaveFileable(remarks)
+      return "leavable"
+    else
+      return ""
+
+  isLeaveFileable: (remarks) ->
+    if remarks != null
+      remarks = _.map(remarks.split(","), (x) ->
+        return x.trim())
+      forLeave = ['AWOL', 'LATE', 'UNDERTIME']
+      if _.include(remarks, 'LEAVE FILED') == false and
+         _.isEmpty(_.intersection(forLeave, remarks)) == false
+        return true
+      else
+        return false
+    else
+      return false
+
 
   getDayOfWeek: (date) ->
     dateOnly = date.clone().clearTime()

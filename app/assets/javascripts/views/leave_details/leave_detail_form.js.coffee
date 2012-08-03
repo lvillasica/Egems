@@ -1,11 +1,11 @@
 class Egems.Views.LeaveDetailForm extends Backbone.View
-  
+
   template: JST['leave_details/leave_detail_form']
-  
+
   events:
     'click #radio-reset-btn': 'resetPeriod'
     'submit #leave_detail_form': 'submitForm'
-  
+
   initialize: ->
     _.extend(this, Egems.Mixins.Defaults)
     @leaveTypeFld = null
@@ -21,7 +21,7 @@ class Egems.Views.LeaveDetailForm extends Backbone.View
     @model.on('change:end_date', @resetDates, this)
     @model.on('change:leave_unit', @setLeaveUnitFldVal, this)
     @model.on('change:period', @setHalfDay, this)
-  
+
   render: ->
     $(@el).html(@template(
       leave_detail: @model
@@ -30,7 +30,7 @@ class Egems.Views.LeaveDetailForm extends Backbone.View
     @initFields()
     @setFormValues()
     this
-  
+
   initFields: ->
     @leaveTypeFld = @$('#leave_detail_leave_type')
     @leaveDateFld = @$('#leave_detail_leave_date')
@@ -43,7 +43,7 @@ class Egems.Views.LeaveDetailForm extends Backbone.View
     @endDateFld.change => @model.set('end_date', @endDateFld.val())
     @leaveUnitFld.change => @model.set('leave_unit', @leaveUnitFld.val())
     @periodFld.change => @model.set('period', @periodFld.filter(':checked').val())
-  
+
   dateSelector: (dateFld, moreOpts = {}, useDefaultOpts = true) ->
     defaultOpts =
       showOtherMonths: true
@@ -55,10 +55,10 @@ class Egems.Views.LeaveDetailForm extends Backbone.View
     opts = if useDefaultOpts then $.extend(defaultOpts, moreOpts) else moreOpts
     $(dateFld).datepicker("destroy").datepicker(opts)
     $(dateFld).next('.ui-datepicker-trigger').addClass("btn")
-  
+
   onDateSelect: (dateText, inst) =>
     @model.set(inst.id.substring(13), dateText)
-  
+
   setFormValues: ->
     switch @leaveTypeFld.val()
       when "Vacation Leave","Maternity Leave"
@@ -82,14 +82,14 @@ class Egems.Views.LeaveDetailForm extends Backbone.View
     @dateSelector(@endDateFld, {minDate: @leaveDateFld.val(), maxDate: @maxDate})
     @setLeaveUnitFldVal()
     @setHalfDay()
-  
+
   setDateFldVal: (dateFld, newDateVal) ->
     fldDateVal = Date.parse(dateFld.val()) or new Date()
     if fldDateVal >= @minDate and fldDateVal <= @maxDate
       dateFld.val(@format_date fldDateVal)
     else
       dateFld.val(@format_date newDateVal)
-  
+
   setLeaveUnitFldVal: ->
     offset = if @isHalfDay() then 0.5 else 1
     @setDates()
@@ -99,11 +99,11 @@ class Egems.Views.LeaveDetailForm extends Backbone.View
       @leaveUnitFld.val(leaveUnit)
     else
       @leaveUnitFld.val(parseFloat(0.0).toFixed(1))
-  
+
   setDates: ->
     @startDate = Date.parse(@leaveDateFld.val())
     @endDate = Date.parse(@endDateFld.val())
-  
+
   nonWorkingDays: ->
     current = @startDate.clone()
     result = new Array()
@@ -119,27 +119,27 @@ class Egems.Views.LeaveDetailForm extends Backbone.View
         holiday = new Date(obj.date)
         if tmpDay.clone().clearTime().equals(holiday.clone().clearTime())
           result.push(tmpDay) if $.inArray(tmpDay, result) == -1
-      
+
       current.addDays(1)
     return result
-  
+
   isHalfDay: ->
     @$("#leave_detail_form input[name='leave_detail[period]']:checked").length is 1
-  
+
   setHalfDay: ->
     if @isHalfDay()
       @$('#leave_detail_end_date').next('.ui-datepicker-trigger').attr('disabled', true)
       if @validDates()
         @endDateFld.val(@leaveDateFld.val())
         @setLeaveUnitFldVal()
-  
+
   resetPeriod: ->
     $("#leave_detail_form input[name='leave_detail[period]']").attr('checked', false)
     $('#leave_detail_end_date').next('.ui-datepicker-trigger').attr('disabled', false)
     @setLeaveUnitFldVal() if @validDates()
     @model.set('period', 0)
     return false
-  
+
   resetDates: ->
     if @validDates()
       @setDates()
@@ -154,12 +154,12 @@ class Egems.Views.LeaveDetailForm extends Backbone.View
       @dateSelector(@endDateFld, {minDate: @startDate, maxDate: @maxDate})
       @setHalfDay()
       @setLeaveUnitFldVal()
-  
+
   validDates: ->
     validLeaveDate = @validateDateFld(@leaveDateFld)
     validEndDate = @validateDateFld(@endDateFld)
     return validLeaveDate and validEndDate
-  
+
   validateDateFld: ( field ) ->
     if Date.parse(field.val()) is null || @validateDateFormat(field.val()) is false
       field.closest('.control-group').addClass('error')
@@ -167,12 +167,12 @@ class Egems.Views.LeaveDetailForm extends Backbone.View
     else
       field.closest('.control-group').removeClass('error')
       return true
-  
+
   validateDateFormat: (dateStr) ->
     matches = /^(\d{4})[-](\d{1,2})[-](\d{1,2})$/.exec(dateStr)
     res = if matches is null then false else true
     return res
-  
+
   submitForm: (event) ->
     event.preventDefault()
     attributes =
@@ -198,19 +198,18 @@ class Egems.Views.LeaveDetailForm extends Backbone.View
           @updateNotif(data.total_pending)
         else
           $('#flash_messages').html(@flash_messages(flash_messages))
-  
+
   navigateLeaves: (event) ->
     event.preventDefault()
     if @inModal()
       if $('#leave-detail-form-actions .cancel').attr('disabled') is undefined
         $('#apply-leave-modal').modal('hide')
         if event.type is 'submit'
-          leaves = new Egems.Routers.Leaves()
-          leaves.index()
+          Backbone.history.loadUrl(Backbone.history.fragment)
     else
       leaves = new Egems.Routers.Leaves()
       leaves.navigate('leaves', true)
-  
+
   inModal: ->
     $('#leave_detail_form').parents('#apply-leave-modal').length == 1
 
@@ -218,4 +217,3 @@ class Egems.Views.LeaveDetailForm extends Backbone.View
     popoverContent = "You have #{ totalPending } leaves waiting for approval."
     $('#notif').attr('data-content', popoverContent)
     $('#total_pending_leaves').html(totalPending)
-

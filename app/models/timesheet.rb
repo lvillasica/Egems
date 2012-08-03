@@ -267,7 +267,7 @@ class Timesheet < ActiveRecord::Base
     remarks_.delete 'Undertime' if time_out && minutes_undertime <= 0
 
     if @first_timesheet.new_record?
-      # TODO: update late remark on leave scenario
+      # TODO: update late remark on leave scenarios
       remarks_ << 'Late' if minutes_late > 0
       if employee.leave_details.filed_for(date.localtime).present?
         remarks_ << 'Leave Filed'

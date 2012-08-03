@@ -1,6 +1,6 @@
 <div class="tab-content">
   <div class="tab-pane active" id="monday">
-    <table class="table timesheets">
+    <table class="table table-condensed timesheets">
       <thead>
       <tr>
         <th>Day</th>
@@ -12,6 +12,7 @@
         <th>Late</th>
         <th>Undertime</th>
         <th>Excess</th>
+        <th>Actions</th>
       </tr>
       </thead>
       <tbody>
@@ -22,15 +23,21 @@
         <% models = collection.models %>
         <% first_timesheet = models[0] %>
         <% last_timesheet = models[models.length - 1] %>
+        <% remarks = first_timesheet.remarks() %>
         <td class="day"><%= @mixins.format_day_only first_timesheet.date() %></td>
-        <td class="mins"><%= @mixins.format_date first_timesheet.date() %></td>
-        <td class="remarks"><%= @mixins.showRemarks first_timesheet.remarks() %>
-        <td><%= @mixins.format_long_time first_timesheet.timeIn() %></td>
-        <td><%= @mixins.format_long_time last_timesheet.timeOut() %></td>
+        <td class="mins time" id="tdate"><%= @mixins.format_date first_timesheet.date() %></td>
+        <td class="remarks <%= @mixins.classRemarks remarks %>" title="<%= @mixins.titleRemarks remarks %>">
+          <% for remark in @mixins.showRemarks remarks :%>
+            <%= remark %><br/>
+          <% end %>
+        </td>
+        <td class="time"><%= @mixins.format_long_time first_timesheet.timeIn() %></td>
+        <td class="time"><%= @mixins.format_long_time last_timesheet.timeOut() %></td>
         <td class="mins"><%= @mixins.format_in_hours collection.sum_minutes('duration') %></td>
         <td class="mins"><%= @mixins.format_in_hours collection.sum_minutes('minutes_late') %></td>
         <td class="mins"><%= @mixins.format_in_hours collection.sum_minutes('minutes_undertime') %></td>
         <td class="mins"><%= @mixins.format_in_hours collection.sum_minutes('minutes_excess') %></td>
+        <td></td>
       </tr>
       <% end %>
       </tbody>

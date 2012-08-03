@@ -1,26 +1,26 @@
 <% collection = @timeEntry.collection %>
 <% if collection.models[0] is @timeEntry: %>
-  <td class='mins' rowspan="<%= @size %>"><%= @mixins.format_date @timeEntry.date() %></td>
-  <td class='remarks' rowspan="<%= @size %>">
-  <% for remark in @mixins.showRemarks @timeEntry.remarks() :%>
-    <%= remark %>
-    <br/>
-  <% end %>
+  <td class="mins time" rowspan="<%= @size %>"><%= @mixins.format_date @timeEntry.date() %></td>
+  <td class="remarks" rowspan="<%= @size %>">
+    <% for remark in @mixins.showRemarks @timeEntry.remarks() :%>
+      <%= remark %><br/>
+    <% end %>
   </td>
-  <td><%= @mixins.format_long_time @timeEntry.timeIn() %></td>
-  <td><%= @mixins.format_long_time @timeEntry.timeOut() %></td>
-  <td class='mins' rowspan="<%= @size %>">
+  <td class="time"><%= @mixins.format_long_time @timeEntry.timeIn() %></td>
+  <td class="time"><%= @mixins.format_long_time @timeEntry.timeOut() %></td>
+  <td class="mins" rowspan="<%= @size %>">
     <%= @mixins.format_in_hours collection.sum_minutes('duration') %>
   </td>
-  <td class='mins' rowspan="<%= @size %>">
+  <td class="mins" rowspan="<%= @size %>">
     <%= @mixins.format_in_hours collection.sum_minutes('minutes_late') %>
   </td>
-  <td class='mins' rowspan="<%= @size %>">
+  <td class="mins" rowspan="<%= @size %>">
     <%= @mixins.format_in_hours collection.sum_minutes('minutes_undertime') %>
   </td>
-  <td class='mins' rowspan="<%= @size %>">
+  <td class="mins" rowspan="<%= @size %>">
     <%= @mixins.format_in_hours collection.sum_minutes('minutes_excess') %>
   </td>
+  <td rowspan="<%= @size %>"></td>
 <% else: %>
   <td><%= @mixins.format_long_time @timeEntry.timeIn() %></td>
   <td><%= @mixins.format_long_time @timeEntry.timeOut() %></td>

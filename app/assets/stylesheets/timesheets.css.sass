@@ -2,6 +2,12 @@
 // They will automatically be included in application.css.
 // You can use Sass (SCSS) here: http://sass-lang.com/
 
+body
+  min-width: 820px
+
+div.ui-datepicker
+  font-size: 13px
+
 input[type="text"].time
   text-align: center
   padding: 4px 1px
@@ -13,8 +19,9 @@ select.time
   width: 52px
 
 table.timesheets
-  border: 1px solid #ddd
-  font-size: 11px
+  font-family: verdana, arial, helvetica, sans-serif
+  font-size: 10px
+  white-space: nowrap
 
   thead
     tr
@@ -31,11 +38,13 @@ table.timesheets
       vertical-align: middle
       text-align: center
       width: 20%
-      white-space: nowrap
     td.mins
       width: 10%
     td.remarks
-      width: 15%
+      width: 13%
+    td.remarks.leavable:hover
+      color: red
+      cursor: pointer
     td.day
       width: 5%
 
@@ -46,15 +55,11 @@ table.timesheets.daily tbody tr:hover
 
 .btn-large
   font-weight: bold
+  font-size: 13px
+  padding: 8px
 
 .icon-calendar
   font-size: 15px
 
-body
-  min-width: 700px
-
 .container-fluid
   padding: 0 0
-
-.span9
-  min-width: 700px

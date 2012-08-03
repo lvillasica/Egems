@@ -1,6 +1,6 @@
 
 <div class="tab-pane active" id="monday">
-  <table id="time-entries" class="table timesheets daily">
+  <table id="time-entries" class="table table-condensed timesheets daily">
     <thead>
     <tr>
       <th>Date</th>
@@ -11,6 +11,7 @@
       <th>Late</th>
       <th>Undertime</th>
       <th>Excess</th>
+      <th>Actions</th>
     </tr>
     </thead>
     <tbody></tbody>
