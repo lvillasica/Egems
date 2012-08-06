@@ -61,11 +61,16 @@ class Egems.Views.LeaveDetailForm extends Backbone.View
 
   setFormValues: ->
     switch @leaveTypeFld.val()
-      when "Vacation Leave","Maternity Leave"
+      when "Vacation Leave"
         @minDate = new Date().addDays(1)
         @maxDate = new Date(@model.leaveEndDate())
         @setDateFldVal(@leaveDateFld, @minDate)
         @setDateFldVal(@endDateFld, @minDate)
+      when "Maternity Leave", "Magna Carta"
+        @minDate = new Date().addDays(1)
+        @maxDate = new Date(@minDate).addDays(@model.employeeLeaves()[@leaveTypeFld.val()])
+        @setDateFldVal(@leaveDateFld, @minDate)
+        @setDateFldVal(@endDateFld, @maxDate)
       when "Sick Leave", "Emergency Leave"
         @minDate = new Date(@model.leaveStartDate())
         @maxDate = new Date()
@@ -82,6 +87,7 @@ class Egems.Views.LeaveDetailForm extends Backbone.View
     @dateSelector(@endDateFld, {minDate: @leaveDateFld.val(), maxDate: @maxDate})
     @setLeaveUnitFldVal()
     @setHalfDay()
+    @disableAttr(@leaveTypeFld.val())
 
   setDateFldVal: (dateFld, newDateVal) ->
     fldDateVal = Date.parse(dateFld.val()) or new Date()
@@ -94,7 +100,11 @@ class Egems.Views.LeaveDetailForm extends Backbone.View
     offset = if @isHalfDay() then 0.5 else 1
     @setDates()
     days = ((@endDate - @startDate) / 1000 / 60 / 60 / 24)
-    leaveUnit = parseFloat((days + offset) - @nonWorkingDays().length).toFixed(1)
+    if _.include(["Maternity Leave", "Magna Carta"], @leaveTypeFld.val())
+      leaveUnit = parseFloat(days).toFixed(1)
+    else
+      leaveUnit = parseFloat((days + offset) - @nonWorkingDays().length).toFixed(1)
+    
     if leaveUnit >= 0
       @leaveUnitFld.val(leaveUnit)
     else
@@ -139,6 +149,18 @@ class Egems.Views.LeaveDetailForm extends Backbone.View
     @setLeaveUnitFldVal() if @validDates()
     @model.set('period', 0)
     return false
+
+  disableAttr: (leave) ->
+    if _.include(["Magna Carta", "Maternity Leave"], leave)
+      @$("#leave_detail_form input[name='leave_detail[period]']").attr('disabled', true)
+      @$('#leave_detail_end_date').next('.ui-datepicker-trigger').attr('disabled', true)
+      @$('#leave_detail_end_date').attr('disabled', true)
+      @$('#leave_detail_leave_unit').attr('disabled', true)
+    else
+      @$("#leave_detail_form input[name='leave_detail[period]']").attr('disabled', false)
+      @$('#leave_detail_end_date').attr('disabled', false)
+      @$('#leave_detail_end_date').next('.ui-datepicker-trigger').attr('disabled', false)
+      @$('#leave_detail_leave_unit').attr('disabled', false)
 
   resetDates: ->
     if @validDates()

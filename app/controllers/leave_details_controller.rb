@@ -60,10 +60,16 @@ private
   
   def leave_detail_attrs
     leave_range = (@leave.date_from .. @leave.date_to)
+    leaves_allocations = {}
+    @employee.leaves.each do |leave|
+      leaves_allocations[leave.leave_type] = leave.leaves_allocated
+      leaves_allocations["Emergency Leave"] = leave.leaves_allocated if leave.leave_type == "Vacation Leave"     
+    end
+
     js_params[:leave_detail] = @leave_detail.attributes.merge({
       :leave_start_date => @leave.date_from,
       :leave_end_date => @leave.date_to,
-      :employee_leaves => @employee.leaves.leave_types,
+      :employee_leaves => leaves_allocations,
       :day_offs => @employee.day_offs_within(leave_range),
       :holidays => @employee.holidays_within(leave_range)
     })

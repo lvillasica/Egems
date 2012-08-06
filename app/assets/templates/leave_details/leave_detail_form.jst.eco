@@ -6,7 +6,7 @@
       <label for="leave_detail_leave_type" class="control-label"><%= l 'leave_type' %></label>
       <div class="controls">
         <select name="leave_detail[leave_type]" id="leave_detail_leave_type">
-          <% for leave in @leave_detail.employeeLeaves(): %>
+          <% for leave in Object.keys(@leave_detail.employeeLeaves()): %>
           <option <%= __safe("selected = 'selected'") if @leave_detail.leaveType() is leave %>
            value="<%= leave %>"><%= leave %></option>
           <% end %>
