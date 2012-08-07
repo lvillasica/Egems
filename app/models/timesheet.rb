@@ -36,7 +36,7 @@ class Timesheet < ActiveRecord::Base
   before_save :set_minutes_late, :on => [:create]
   before_save :update_shift_details, :on => [:create, :update]
   before_save :compute_minutes, :on => [:create, :update]
-  before_save :put_remarks, :on => [:create, :update]
+  after_save  :put_remarks
 
   # -------------------------------------------------------
   # Namescopes
@@ -260,23 +260,26 @@ class Timesheet < ActiveRecord::Base
   end
 
   def put_remarks
-    @first_timesheet ||= employee.timesheets.by_date(date.localtime).asc.first || self
-    remarks_ = (@first_timesheet.remarks || String.new).split(',')
+    @timesheets_today ||= employee.timesheets.by_date(date.localtime).asc
+    @first_timesheet ||= @timesheets_today.first || self
+    remarks_ = (@first_timesheet.remarks || String.new).split(/ *, */).uniq.compact
 
-    remarks_ << 'Undertime' if minutes_undertime > 0
-    remarks_.delete 'Undertime' if time_out && minutes_undertime <= 0
+    remarks_ << 'Late' if is_late?
+    remarks_ << 'Undertime' if is_undertime?
+
+    if employee.leave_details.filed_for(date.localtime).present?
+      remarks_ << 'Leave Filed'
+    else
+      remarks_ << 'AWOL' if @first_timesheet == self && @first_timesheet.is_awol?
+    end
+
+    remarks_.delete 'Undertime' if time_out && !is_undertime?
+    remarks_ = remarks_.uniq.compact.join(', ')
 
     if @first_timesheet.new_record?
-      # TODO: update late remark on leave scenarios
-      remarks_ << 'Late' if minutes_late > 0
-      if employee.leave_details.filed_for(date.localtime).present?
-        remarks_ << 'Leave Filed'
-      else
-        remarks_ << 'AWOL' if is_awol?
-      end
-      @first_timesheet.remarks = remarks_.uniq.compact.join(', ')
+      @first_timesheet.remarks = remarks_ unless remarks_.empty?
     else
-      @first_timesheet.update_column(:remarks, remarks_.uniq.compact.join(', '))
+      @first_timesheet.update_column(:remarks, remarks_) unless remarks_.empty?
     end
   end
 
@@ -285,10 +288,31 @@ class Timesheet < ActiveRecord::Base
     shift = employee.shift_schedule.detail_by_day(ldate.wday)
     valid_time_out = shift.valid_time_out(ldate).last
     date_hired = employee.date_hired.localtime
-    is_past = Time.now > valid_time_out
-    is_after_hiring = date.localtime >= (date_hired - date_hired.utc_offset)
-    return true if !time_in && !time_out && is_work_day? && is_past && is_after_hiring
+
+    if new_record?
+      is_past = Time.now > valid_time_out
+      is_after_hiring = date.localtime >= (date_hired - date_hired.utc_offset)
+      return true if is_work_day? && is_past && is_after_hiring
+    else
+      return true if time_in_without_adjustment > valid_time_out
+    end
     return false
+  end
+
+  def is_late?
+    minutes_late > 0
+  end
+
+  def is_undertime?
+    timesheets = @timesheets_today
+    timesheets << self unless @timesheets_today.include?(self)
+    timesheets.sum(&:minutes_undertime) > 0
+  end
+
+  def is_overtime?
+    timesheets = @timesheets_today
+    timesheets << self unless @timesheets_today.include?(self)
+    timesheets.sum(&:minutes_excess) > 0
   end
 
   def set_minutes_late
