@@ -29,8 +29,8 @@ Egems.Mixins.Timesheets =
 
   isLeaveFileable: (remarks) ->
     if remarks != null
-      remarks = _.map(remarks.split(","), (x) ->
-        return x.trim())
+      remarks = _.map(remarks.split(///[ ]*,[ ]*///), (x) ->
+        return x.toUpperCase().trim())
       forLeave = ['AWOL', 'LATE', 'UNDERTIME']
       if _.include(remarks, 'LEAVE FILED') == false and
          _.isEmpty(_.intersection(forLeave, remarks)) == false

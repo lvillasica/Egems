@@ -1,8 +1,9 @@
 <% collection = @timeEntry.collection %>
+<% remarks = @timeEntry.remarks() %>
 <% if collection.models[0] is @timeEntry: %>
-  <td class="mins time" rowspan="<%= @size %>"><%= @mixins.format_date @timeEntry.date() %></td>
-  <td class="remarks" rowspan="<%= @size %>">
-    <% for remark in @mixins.showRemarks @timeEntry.remarks() :%>
+  <td class="mins time" id="tdate" rowspan="<%= @size %>"><%= @mixins.format_date @timeEntry.date() %></td>
+  <td class="remarks <%= @mixins.classRemarks remarks %>" title="<%= @mixins.titleRemarks remarks %>" rowspan="<%= @size %>">
+    <% for remark in @mixins.showRemarks remarks :%>
       <%= remark %><br/>
     <% end %>
   </td>
