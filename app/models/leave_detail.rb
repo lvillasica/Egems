@@ -60,6 +60,7 @@ class LeaveDetail < ActiveRecord::Base
   #  Class Methods
   # -------------------------------------------------------
   class << self
+    include LeaveDetailsHelper
     def get_units_per_leave_date(non_working_dates)
       units_per_leave_date = {}
       self.active.each do |ld|
@@ -69,7 +70,11 @@ class LeaveDetail < ActiveRecord::Base
         if ld.leave_unit > 1
           leave_start = local_leave_date
           leave_end = local_end_date
-          leave_dates = (leave_start .. leave_end).to_a - non_working_dates
+          if leaves_for_hr_approval.include?(ld.leave_type) 
+            leave_dates = (leave_start .. leave_end).to_a 
+          else 
+            leave_dates = (leave_start .. leave_end).to_a - non_working_dates
+          end
           leave_dates.each do |day|
             units_per_leave_date[day.to_s] = 1.0
           end
@@ -252,8 +257,10 @@ class LeaveDetail < ActiveRecord::Base
       @holidays = get_holidays
       
       if leave_type != "Absent Without Pay"
-        validate_date_range(:leave_date, valid_range)
-        validate_date_range(:end_date, valid_range)
+        if !(["Magna Carta", "Maternity Leave"]).include?(leave_type)
+          validate_date_range(:leave_date, valid_range)
+          validate_date_range(:end_date, valid_range)
+        end
         validate_leave_balance(total_leaves, allocated)
         validate_date_of_filing
       end
@@ -391,7 +398,7 @@ private
   
   def validate_leave_unit
     units = ([1, 2].include?(period) ? 0.5 : @leave_dates.count)
-    total_days = units - (@day_offs + @holidays).uniq.count
+    leaves_for_hr_approval.include?(self.leave_type) ? total_days = units - 1 : total_days = units - (@day_offs + @holidays).uniq.count
     total_days = 0.0 if total_days < 0
     if leave_unit != total_days
       errors[:leave_unit] << "is invalid."

@@ -66,16 +66,17 @@ class Egems.Views.LeaveDetailForm extends Backbone.View
         @maxDate = new Date(@model.leaveEndDate())
         @setDateFldVal(@leaveDateFld, @minDate)
         @setDateFldVal(@endDateFld, @minDate)
-      when "Maternity Leave", "Magna Carta"
-        @minDate = new Date().addDays(1)
-        @maxDate = new Date(@minDate).addDays(@model.employeeLeaves()[@leaveTypeFld.val()])
-        @setDateFldVal(@leaveDateFld, @minDate)
-        @setDateFldVal(@endDateFld, @maxDate)
       when "Sick Leave", "Emergency Leave"
         @minDate = new Date(@model.leaveStartDate())
         @maxDate = new Date()
         @setDateFldVal(@leaveDateFld, @maxDate)
         @setDateFldVal(@endDateFld, @maxDate)
+      when "Maternity Leave", "Magna Carta"
+        @minDate = new Date().addDays(1)
+        @maxDate = new Date().addYears(1)
+        dateWithAllocation = new Date().addDays(1 + @model.employeeLeaves()[@leaveTypeFld.val()])
+        @setDateFldVal(@leaveDateFld, @minDate)
+        @setDateFldVal(@endDateFld,dateWithAllocation)
       else
         @minDate = new Date(@model.leaveStartDate())
         @maxDate = new Date(@model.leaveEndDate())
@@ -87,20 +88,16 @@ class Egems.Views.LeaveDetailForm extends Backbone.View
     @dateSelector(@endDateFld, {minDate: @leaveDateFld.val(), maxDate: @maxDate})
     @setLeaveUnitFldVal()
     @setHalfDay()
-    @disableAttr(@leaveTypeFld.val())
+    @disableAttr()
 
   setDateFldVal: (dateFld, newDateVal) ->
-    fldDateVal = Date.parse(dateFld.val()) or new Date()
-    if fldDateVal >= @minDate and fldDateVal <= @maxDate
-      dateFld.val(@format_date fldDateVal)
-    else
-      dateFld.val(@format_date newDateVal)
+    dateFld.val(@format_date newDateVal)
 
   setLeaveUnitFldVal: ->
     offset = if @isHalfDay() then 0.5 else 1
     @setDates()
     days = ((@endDate - @startDate) / 1000 / 60 / 60 / 24)
-    if _.include(["Maternity Leave", "Magna Carta"], @leaveTypeFld.val())
+    if _.include(@calendarLeaves(), @leaveTypeFld.val())
       leaveUnit = parseFloat(days).toFixed(1)
     else
       leaveUnit = parseFloat((days + offset) - @nonWorkingDays().length).toFixed(1)
@@ -150,32 +147,44 @@ class Egems.Views.LeaveDetailForm extends Backbone.View
     @model.set('period', 0)
     return false
 
-  disableAttr: (leave) ->
-    if _.include(["Magna Carta", "Maternity Leave"], leave)
+  disableAttr: ->
+    if _.include(@calendarLeaves(), @leaveTypeFld.val())
       @$("#leave_detail_form input[name='leave_detail[period]']").attr('disabled', true)
       @$('#leave_detail_end_date').next('.ui-datepicker-trigger').attr('disabled', true)
+      @$("#radio-reset-btn.btn.btn-mini").attr('disabled', true)
       @$('#leave_detail_end_date').attr('disabled', true)
       @$('#leave_detail_leave_unit').attr('disabled', true)
     else
       @$("#leave_detail_form input[name='leave_detail[period]']").attr('disabled', false)
-      @$('#leave_detail_end_date').attr('disabled', false)
       @$('#leave_detail_end_date').next('.ui-datepicker-trigger').attr('disabled', false)
+      @$("#radio-reset-btn.btn.btn-mini").attr('disabled', false)
+      @$('#leave_detail_end_date').attr('disabled', false)
       @$('#leave_detail_leave_unit').attr('disabled', false)
 
   resetDates: ->
     if @validDates()
       @setDates()
-      if @startDate > @endDate
-        @endDateFld.val(@leaveDateFld.val())
-      else if @startDate > @maxDate
-        @leaveDateFld.val(@format_date @maxDate)
-      else if @startDate < @minDate
-        @leaveDateFld.val(@format_date @minDate)
-      else if @endDate > @maxDate
-        @endDateFld.val(@format_date @maxDate)
+      if !_.include(@calendarLeaves, @leaveTypeFld.val())
+        if @startDate > @endDate
+          @endDateFld.val(@leaveDateFld.val())
+        else if @startDate > @maxDate
+          @leaveDateFld.val(@format_date @maxDate)
+        else if @startDate < @minDate
+          @leaveDateFld.val(@format_date @minDate)
+        else if @endDate > @maxDate
+          @endDateFld.val(@format_date @maxDate)
+      @updateEndDateWithAllocation(@startDate) if _.include(@calendarLeaves(), @leaveTypeFld.val())
       @dateSelector(@endDateFld, {minDate: @startDate, maxDate: @maxDate})
       @setHalfDay()
       @setLeaveUnitFldVal()
+
+  calendarLeaves: ->
+    leaves = ["Magna Carta", "Maternity Leave"]
+    return leaves
+
+  updateEndDateWithAllocation: (date) ->
+    newDate = date.addDays(@model.employeeLeaves()[@leaveTypeFld.val()])
+    @setDateFldVal(@endDateFld,newDate)
 
   validDates: ->
     validLeaveDate = @validateDateFld(@leaveDateFld)
