@@ -398,7 +398,7 @@ private
   
   def validate_leave_unit
     units = ([1, 2].include?(period) ? 0.5 : @leave_dates.count)
-    leaves_for_hr_approval.include?(self.leave_type) ? total_days = units - 1 : total_days = units - (@day_offs + @holidays).uniq.count
+    ["Maternity Leave", "Magna Carta"].include?(self.leave_type) ? total_days = units - 1 : total_days = units - (@day_offs + @holidays).uniq.count
     total_days = 0.0 if total_days < 0
     if leave_unit != total_days
       errors[:leave_unit] << "is invalid."

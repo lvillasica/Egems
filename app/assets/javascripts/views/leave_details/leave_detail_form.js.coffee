@@ -185,6 +185,7 @@ class Egems.Views.LeaveDetailForm extends Backbone.View
   updateEndDateWithAllocation: (date) ->
     newDate = date.addDays(@model.employeeLeaves()[@leaveTypeFld.val()])
     @setDateFldVal(@endDateFld,newDate)
+    disableAttr()
 
   validDates: ->
     validLeaveDate = @validateDateFld(@leaveDateFld)
