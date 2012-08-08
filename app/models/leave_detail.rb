@@ -161,8 +161,8 @@ class LeaveDetail < ActiveRecord::Base
   end
   
   def recompute_timesheets
-    # In-progress
     @employee ||= employee
+    @leave ||= leave
     @leave_dates ||= (leave_date.localtime.to_date .. end_date.localtime.to_date)
     @day_offs ||= get_day_offs
     @holidays ||= get_holidays
@@ -174,51 +174,74 @@ class LeaveDetail < ActiveRecord::Base
         entry.update_column(:duration, 0)
         entry.update_column(:minutes_excess, 0)
         entry.update_column(:minutes_undertime, 0)
-        # TODO: update remarks
+        entry.put_remarks
       end
-    elsif is_half_day? # TODO: Refactor
+    elsif is_half_day?
       active_timesheet.select { |entries| !entries.blank? }.each do |entries|
         first_entry = entries.first
         last_entry = entries.last
-        if last_entry.time_out
-          shift_schedule_detail = first_entry.shift_schedule_detail
-          am_valid_timein = shift_schedule_detail.valid_time_in(first_entry.date)
-          pm_valid_timein = shift_schedule_detail.valid_time_in(first_entry.date, false)
-          first_timein = first_entry.time_in_without_adjustment.localtime
-          last_timeout = last_entry.time_out.localtime
-          pm_start = pm_valid_timein.first + shift_schedule_detail.pm_time_allowance.minutes
-          if period == 1  # 1st Period Halfday Leave
-            min_timein = am_valid_timein.first - shift_schedule_detail.am_time_duration.minutes
-            max_timein = pm_valid_timein.last
-            first_timein = min_timein if first_timein < min_timein
-            late = (first_timein > max_timein ? ((first_timein - max_timein) / 1.minute).floor : 0)
+        shift_schedule_detail = first_entry.shift_schedule_detail
+        am_valid_timein = shift_schedule_detail.valid_time_in(first_entry.date)
+        pm_valid_timein = shift_schedule_detail.valid_time_in(first_entry.date, false)
+        first_timein = first_entry.time_in_without_adjustment.localtime
+        last_timeout = last_entry.time_out.localtime rescue nil
+        pm_start = pm_valid_timein.first + shift_schedule_detail.pm_time_allowance.minutes
+        @late = entries.sum(&:minutes_late)
+        @undertime = entries.sum(&:minutes_undertime)
+        @excess = entries.sum(&:minutes_excess)
+        if period == 1  # 1st Period Halfday Leave
+          min_timein = am_valid_timein.first - shift_schedule_detail.am_time_duration.minutes
+          max_timein = pm_valid_timein.last
+          first_timein = min_timein if first_timein < min_timein
+          @late = (first_timein > max_timein ? ((first_timein - max_timein) / 1.minute).floor : 0)
+          if last_timeout
             total_break = (first_timein <= (pm_start - 1.hour) ? 1.hour : 0.hours)
             shift_total_time = shift_schedule_detail.shift_total_time(total_break)
             shift_total_time_half = shift_total_time - shift_schedule_detail.am_time_duration
-            valid_timeout = if late > 0
+            shift_start = first_timein > max_timein ? max_timein : first_timein
+            shift_end = shift_start + shift_total_time_half.minutes
+            within_shift_entries = entries.select { |e| e.is_within_range?(shift_start, shift_end) }
+            valid_timeout = if @late > 0
               max_timein + shift_total_time_half.minutes
             else
-              ((total_break == 1.hour ? first_timein : pm_start) + shift_total_time_half.minutes)
+              if total_break == 1.hour || first_timein > pm_start
+                first_timein + shift_total_time_half.minutes
+              else
+                pm_start + shift_total_time_half.minutes
+              end
             end
-            undertime = last_entry.get_minutes_undertime(valid_timeout)
-            excess = last_entry.get_minutes_excess(valid_timeout, undertime)
-          elsif period == 2  # 2nd Period Halfday Leave
-            total_break = (last_timeout > pm_start ? 1.hour : 0.hours)
-            shift_total_time = shift_schedule_detail.shift_total_time(total_break)
-            shift_total_time_half = shift_total_time - shift_schedule_detail.pm_time_duration
-            valid_timeout = if last_entry.minutes_late > 0
-              am_valid_timein.last + shift_total_time_half.minutes
-            else
-              first_entry.time_in.localtime + shift_total_time_half.minutes
-            end
-            late = last_entry.minutes_late
-            undertime = last_entry.get_minutes_undertime(valid_timeout)
-            excess = 0
+            @undertime = within_shift_entries.last.get_minutes_undertime(valid_timeout.utc)
+            @excess = last_entry.get_minutes_excess(valid_timeout.utc, @undertime)
           end
-          last_entry.update_column(:minutes_late, late)
-          last_entry.update_column(:minutes_undertime, undertime)
-          last_entry.update_column(:minutes_excess, excess)
-          # TODO: update remarks
+        elsif period == 2 && last_timeout  # 2nd Period Halfday Leave
+          shift_total_time = shift_schedule_detail.shift_total_time
+          shift_total_time_half = shift_total_time - shift_schedule_detail.pm_time_duration
+          valid_timeout = if @late > 0
+            am_valid_timein.last + shift_total_time_half.minutes
+          else
+            first_entry.time_in.localtime + shift_total_time_half.minutes
+          end
+          within_shift_entries = entries.select { |e| e.is_within_range?(nil, valid_timeout) }
+          within_shift_entries.reverse_each do |e|
+            if e.time_out.localtime < pm_start && valid_timeout <= pm_start
+              within_shift_entries = [e]
+              valid_timeout = valid_timeout - 1.hour
+            else
+              next if e.time_in.localtime > valid_timeout
+            end
+            break
+          end
+          @undertime = within_shift_entries.last.get_minutes_undertime(valid_timeout.utc)
+          @excess = 0
+        end
+        entries.compact.each do |entry|
+          late = @late.to_i if entry.eql?(first_entry)
+          undertime = @undertime.to_i if entry.eql?(last_entry)
+          excess = @excess.to_i if entry.eql?(last_entry)
+          entry.update_column(:minutes_late, late.to_i)
+          entry.update_column(:minutes_excess, excess.to_i)
+          entry.update_column(:minutes_undertime, undertime.to_i)
+          entry.put_remarks
         end
       end
     end

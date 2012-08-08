@@ -36,6 +36,7 @@ class Timesheet < ActiveRecord::Base
   before_save :set_minutes_late, :on => [:create]
   before_save :update_shift_details, :on => [:create, :update]
   before_save :compute_minutes, :on => [:create, :update]
+  after_save  :recompute_minutes_for_leaves
   after_save  :put_remarks
 
   # -------------------------------------------------------
@@ -282,6 +283,15 @@ class Timesheet < ActiveRecord::Base
       @first_timesheet.update_column(:remarks, remarks_) unless remarks_.empty?
     end
   end
+  
+  def recompute_minutes_for_leaves
+    filed_leaves = employee.leave_details.filed_for(date.localtime)
+    if filed_leaves.present?
+      filed_leaves.each do |fl|
+        fl.recompute_timesheets
+      end
+    end
+  end
 
   def is_awol?
     ldate = date.localtime
@@ -323,16 +333,16 @@ class Timesheet < ActiveRecord::Base
   end
 
   def get_minutes_undertime(valid_time_out = nil)
-    @valid_time_out ||= valid_time_out
-    t_undertime = ((@valid_time_out - time_out) / 1.minute).ceil
+    valid_time_out ||= @valid_time_out
+    t_undertime = ((valid_time_out - time_out) / 1.minute).ceil
     t_undertime > 0 ? t_undertime : 0
   end
 
   def get_minutes_excess(valid_time_out = nil, t_undertime = nil)
     t_undertime ||= minutes_undertime
     return 0 if t_undertime > 0
-    @valid_time_out ||= valid_time_out
-    t_excess = ((time_out - @valid_time_out) / 1.minute).floor
+    valid_time_out ||= @valid_time_out
+    t_excess = ((time_out - valid_time_out) / 1.minute).floor
     t_excess > 0 ? t_excess : 0
   end
 
@@ -418,6 +428,23 @@ class Timesheet < ActiveRecord::Base
       shift_start = @first_timesheet.time_in
       shift_start = shift_start > in_max ? in_max : shift_start
       shift_end = shift_start + shift_schedule_detail.shift_total_time.minutes
+
+      shift = Range.new(shift_start, shift_end)
+      shift.cover?(time_in.localtime)
+    end
+  end
+  
+  def is_within_range?(shift_start = nil, shift_end = nil)
+    if is_work_day?
+      @timesheets_today ||= employee.timesheets.by_date(date.localtime).asc
+      @first_timesheet ||= @timesheets_today.first || self
+
+      in_min, in_max = shift_schedule_detail.valid_time_in(@first_timesheet.date)
+      unless shift_start
+        shift_start = @first_timesheet.time_in
+        shift_start = shift_start > in_max ? in_max : shift_start
+      end
+      shift_end ||= shift_start + shift_schedule_detail.shift_total_time.minutes
 
       shift = Range.new(shift_start, shift_end)
       shift.cover?(time_in.localtime)
