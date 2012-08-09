@@ -28,4 +28,7 @@ class Egems.Views.TimeEntries extends Backbone.View
       data: data
       success: (data) ->
         leave = new Egems.Views.LeavesIndex()
-        leave.showLeaveForm(data)
+        if data.leave_detail == undefined or data.leave_detail == null
+          leave.showError(data.flash_messages)
+        else
+          leave.showLeaveForm(data)

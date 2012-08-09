@@ -2,13 +2,13 @@ class LeaveDetail < ActiveRecord::Base
 
   self.table_name = 'employee_truancy_details'
   attr_accessible :leave_type, :leave_date, :end_date, :leave_unit, :details, :period
-  
+
   # -------------------------------------------------------
   # Modules
   # -------------------------------------------------------
   include ApplicationHelper
   include LeaveDetailsHelper
-  
+
   # -------------------------------------------------------
   # Relationships / Associations
   # -------------------------------------------------------
@@ -19,7 +19,7 @@ class LeaveDetail < ActiveRecord::Base
                           :join_table => "employee_truancy_detail_responders",
                           :foreign_key => :employee_truancy_detail_id,
                           :association_foreign_key => :responder_id
-  
+
   # -------------------------------------------------------
   # Validations
   # -------------------------------------------------------
@@ -27,16 +27,16 @@ class LeaveDetail < ActiveRecord::Base
   validates_numericality_of :leave_unit
   validates_inclusion_of :period, :in => 0 .. 2, :message => "period is invalid."
   validate :invalid_leave
-  
+
   # -------------------------------------------------------
   # Callbacks
   # -------------------------------------------------------
   before_save :set_period
+  before_validation :set_leave
   before_create :set_default_responders
-  before_create :set_leave
   after_save :recompute_timesheets
   after_save :send_email_notification
-  
+
   # -------------------------------------------------------
   # Namescopes
   # -------------------------------------------------------
@@ -46,16 +46,16 @@ class LeaveDetail < ActiveRecord::Base
   scope :asc, order(:leave_date, :period)
   scope :find_half_day, lambda { |date, period|
     where("leave_date = ? AND period = ?", date, period)
-  }  
+  }
   scope :filed_for, lambda {|date = Time.now.beginning_of_day|
     where(["leave_date <= ? and optional_to_leave_date >= ?", date.utc, date.utc])
   }
-  
+
   # -------------------------------------------------------
   #  Constants
   # -------------------------------------------------------
   LEAVE_PERIOD = ["Whole Day", "AM", "PM", "Range"]
-  
+
   # -------------------------------------------------------
   #  Class Methods
   # -------------------------------------------------------
@@ -70,9 +70,9 @@ class LeaveDetail < ActiveRecord::Base
         if ld.leave_unit > 1
           leave_start = local_leave_date
           leave_end = local_end_date
-          if leaves_for_hr_approval.include?(ld.leave_type) 
-            leave_dates = (leave_start .. leave_end).to_a 
-          else 
+          if leaves_for_hr_approval.include?(ld.leave_type)
+            leave_dates = (leave_start .. leave_end).to_a
+          else
             leave_dates = (leave_start .. leave_end).to_a - non_working_dates
           end
           leave_dates.each do |day|
@@ -89,22 +89,22 @@ class LeaveDetail < ActiveRecord::Base
       return units_per_leave_date
     end
   end
-  
+
   # -------------------------------------------------------
   # Instance Methods
   # -------------------------------------------------------
   def leave_date=(date)
     self[:leave_date] = Time.parse(date.to_s).utc rescue nil
   end
-  
+
   def end_date=(date)
     self[:optional_to_leave_date] = Time.parse(date.to_s).utc rescue nil
   end
-  
+
   def end_date
     self[:optional_to_leave_date]
   end
-  
+
   # returns {<mm/dd/yyyy> to <mm/dd/yyyy> or <mm/dd/yyyy AM/PM> or <mm/dd/yyyy>}
   def dated_on
     leave_start = leave_date.localtime.to_date
@@ -116,7 +116,7 @@ class LeaveDetail < ActiveRecord::Base
     am_pm = {1 => "AM", 2 => "PM"}[period]
     [date, am_pm].compact.join(" ")
   end
-  
+
   def get_responders
     if responder
       [responder.full_name]
@@ -124,11 +124,13 @@ class LeaveDetail < ActiveRecord::Base
       responders.map(&:full_name)
     end
   end
-  
+
   def set_leave
-    self.leave = self.employee.leaves.type(self.leave_type).first
+    self.leave = self.employee.leaves.where(
+                      "leave_type = :leave_type and :leave_date between date_from and date_to",
+                      { :leave_type => leave_type, :leave_date => leave_date }).first
   end
-  
+
   def set_period
     leave_date_local = leave_date.localtime.to_date
     end_date_local = end_date.localtime.to_date
@@ -136,7 +138,7 @@ class LeaveDetail < ActiveRecord::Base
       self.period = 3
     end
   end
-  
+
   def set_default_responders
     if leaves_for_hr_approval.include?(self.leave_type)
       responders << @employee.hr_personnel
@@ -145,21 +147,21 @@ class LeaveDetail < ActiveRecord::Base
       responders << managers
     end
   end
-  
+
   def is_whole_day?
     @employee ||= employee
     return (period == 0 && leave_unit == 1) ||
       @employee.leave_details.filed_for(leave_date.localtime).sum(:leave_unit) == 1
   end
-  
+
   def is_range?
     period == 3 && leave_unit > 1
   end
-  
+
   def is_half_day?
     [1, 2].include?(period) && leave_unit == 0.5
   end
-  
+
   def recompute_timesheets
     @employee ||= employee
     @leave ||= leave
@@ -246,12 +248,12 @@ class LeaveDetail < ActiveRecord::Base
       end
     end
   end
-  
+
   def send_email_notification
     recipients = [employee]
 
     employee.hr_personnel.each{|hr| recipients << hr } if leaves_for_hr_approval.include?(self.leave.leave_type)
-    
+
     if employee.immediate_supervisor == employee.project_manager
       recipients << employee.project_manager
     else
@@ -267,7 +269,7 @@ class LeaveDetail < ActiveRecord::Base
       end
     end
   end
-  
+
   def invalid_leave
     @employee = self.employee
     @leave = self.leave || @employee.leaves.type(self.leave_type).first
@@ -278,7 +280,7 @@ class LeaveDetail < ActiveRecord::Base
       @leave_dates = (@leave_date_local .. @end_date_local)
       @day_offs = get_day_offs
       @holidays = get_holidays
-      
+
       if leave_type != "Absent Without Pay"
         if !(["Magna Carta", "Maternity Leave"]).include?(leave_type)
           validate_date_range(:leave_date, valid_range)
@@ -294,7 +296,7 @@ class LeaveDetail < ActiveRecord::Base
       validate_non_working
     end
   end
-  
+
 private
   def validate_leave_type
     if @leave.nil?
@@ -304,7 +306,7 @@ private
       return true
     end
   end
-  
+
   def validate_dates
     if valid_date?(:leave_date) && valid_date?(:end_date)
       @leave_date_local = leave_date.localtime.to_date
@@ -317,7 +319,7 @@ private
       end
     end
   end
-  
+
   def valid_date?(date_attr)
     begin
       Date.parse(self.send(date_attr).to_s)
@@ -327,11 +329,11 @@ private
       return false
     end
   end
-  
+
   def valid_range
     date_from = @leave.date_from.localtime.to_date
     date_to = @leave.date_to.localtime.to_date
-    
+
     case leave_type
     when "Vacation Leave", "Maternity Leave"
       min_date, max_date = Date.today + 1.day, date_to
@@ -342,7 +344,7 @@ private
     end
     return Range.new(min_date, max_date)
   end
-  
+
   def validate_active
     if !@leave.active?
       errors[:base] << "Leave credits has already been expired."
@@ -351,20 +353,20 @@ private
       return true
     end
   end
-  
+
   def validate_date_range(date_attr, range)
     if range && !range.include?(self.send(date_attr).localtime.to_date)
       errors[date_attr] << "is invalid. Should be within
                             #{range.first} and #{range.last}."
     end
   end
-  
+
   def validate_leave_balance(total, remaining)
     if total > remaining
       errors[:base] << "You don't have enough leave credits."
     end
   end
-  
+
   def validate_leave_conflicts
     nwd = @day_offs + @holidays
     @units_per_leave_date = @employee.leave_details.get_units_per_leave_date(nwd)
@@ -375,7 +377,7 @@ private
         maxed_out_leaves << day
       end
     end
-    
+
     conflict_leaves = maxed_out_leaves & @leave_dates.to_a
     if !conflict_leaves.blank?
       dates = conflict_leaves.map { |d| format_date(d) }.compact.join(', ')
@@ -383,13 +385,13 @@ private
                         the ff. date(s): #{dates}"
     end
   end
-  
+
   def validate_whole_day
     if [0, 3].include?(period) && leave_unit < 1
       errors[:leave_unit] << "should not be less than 1 if not a half day leave."
     end
   end
-  
+
   def validate_half_day
     half_day = @employee.leave_details.find_half_day(leave_date, period).first
     if [1, 2].include?(period)
@@ -397,19 +399,19 @@ private
         errors[:base] << "You already have a #{period.ordinalize} period
                           half day leave on #{format_date leave_date}."
       end
-      
+
       if @leave_date_local != @end_date_local
         errors[:base] << "Leave date should be equal to End date
                           if applying for a half day leave."
       end
-      
+
       if leave_unit != 0.5
         errors[:leave_unit] << "should be equal to 0.5 if applying
                                 for a half day leave."
       end
     end
   end
-  
+
   def validate_date_of_filing
     if ["Sick Leave", "Emergency Leave"].include?(leave_type) && @end_date_local == Date.today
       if [0, 2].include?(period) || (period == 1 && Time.now < Time.parse("12pm"))
@@ -418,7 +420,7 @@ private
       end
     end
   end
-  
+
   def validate_leave_unit
     units = ([1, 2].include?(period) ? 0.5 : @leave_dates.count)
     ["Maternity Leave", "Magna Carta"].include?(self.leave_type) ? total_days = units - 1 : total_days = units - (@day_offs + @holidays).uniq.count
@@ -427,23 +429,23 @@ private
       errors[:leave_unit] << "is invalid."
     end
   end
-  
+
   def validate_non_working
     nwd = @day_offs + @holidays
     if (@leave_dates.to_a - nwd).empty?
       errors[:base] << "You cannot file leave within non-working days."
     end
   end
-  
+
   def get_day_offs
     day_offs = []
     day_offs_per_shift = @employee.day_offs_within(@leave.date_from .. @leave.date_to)
-    
+
     day_offs_per_shift.each do | day_off |
       from = Date.parse(day_off[:from]) rescue nil
       to = Date.parse(day_off[:to]) rescue nil
       days = day_off[:days]
-      
+
       @leave_dates.each do | date |
         if date >= from && date <= to && days.include?(date.wday)
           day_offs << date
@@ -452,12 +454,12 @@ private
     end
     day_offs
   end
-  
+
   def get_holidays
     holidays = []
     emp_holidays = @employee.holidays_within(@leave.date_from .. @leave.date_to)
     holiday_dates = emp_holidays.map { | h | h.date.localtime.to_date }
-    
+
     @leave_dates.each do | date |
       if holiday_dates.include?(date)
         holidays << date

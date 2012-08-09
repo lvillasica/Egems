@@ -36,9 +36,7 @@ class Leave < ActiveRecord::Base
   # Instance Methods
   # -------------------------------------------------------
   def active?
-    from = date_from.localtime.to_date
-    to = date_to.localtime.to_date
-    status == 1 && (from .. to).include?(Date.today)
+    status == 1
   end
 
   def remaining_balance

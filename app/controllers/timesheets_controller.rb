@@ -68,25 +68,33 @@ class TimesheetsController < ApplicationController
 
   def new_leave
     if request.get?
-      leave = @employee.leaves.first
-      leave_detail = @employee.leave_details.new
-      leave_range = Range.new(leave.date_from, leave.date_to)
-      leave_date = (params[:date] || Date.today).to_time
+      if (leaves = @employee.leaves.active.from_timesheets).present?
+        leave = leaves.first
+        leaves_of_type = leaves.type(leave.leave_type)
+        leave_date = (params[:date] || Date.today).to_time
 
-      leaves_allocations = {}
-      @employee.leaves.from_timesheets.each do |leave|
-        leaves_allocations[leave.leave_type] = leave.leaves_allocated
-        leaves_allocations["Emergency Leave"] = leave.leaves_allocated if leave.leave_type == "Vacation Leave"
+        leave_start = leaves_of_type.minimum(:date_from)
+        leave_end = leaves_of_type.maximum(:date_to)
+        leave_range = Range.new(leave_start, leave_end)
+
+        leaves_allocations = {}
+        leaves.each do |leave|
+          leaves_allocations[leave.leave_type] = leave.leaves_allocated
+          leaves_allocations["Emergency Leave"] = leave.leaves_allocated if leave.leave_type == "Vacation Leave"
+        end
+
+        leave_detail = @employee.leave_details.new({ leave_type: leave.leave_type })
+        js_params[:leave_detail] = leave_detail.attributes.merge({
+          :leave_start_date => leave_start,
+          :leave_end_date => leave_end,
+          :end_date => leave_date,
+          :employee_leaves => leaves_allocations,
+          :day_offs => @employee.day_offs_within(leave_range),
+          :holidays => @employee.holidays_within(leave_range)
+        })
+      else
+        js_params[:flash_messages] = { error: 'No allocated leaves.' }
       end
-      js_params[:leave_detail] = leave_detail.attributes.merge({
-        :leave_start_date => leave.date_from,
-        :leave_end_date => leave.date_to,
-        :leave_date => leave_date,
-        :end_date => leave_date,
-        :employee_leaves => leaves_allocations,
-        :day_offs => @employee.day_offs_within(leave_range),
-        :holidays => @employee.holidays_within(leave_range)
-      })
       respond_with_json
     end
   end

@@ -22,7 +22,17 @@ class Egems.Views.LeavesIndex extends Backbone.View
       url: 'leave_details/new'
       dataType: 'json'
       success: (data) =>
-        @showLeaveForm(data)
+        if data.leave_detail == undefined or data.leave_detail == null
+          @showError(data.flash_messages)
+        else
+          @showLeaveForm(data)
+
+  showError: (flashMsgs) ->
+    _.extend(this, Egems.Mixins.Leaves)
+    $('#apply-leave-modal').append(@noLeaveModal(flashMsgs, isModal: true))
+    $('#apply-leave-modal').modal(backdrop: 'static', 'show')
+    $('#apply-leave-modal').on 'hidden', ->
+      $(this).remove()
 
   showLeaveForm: (data) ->
     model = new Egems.Models.LeaveDetail(data.leave_detail)

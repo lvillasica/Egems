@@ -23,7 +23,7 @@ Egems::Application.routes.draw do
     scope '/timesheets' do
       match '/:time', to: 'timesheets#timesheets_nav', as: 'timesheets_nav', via: 'post'
       match '/:time/week', to: 'timesheets#timesheets_nav_week', as: 'timesheets_nav_week', via: 'post'
-      match '/leaves/new', to: 'timesheets#new_leave', as: 'timesheets_new_leave'
+      match '/leaves/new', to: 'timesheets#new_leave', as: 'timesheets_new_leave', via: 'get'
     end
 
     match '/delete/autotimein', :to => 'application#delete_session', :via => :post

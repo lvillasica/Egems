@@ -16,6 +16,7 @@ class Egems.Views.LeaveDetailForm extends Backbone.View
     @maxDate = null
     @startDate = null
     @endDate = null
+    @model.on('change:leave_type', @getMinMaxDates, this)
     @model.on('change:leave_type', @setFormValues, this)
     @model.on('change:leave_date', @resetDates, this)
     @model.on('change:end_date', @resetDates, this)
@@ -59,6 +60,16 @@ class Egems.Views.LeaveDetailForm extends Backbone.View
   onDateSelect: (dateText, inst) =>
     @model.set(inst.id.substring(13), dateText)
 
+  getMinMaxDates: ->
+    $.ajax
+      url: '/leave_details/new'
+      data: { 'leave_type': @leaveTypeFld.val() }
+      async: false
+      dataType: 'JSON'
+      success: (data) =>
+        @model.set('leave_start_date', data.leave_detail['leave_start_date'])
+        @model.set('leave_end_date', data.leave_detail['leave_end_date'])
+
   setFormValues: ->
     switch @leaveTypeFld.val()
       when "Vacation Leave"
@@ -97,7 +108,6 @@ class Egems.Views.LeaveDetailForm extends Backbone.View
     else
       dateFld.val(@format_date newDateVal)
     dateFld.val(@format_date newDateVal) if _.include(@calendarLeaves(), @leaveTypeFld.val())
-       
 
   setLeaveUnitFldVal: ->
     offset = if @isHalfDay() then 0.5 else 1
@@ -107,7 +117,7 @@ class Egems.Views.LeaveDetailForm extends Backbone.View
       leaveUnit = parseFloat(days).toFixed(1)
     else
       leaveUnit = parseFloat((days + offset) - @nonWorkingDays().length).toFixed(1)
-    
+
     if leaveUnit >= 0
       @leaveUnitFld.val(leaveUnit)
     else
