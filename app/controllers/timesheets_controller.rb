@@ -67,19 +67,23 @@ class TimesheetsController < ApplicationController
   end
 
   def new_leave
-    if request.post?
-      # create
-    else
+    if request.get?
       leave = @employee.leaves.first
       leave_detail = @employee.leave_details.new
       leave_range = Range.new(leave.date_from, leave.date_to)
       leave_date = (params[:date] || Date.today).to_time
+
+      leaves_allocations = {}
+      @employee.leaves.from_timesheets.each do |leave|
+        leaves_allocations[leave.leave_type] = leave.leaves_allocated
+        leaves_allocations["Emergency Leave"] = leave.leaves_allocated if leave.leave_type == "Vacation Leave"
+      end
       js_params[:leave_detail] = leave_detail.attributes.merge({
         :leave_start_date => leave.date_from,
         :leave_end_date => leave.date_to,
         :leave_date => leave_date,
         :end_date => leave_date,
-        :employee_leaves => @employee.leaves.from_timesheets.leave_types,
+        :employee_leaves => leaves_allocations,
         :day_offs => @employee.day_offs_within(leave_range),
         :holidays => @employee.holidays_within(leave_range)
       })
