@@ -261,11 +261,10 @@ class Timesheet < ActiveRecord::Base
   end
 
   def put_remarks
-    @timesheets_today ||= employee.timesheets.by_date(date.localtime).asc
-    @first_timesheet ||= @timesheets_today.first || self
-    remarks_ = (@first_timesheet.remarks || String.new).split(/ *, */).uniq.compact
-
-    remarks_ << 'Late' if is_late?
+    @timesheets_today = employee.timesheets.by_date(date.localtime).asc
+    @first_timesheet = @timesheets_today.first || self
+    remarks_ = Array.new
+    remarks_ << 'Late' if @first_timesheet.is_late?
     remarks_ << 'Undertime' if is_undertime?
 
     if employee.leave_details.filed_for(date.localtime).present?
@@ -274,16 +273,14 @@ class Timesheet < ActiveRecord::Base
       remarks_ << 'AWOL' if @first_timesheet == self && @first_timesheet.is_awol?
     end
 
-    remarks_.delete 'Undertime' if time_out && !is_undertime?
     remarks_ = remarks_.uniq.compact.join(', ')
-
     if @first_timesheet.new_record?
       @first_timesheet.remarks = remarks_ unless remarks_.empty?
     else
       @first_timesheet.update_column(:remarks, remarks_) unless remarks_.empty?
     end
   end
-  
+
   def recompute_minutes_for_leaves
     filed_leaves = employee.leave_details.filed_for(date.localtime)
     if filed_leaves.present?
@@ -433,7 +430,7 @@ class Timesheet < ActiveRecord::Base
       shift.cover?(time_in.localtime)
     end
   end
-  
+
   def is_within_range?(shift_start = nil, shift_end = nil)
     if is_work_day?
       @timesheets_today ||= employee.timesheets.by_date(date.localtime).asc
