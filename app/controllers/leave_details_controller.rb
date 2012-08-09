@@ -9,7 +9,7 @@ class LeaveDetailsController < ApplicationController
   def index
     @leave_details = @leave.leave_details.active.asc if @leave
     init_data
-    respond_with_json
+    request.xhr? ? respond_with_json : redirect_to(:timesheets)
   end
   
   def new
