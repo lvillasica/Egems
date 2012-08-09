@@ -91,7 +91,13 @@ class Egems.Views.LeaveDetailForm extends Backbone.View
     @disableAttr()
 
   setDateFldVal: (dateFld, newDateVal) ->
-    dateFld.val(@format_date newDateVal)
+    fldDateVal = Date.parse(dateFld.val()) or new Date()
+    if fldDateVal >= @minDate and fldDateVal <= @maxDate
+      dateFld.val(@format_date fldDateVal)
+    else
+      dateFld.val(@format_date newDateVal)
+    dateFld.val(@format_date newDateVal) if _.include(@calendarLeaves(), @leaveTypeFld.val())
+       
 
   setLeaveUnitFldVal: ->
     offset = if @isHalfDay() then 0.5 else 1
