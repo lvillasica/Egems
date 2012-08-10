@@ -212,7 +212,10 @@ class LeaveDetail < ActiveRecord::Base
                 pm_start + shift_total_time_half.minutes
               end
             end
-            @undertime = within_shift_entries.last.get_minutes_undertime(valid_timeout.utc)
+            last_within_shift = within_shift_entries.last
+            if last_within_shift
+              @undertime = last_within_shift.get_minutes_undertime(valid_timeout.utc)
+            end
             @excess = last_entry.get_minutes_excess(valid_timeout.utc, @undertime)
           end
         elsif period == 2 && last_timeout  # 2nd Period Halfday Leave
@@ -233,7 +236,10 @@ class LeaveDetail < ActiveRecord::Base
             end
             break
           end
-          @undertime = within_shift_entries.last.get_minutes_undertime(valid_timeout.utc)
+          last_within_shift = within_shift_entries.last
+          if last_within_shift
+            @undertime = last_within_shift.get_minutes_undertime(valid_timeout.utc)
+          end
           @excess = 0
         end
         entries.compact.each do |entry|
