@@ -31,7 +31,7 @@ Egems.Mixins.Timesheets =
     if remarks != null
       remarks = _.map(remarks.split(///[ ]*,[ ]*///), (x) ->
         return x.toUpperCase().trim())
-      forLeave = ['AWOL', 'LATE', 'UNDERTIME', 'LEAVE FILED']
+      forLeave = ['AWOL', 'LATE', 'UNDERTIME']
       if _.isEmpty(_.intersection(forLeave, remarks)) == false
         return true
       else
