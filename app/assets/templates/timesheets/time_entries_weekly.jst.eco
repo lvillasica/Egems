@@ -12,7 +12,6 @@
         <th>Late</th>
         <th>Undertime</th>
         <th>Excess</th>
-        <th>Actions</th>
       </tr>
       </thead>
       <tbody>
@@ -28,7 +27,7 @@
         <td class="mins time" id="tdate"><%= @mixins.format_date first_timesheet.date() %></td>
         <td class="remarks <%= @mixins.classRemarks remarks %>" title="<%= @mixins.titleRemarks remarks %>">
           <% for remark in @mixins.showRemarks remarks :%>
-            <%= remark %><br/>
+            <span class='remarks-text'><%= remark %></span><br/>
           <% end %>
         </td>
         <td class="time"><%= @mixins.format_long_time first_timesheet.timeIn() %></td>
@@ -37,7 +36,6 @@
         <td class="mins"><%= @mixins.format_in_hours collection.sum_minutes('minutes_late') %></td>
         <td class="mins"><%= @mixins.format_in_hours collection.sum_minutes('minutes_undertime') %></td>
         <td class="mins"><%= @mixins.format_in_hours collection.sum_minutes('minutes_excess') %></td>
-        <td></td>
       </tr>
       <% end %>
       </tbody>

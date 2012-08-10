@@ -71,7 +71,7 @@ class TimesheetsController < ApplicationController
       if (leaves = @employee.leaves.active.from_timesheets).present?
         leave = leaves.first
         leaves_of_type = leaves.type(leave.leave_type)
-        leave_date = (params[:date] || Date.today).to_time
+        leave_date = (params[:date] || Date.today).to_time rescue Date.today.to_time
 
         leave_start = leaves_of_type.minimum(:date_from)
         leave_end = leaves_of_type.maximum(:date_to)
@@ -87,6 +87,7 @@ class TimesheetsController < ApplicationController
         js_params[:leave_detail] = leave_detail.attributes.merge({
           :leave_start_date => leave_start,
           :leave_end_date => leave_end,
+          :leave_date => leave_date,
           :end_date => leave_date,
           :employee_leaves => leaves_allocations,
           :day_offs => @employee.day_offs_within(leave_range),

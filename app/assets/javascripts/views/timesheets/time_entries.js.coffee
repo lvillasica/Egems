@@ -19,7 +19,7 @@ class Egems.Views.TimeEntries extends Backbone.View
 
   linkToLeaveFile: (event) ->
     event.preventDefault()
-    date = $(event.target).parent().find("td#tdate").text()
+    date = $(event.target).parents("tr").find("td#tdate").text()
     data = 'date=' + date.trim()
     $('#main-container').append('<div id="apply-leave-modal" class="modal hide fade" />')
     $.ajax
