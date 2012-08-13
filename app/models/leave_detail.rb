@@ -126,9 +126,7 @@ class LeaveDetail < ActiveRecord::Base
   end
 
   def set_leave
-    self.leave = self.employee.leaves.where(
-                      "leave_type = :leave_type and :leave_date between date_from and date_to",
-                      { :leave_type => leave_type, :leave_date => leave_date }).first
+    self.leave = self.employee.leaves.type(leave_type).within_validity(leave_date).first
   end
 
   def set_period
@@ -278,7 +276,7 @@ class LeaveDetail < ActiveRecord::Base
 
   def invalid_leave
     @employee = self.employee
-    @leave = self.leave || @employee.leaves.type(self.leave_type).first
+    @leave = self.leave || @employee.leaves.type(leave_type).within_validity(leave_date).first
     if validate_leave_type && validate_dates && validate_active
       allocated = @leave.leaves_allocated.to_f
       consumed = @leave.leaves_consumed.to_f
@@ -287,7 +285,7 @@ class LeaveDetail < ActiveRecord::Base
       @day_offs = get_day_offs
       @holidays = get_holidays
 
-      if leave_type != "Absent Without Pay"
+      if leave_type != "AWOP"
         if !(["Magna Carta", "Maternity Leave"]).include?(leave_type)
           validate_date_range(:leave_date, valid_range)
           validate_date_range(:end_date, valid_range)

@@ -15,8 +15,11 @@ class Leave < ActiveRecord::Base
   scope :active, where("status = 1")
   scope :order_by_id, order(:id)
   scope :type, lambda { |type|
-    type = ((type == "Emergency Leave")? "Vacation Leave" : type)
+    type = "Vacation Leave" if type == "Emergency Leave"
     where(:leave_type => type).order(:id, :created_on)
+  }
+  scope :within_validity, lambda { |date|
+    where("? between date_from and date_to", date)
   }
 
   scope :from_timesheets, where(["leave_type not in ('Vacation Leave', 'Maternity Leave', 'Magna Carta')"])

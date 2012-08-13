@@ -241,19 +241,23 @@ class Egems.Views.LeaveDetailForm extends Backbone.View
         $('#leave-detail-form-actions .cancel').removeAttr('disabled') if @inModal()
         flash_messages = data.flash_messages
         if flash_messages.error is undefined
-          @navigateLeaves(event)
+          @exitForm(event)
           $("#main-container").prepend(@flash_messages(flash_messages))
           @updateNotif(data.total_pending)
         else
           $('#flash_messages').html(@flash_messages(flash_messages))
 
-  navigateLeaves: (event) ->
+  exitForm: (event) ->
     event.preventDefault()
     if @inModal()
       if $('#leave-detail-form-actions .cancel').attr('disabled') is undefined
         $('#apply-leave-modal').modal('hide')
         if event.type is 'submit'
-          Backbone.history.loadUrl(Backbone.history.fragment)
+          if Backbone.history.fragment is 'leaves'
+            leaves = new Egems.Routers.Leaves()
+            leaves.index()
+          else
+            Backbone.history.loadUrl(Backbone.history.fragment)
     else
       leaves = new Egems.Routers.Leaves()
       leaves.navigate('leaves', true)

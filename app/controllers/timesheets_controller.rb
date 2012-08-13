@@ -80,8 +80,9 @@ class TimesheetsController < ApplicationController
         leaves_allocations = {}
         leaves.each do |leave|
           leaves_allocations[leave.leave_type] = leave.leaves_allocated
-          leaves_allocations["Emergency Leave"] = leave.leaves_allocated if leave.leave_type == "Vacation Leave"
         end
+        el = @employee.leaves.type("Emergency Leave").first
+        leaves_allocations["Emergency Leave"] = el.leaves_allocated if el
 
         leave_detail = @employee.leave_details.new({ leave_type: leave.leave_type })
         js_params[:leave_detail] = leave_detail.attributes.merge({
