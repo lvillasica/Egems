@@ -341,7 +341,7 @@ private
     date_to = @leave.date_to.localtime.to_date
 
     case leave_type
-    when "Vacation Leave", "Maternity Leave"
+    when "Vacation Leave", "Maternity Leave", "Magna Carta"
       min_date, max_date = Date.today + 1.day, date_to
     when "Sick Leave", "Emergency Leave"
       min_date, max_date = date_from, Date.today
@@ -429,7 +429,11 @@ private
 
   def validate_leave_unit
     units = ([1, 2].include?(period) ? 0.5 : @leave_dates.count)
-    ["Maternity Leave", "Magna Carta"].include?(self.leave_type) ? total_days = units - 1 : total_days = units - (@day_offs + @holidays).uniq.count
+    if ["Maternity Leave", "Magna Carta"].include?(self.leave_type)
+      total_days = units - 1 
+    else
+      total_days = units - (@day_offs + @holidays).uniq.count
+    end
     total_days = 0.0 if total_days < 0
     if leave_unit != total_days
       errors[:leave_unit] << "is invalid."

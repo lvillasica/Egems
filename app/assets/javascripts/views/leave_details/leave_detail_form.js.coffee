@@ -87,7 +87,7 @@ class Egems.Views.LeaveDetailForm extends Backbone.View
         @maxDate = new Date().addYears(1)
         dateWithAllocation = new Date().addDays(1 + @model.employeeLeaves()[@leaveTypeFld.val()])
         @setDateFldVal(@leaveDateFld, @minDate)
-        @setDateFldVal(@endDateFld,dateWithAllocation)
+        @setDateFldVal(@endDateFld, dateWithAllocation)
       else
         @minDate = new Date(@model.leaveStartDate())
         @maxDate = new Date(@model.leaveEndDate())
@@ -171,11 +171,11 @@ class Egems.Views.LeaveDetailForm extends Backbone.View
       @$('#leave_detail_end_date').attr('disabled', true)
       @$('#leave_detail_leave_unit').attr('disabled', true)
     else
-      @$("#leave_detail_form input[name='leave_detail[period]']").attr('disabled', false)
-      @$('#leave_detail_end_date').next('.ui-datepicker-trigger').attr('disabled', false)
-      @$("#radio-reset-btn.btn.btn-mini").attr('disabled', false)
-      @$('#leave_detail_end_date').attr('disabled', false)
-      @$('#leave_detail_leave_unit').attr('disabled', false)
+      @$("#leave_detail_form input[name='leave_detail[period]']").removeAttr('disabled')
+      @$('#leave_detail_end_date').next('.ui-datepicker-trigger').removeAttr('disabled')
+      @$("#radio-reset-btn.btn.btn-mini").removeAttr('disabled')
+      @$('#leave_detail_end_date').removeAttr('disabled')
+      @$('#leave_detail_leave_unit').removeAttr('disabled')
 
   resetDates: ->
     if @validDates()
@@ -193,15 +193,15 @@ class Egems.Views.LeaveDetailForm extends Backbone.View
       @dateSelector(@endDateFld, {minDate: @startDate, maxDate: @maxDate})
       @setHalfDay()
       @setLeaveUnitFldVal()
+      @disableAttr()
 
   calendarLeaves: ->
     leaves = ["Magna Carta", "Maternity Leave"]
-    return leaves
 
   updateEndDateWithAllocation: (date) ->
     newDate = date.addDays(@model.employeeLeaves()[@leaveTypeFld.val()])
     @setDateFldVal(@endDateFld,newDate)
-    disableAttr()
+
 
   validDates: ->
     validLeaveDate = @validateDateFld(@leaveDateFld)
