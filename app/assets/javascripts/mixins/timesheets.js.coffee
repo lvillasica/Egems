@@ -31,7 +31,7 @@ Egems.Mixins.Timesheets =
     if remarks != null
       remarks = _.map(remarks.split(///[ ]*,[ ]*///), (x) ->
         return x.toUpperCase().trim())
-      forLeave = ['AWOL', 'LATE', 'UNDERTIME']
+      forLeave = ['AWOL', 'LATE', 'UNDERTIME','AM AWOL', 'PM AWOL']
       if _.isEmpty(_.intersection(forLeave, remarks)) == false
         return true
       else
@@ -96,3 +96,4 @@ Egems.Mixins.Timesheets =
         return shift
       else
         return default_value
+

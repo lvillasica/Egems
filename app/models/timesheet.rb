@@ -267,8 +267,19 @@ class Timesheet < ActiveRecord::Base
     remarks_ << 'Late' if @first_timesheet.is_late?
     remarks_ << 'Undertime' if is_undertime?
 
-    if employee.leave_details.filed_for(date.localtime).present?
-      remarks_ << 'Leave Filed'
+    leaves = employee.leave_details.filed_for(date.localtime)
+    if leaves.present?
+      sum = leaves.sum(&:leave_unit)
+      if sum == 0.5
+        remarks_ << 'Leave Filed'
+        periods = { 1 => 'PM', 2 => 'AM' }
+        if @first_timesheet == self && @first_timesheet.new_record?
+          period = periods[leaves.first.period]
+          remarks_ << "#{period} AWOL"
+        end
+      else
+        remarks_ << 'Leave Filed'
+      end
     else
       remarks_ << 'AWOL' if @first_timesheet == self && @first_timesheet.is_awol?
     end
@@ -461,3 +472,4 @@ class Timesheet < ActiveRecord::Base
     employee.timesheets.by_date(date.localtime).first.nil?
   end
 end
+

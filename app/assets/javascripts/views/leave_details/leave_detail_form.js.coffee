@@ -257,7 +257,12 @@ class Egems.Views.LeaveDetailForm extends Backbone.View
             leaves = new Egems.Routers.Leaves()
             leaves.index()
           else
-            Backbone.history.loadUrl(Backbone.history.fragment)
+            if Backbone.history.fragment == ''
+                timesheets = new Egems.Routers.Timesheets()
+                timesheets.index()
+            else if Backbone.history.fragment == 'leaves'
+                leaves = new Egems.Routers.Leaves()
+                leaves.index()
     else
       leaves = new Egems.Routers.Leaves()
       leaves.navigate('leaves', true)
@@ -269,3 +274,4 @@ class Egems.Views.LeaveDetailForm extends Backbone.View
     popoverContent = "You have #{ totalPending } leaves waiting for approval."
     $('#notif').attr('data-content', popoverContent)
     $('#total_pending_leaves').html(totalPending)
+
