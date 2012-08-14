@@ -255,8 +255,10 @@ class LeaveDetail < ActiveRecord::Base
 
   def send_email_notification
     recipients = [employee]
-
-    employee.hr_personnel.each{|hr| recipients << hr } if leaves_for_hr_approval.include?(self.leave.leave_type)
+    
+    employee.hr_personnel.each do |hr| 
+      recipients << hr unless employee.current_department_id == 4 
+    end if leaves_for_hr_approval.include?(self.leave.leave_type)
 
     if employee.immediate_supervisor == employee.project_manager
       recipients << employee.project_manager
