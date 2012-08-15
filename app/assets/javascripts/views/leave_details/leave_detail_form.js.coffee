@@ -236,9 +236,9 @@ class Egems.Views.LeaveDetailForm extends Backbone.View
       dataType: 'json'
       type: 'POST'
       beforeSend: (jqXHR, settings) =>
-        $('#leave-detail-form-actions .cancel').attr('disabled', true) if @inModal()
+        @disableFormActions() if @inModal()
       success: (data) =>
-        $('#leave-detail-form-actions .cancel').removeAttr('disabled') if @inModal()
+        @enableFormActions() if @inModal()
         flash_messages = data.flash_messages
         if flash_messages.error is undefined
           @exitForm(event)
@@ -269,6 +269,14 @@ class Egems.Views.LeaveDetailForm extends Backbone.View
 
   inModal: ->
     $('#leave_detail_form').parents('#apply-leave-modal').length == 1
+  
+  enableFormActions: ->
+    $('#leave-detail-form-actions .submit').removeAttr('disabled')
+    $('#leave-detail-form-actions .cancel').removeAttr('disabled')
+  
+  disableFormActions: ->
+    $('#leave-detail-form-actions .submit').attr('disabled', true)
+    $('#leave-detail-form-actions .cancel').attr('disabled', true)
 
   updateNotif: (totalPending) ->
     popoverContent = "You have #{ totalPending } leaves waiting for approval."
