@@ -11,7 +11,7 @@ class LeaveDetailMailer < BaseMailer
       if requester.hr_personnel.include?(requester)
         @approvers = [requester.immediate_supervisor].compact
       else
-        @approvers = [requester.hr_personnel].compact
+        @approvers = requester.hr_personnel.compact
       end
     else
       if requester.project_manager == requester.immediate_supervisor
