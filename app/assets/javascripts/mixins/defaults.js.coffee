@@ -14,6 +14,9 @@ Egems.Mixins.Defaults =
 
   format_float: (num) ->
     parseFloat(num).toFixed(1)
+  
+  strArrSort: (arr) ->
+    _.sortBy(arr, (str) -> str)
 
   # Returns a method to translate an activerecord attribute
   # through I18n translations.
