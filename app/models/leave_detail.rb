@@ -279,7 +279,7 @@ class LeaveDetail < ActiveRecord::Base
   def invalid_leave
     @employee = self.employee
     @leave = self.leave || @employee.leaves.type(leave_type).within_validity(leave_date).first
-    if validate_leave_type && validate_dates && validate_active
+    if validate_leave_type && validate_dates && validate_leave_validity && validate_active
       allocated = @leave.leaves_allocated.to_f
       consumed = @leave.leaves_consumed.to_f
       total_leaves = leave_unit.to_f + consumed + @leave.total_pending.to_f
@@ -305,8 +305,17 @@ class LeaveDetail < ActiveRecord::Base
 
 private
   def validate_leave_type
-    if @leave.nil?
+    if @employee.leaves.type(leave_type).first.nil?
       errors[:leave_type] << "is invalid."
+      return false
+    else
+      return true
+    end
+  end
+  
+  def validate_leave_validity
+    if @leave.nil?
+      errors[:base] << "You don't have enough leave credits for #{@leave_date_local}."
       return false
     else
       return true
