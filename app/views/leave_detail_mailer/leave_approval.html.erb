@@ -1,6 +1,6 @@
 <p>Hi <%= @recipient.full_name %>,</p>
 <br/>
-<p><%= @receiver_sv %> sent a <%= @type %> request dated
+<p><%= @receiver_sv %> <%= indifinitize @type %> request dated
   { <%= @dated_on %> } <%= "for approval" if @approvers.include?(@recipient) %>.</p>
 <p>The request has been sent to the following for appropriate action:</p>
 <ul style='list-style-type: none'>
@@ -10,7 +10,7 @@
 </ul>
 <br/>
 <p><%= @receiver_action %></p>
-<p><%= url_for(:action => 'index', :controller => 'leaves', :only_path => false, :protocol => 'https') %></p>
+<p><%= url_for(@url) %></p>
 <br/>
 <p>This is a system generated email. Please do not reply.</p>
 <br/>

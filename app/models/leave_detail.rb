@@ -34,8 +34,10 @@ class LeaveDetail < ActiveRecord::Base
   before_save :set_period
   before_validation :set_leave
   before_create :set_default_responders
+  before_create :set_email_action_sent
+  before_update :set_email_action_edited
   after_save :recompute_timesheets
-  after_create :send_email_notification
+  after_save :send_email_notification
 
   # -------------------------------------------------------
   # Namescopes
@@ -256,29 +258,6 @@ class LeaveDetail < ActiveRecord::Base
     end
   end
 
-  def send_email_notification
-    recipients = [employee]
-    
-    employee.hr_personnel.each do |hr| 
-      recipients << hr unless employee.current_department_id == 4 
-    end if leaves_for_hr_approval.include?(self.leave.leave_type)
-
-    if employee.immediate_supervisor == employee.project_manager
-      recipients << employee.project_manager
-    else
-      recipients.concat([employee.project_manager,employee.immediate_supervisor]).compact
-    end
-
-    recipients.compact.each do |recipient|
-      begin
-        LeaveDetailMailer.leave_approval(employee, self, recipient).deliver
-      rescue Net::SMTPAuthenticationError, Net::SMTPServerBusy, Net::SMTPSyntaxError, Net::SMTPFatalError, Net::SMTPUnknownError => e
-        errors[:base] << "There was a problem on sending the email notification to #{recipient.email}: #{e.message}"
-        next
-      end
-    end
-  end
-
   def invalid_leave
     @employee = self.employee
     @leave = self.leave || @employee.leaves.type(leave_type).within_validity(leave_date).first
@@ -490,6 +469,37 @@ private
       end
     end
     holidays
+  end
+
+  def send_email_notification
+    recipients = [employee]
+    
+    employee.hr_personnel.each do |hr|
+      recipients << hr unless employee.current_department_id == 4
+    end if leaves_for_hr_approval.include?(self.leave.leave_type)
+
+    if employee.immediate_supervisor == employee.project_manager
+      recipients << employee.project_manager
+    else
+      recipients.concat([employee.project_manager,employee.immediate_supervisor]).compact
+    end
+
+    recipients.compact.each do |recipient|
+      begin
+        LeaveDetailMailer.leave_approval(employee, self, recipient, @email_action).deliver
+      rescue Net::SMTPAuthenticationError, Net::SMTPServerBusy, Net::SMTPSyntaxError, Net::SMTPFatalError, Net::SMTPUnknownError => e
+        errors[:base] << "There was a problem on sending the email notification to #{recipient.email}: #{e.message}"
+        next
+      end
+    end
+  end
+  
+  def set_email_action_sent
+    @email_action = "sent"
+  end
+  
+  def set_email_action_edited
+    @email_action = "edited"
   end
 
 end

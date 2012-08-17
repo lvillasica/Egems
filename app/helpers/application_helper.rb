@@ -50,6 +50,10 @@ module ApplicationHelper
     time ? I18n.l(User.of_localtime(time), :format => :long_date_with_time) : "mmm dd, yyyy --:--"
   end
   
+  def indifinitize(word)
+    %w(a e i o u).include?(word[0].downcase) ? "an #{word}" : "a #{word}"
+  end
+  
   def vars_to_js
     str = ""
     unless @js_params.blank?

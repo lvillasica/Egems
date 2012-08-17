@@ -59,6 +59,11 @@ private
   
   def get_leave_detail
     @leave_detail = @employee.leave_details.find_by_id(params[:id])
+    if @leave_detail.nil?
+      js_params[:flash_messages] = { error: 'No such leave to edit.' }
+      @data = js_params
+      respond_with_json
+    end
   end
 
   def get_leave

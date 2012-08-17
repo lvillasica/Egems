@@ -1,7 +1,8 @@
 class LeaveDetailMailer < BaseMailer
+  include ApplicationHelper
   include LeaveDetailsHelper
 
-  def leave_approval(requester, leave_detail, recipient=requester)
+  def leave_approval(requester, leave_detail, recipient=requester, email_action="sent")
     @requester = requester
     @recipient = recipient
     @type      = leave_detail.leave_type
@@ -22,17 +23,21 @@ class LeaveDetailMailer < BaseMailer
     end
 
     if recipient == (requester)
-      @receiver_sv = 'You have'
+      @receiver_sv = "You have #{email_action}"
       @receiver_action = 'To view/edit request, please go to:'
+      @url = {:action => 'edit', :controller => 'leave_details', :id => leave_detail.id,
+              :only_path => false, :protocol => 'https'}
     elsif @approvers.include?(recipient)
-      @receiver_sv = "#{requester.full_name} has"
+      @receiver_sv = "#{requester.full_name} has #{email_action}"
       @receiver_action = 'To take action, please go to:'
+      @url = {:action => 'index', :controller => 'leaves', :only_path => false, :protocol => 'https'}
     else
-      @receiver_sv = "#{requester.full_name} has"
+      @receiver_sv = "#{requester.full_name} has #{email_action}"
       @receiver_action = 'To view request, please go to:'
+      @url = {:action => 'index', :controller => 'leaves', :only_path => false, :protocol => 'https'}
     end
 
     mail(:to      => @recipient.email,
-         :subject => "[eGems]#{@receiver_sv} sent a #{@type} request for approval")
+         :subject => "[eGems]#{@receiver_sv} #{email_action} #{indifinitize @type} request for approval")
   end
 end

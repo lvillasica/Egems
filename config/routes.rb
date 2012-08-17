@@ -27,7 +27,11 @@ Egems::Application.routes.draw do
     end
 
     match '/delete/autotimein', :to => 'application#delete_session', :via => :post
-    resources :leave_details
+    resources :leave_details do
+      member do
+        get :cancel
+      end
+    end
     resources :leaves
     root :to => 'timesheets#index', :as => 'timesheets', :via => :get
   end
