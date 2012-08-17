@@ -3,6 +3,7 @@ class LeaveDetailsController < ApplicationController
 
   before_filter :authenticate_user!, :except => [:index]
   before_filter :get_employee
+  before_filter :get_leave_detail, :only => [:edit, :update, :cancel]
   before_filter :get_leave
   before_filter :set_js_params, :only => [:new]
 
@@ -30,10 +31,34 @@ class LeaveDetailsController < ApplicationController
     leave_detail_attrs
     respond_with_json
   end
+  
+  def edit
+    @leaves = [@leave_detail.leave]
+    leave_detail_attrs
+    respond_with_json
+  end
+  
+  def update
+    @leaves = [@leave_detail.leave]
+    params[:leave_detail][:leave_type] = @leave_detail.leave_type
+    if @leave_detail.update_attributes(params[:leave_detail])
+      flash_message(:notice, "#{@leave_detail.leave_type} dated on #{@leave_detail.dated_on} was successfully updated.")
+      flash_message(:warning, @leave_detail.errors.full_messages) if @leave_detail.errors.any?
+      js_params[:total_pending] = @employee.total_pending_leaves
+    else
+      flash_message(:error, @leave_detail.errors.full_messages) if @leave_detail.errors.any?
+    end
+    leave_detail_attrs
+    respond_with_json
+  end
 
 private
   def get_employee
     @employee = current_user.employee
+  end
+  
+  def get_leave_detail
+    @leave_detail = @employee.leave_details.find_by_id(params[:id])
   end
 
   def get_leave
@@ -44,7 +69,7 @@ private
         @leave = @leaves_of_type.where("? between date_from and date_to", Time.now).first ||
                  @leaves_of_type.first || @employee.leaves.first
       else
-        @leave = @leaves.first
+        @leave = (@leave_detail.leave rescue nil) || @leaves.first
         @leaves_of_type = @leaves.type(@leave.leave_type)
       end
     else
@@ -84,6 +109,7 @@ private
     js_params[:leave_detail] = @leave_detail.attributes.merge({
       :leave_start_date => leave_start,
       :leave_end_date => leave_end,
+      :end_date => @leave_detail.end_date,
       :employee_leaves => leaves_allocations,
       :day_offs => @employee.day_offs_within(leave_range),
       :holidays => @employee.holidays_within(leave_range)

@@ -35,7 +35,7 @@ class LeaveDetail < ActiveRecord::Base
   before_validation :set_leave
   before_create :set_default_responders
   after_save :recompute_timesheets
-  after_save :send_email_notification
+  after_create :send_email_notification
 
   # -------------------------------------------------------
   # Namescopes
@@ -49,6 +49,9 @@ class LeaveDetail < ActiveRecord::Base
   }
   scope :filed_for, lambda {|date = Time.now.beginning_of_day|
     where(["leave_date <= ? and optional_to_leave_date >= ?", date.utc, date.utc])
+  }
+  scope :exclude_ids, lambda { |ids|
+    where(["#{LeaveDetail.table_name}.id NOT IN (?)", ids]) if ids.any?
   }
 
   # -------------------------------------------------------
@@ -384,7 +387,8 @@ private
 
   def validate_leave_conflicts
     nwd = @day_offs + @holidays
-    @units_per_leave_date = @employee.leave_details.get_units_per_leave_date(nwd)
+    @units_per_leave_date = @employee.leave_details.exclude_ids([self.id])
+                            .get_units_per_leave_date(nwd)
     maxed_out_leaves = []
     units = ((@leave_dates.count > 1)? 1 : leave_unit)
     @leave_dates.each do |day|
@@ -408,7 +412,8 @@ private
   end
 
   def validate_half_day
-    half_day = @employee.leave_details.find_half_day(leave_date, period).first
+    half_day = @employee.leave_details.exclude_ids([self.id])
+               .find_half_day(leave_date, period).first
     if [1, 2].include?(period)
       if half_day
         errors[:base] << "You already have a #{period.ordinalize} period

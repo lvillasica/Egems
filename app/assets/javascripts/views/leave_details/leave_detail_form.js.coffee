@@ -71,6 +71,7 @@ class Egems.Views.LeaveDetailForm extends Backbone.View
         @model.set('leave_end_date', data.leave_detail['leave_end_date'])
 
   setFormValues: ->
+    @leaveTypeFld.attr('disabled', true) if @options.edit
     switch @leaveTypeFld.val()
       when "Vacation Leave"
         @minDate = new Date().addDays(1)
@@ -93,13 +94,17 @@ class Egems.Views.LeaveDetailForm extends Backbone.View
         @maxDate = new Date(@model.leaveEndDate())
         @setDateFldVal(@leaveDateFld, new Date())
         @setDateFldVal(@endDateFld, new Date())
+    @setPeriodFldVal()
     @validateDateFld @leaveDateFld
     @validateDateFld @endDateFld
     @dateSelector(@leaveDateFld, {minDate: @minDate, maxDate: @maxDate})
     @dateSelector(@endDateFld, {minDate: @leaveDateFld.val(), maxDate: @maxDate})
     @setLeaveUnitFldVal()
-    @setHalfDay()
     @disableAttr()
+    @setHalfDay()
+  
+  setPeriodFldVal: ->
+    @$("#leave_detail_period_#{@model.period()}").attr('checked', 'checked')
 
   setDateFldVal: (dateFld, newDateVal) ->
     fldDateVal = Date.parse(dateFld.val()) or new Date()
@@ -234,7 +239,7 @@ class Egems.Views.LeaveDetailForm extends Backbone.View
       url: @$("#leave_detail_form").attr('action')
       data: {'leave_detail': attributes}
       dataType: 'json'
-      type: 'POST'
+      type: if @options.edit then 'PUT' else 'POST'
       beforeSend: (jqXHR, settings) =>
         @disableFormActions() if @inModal()
       success: (data) =>
@@ -244,6 +249,7 @@ class Egems.Views.LeaveDetailForm extends Backbone.View
           @exitForm(event)
           $("#main-container").prepend(@flash_messages(flash_messages))
           @updateNotif(data.total_pending)
+          $('html, body').animate({scrollTop: 0}, 'slow')
         else
           $('#flash_messages').html(@flash_messages(flash_messages))
 

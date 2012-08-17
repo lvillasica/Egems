@@ -1,13 +1,13 @@
-class Egems.Views.NewLeaveDetail extends Backbone.View
+class Egems.Views.EditLeaveDetail extends Backbone.View
 
-  template: JST['leave_details/new_leave_detail']
+  template: JST['leave_details/edit_leave_detail']
 
   events:
     'click #leave-detail-form-actions .cancel': 'exitForm'
     'click #leave-detail-form-actions .submit': 'triggerSubmit'
 
   initialize: ->
-    @form = new Egems.Views.LeaveDetailForm(model: @model)
+    @form = new Egems.Views.LeaveDetailForm(model: @model, edit: true)
 
   render: ->
     $(@el).html(@template())
@@ -22,7 +22,8 @@ class Egems.Views.NewLeaveDetail extends Backbone.View
 
   triggerSubmit: (event) ->
     event.preventDefault()
-    @$('#leave_detail_form').attr('action', '/leave_details').submit()
+    @$('#leave_detail_form').attr('action', "/leave_details/#{@model.getId()}")
+    .submit()
 
   exitForm: (event) ->
     @form.exitForm(event)

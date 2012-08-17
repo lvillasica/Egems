@@ -61,7 +61,7 @@
       <label for="leave_detail_details" class="control-label"><%= l 'details' %></label>
       <div class="controls">
         <textarea rows="3" placeholder="This field is required." name="leave_detail[details]"
-         id="leave_detail_details" cols="40" class="input-xlarge"></textarea>
+         id="leave_detail_details" cols="40" class="input-xlarge"><%= @leave_detail.details() %></textarea>
       </div>
     </div>
   </fieldset>

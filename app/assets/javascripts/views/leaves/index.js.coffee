@@ -34,13 +34,13 @@ class Egems.Views.LeavesIndex extends Backbone.View
     $('#apply-leave-modal').on 'hidden', ->
       $(this).remove()
 
-  showLeaveForm: (data) ->
+  showLeaveForm: (data, view = Egems.Views.NewLeaveDetail) ->
     model = new Egems.Models.LeaveDetail(data.leave_detail)
-    newLeaveDetail = new Egems.Views.NewLeaveDetail(model: model)
-    $('#apply-leave-modal').append(newLeaveDetail.render().el)
-    $('#new-leave-application-header').wrap('<div class="modal-header" />')
+    leaveDetailForm = new view(model: model)
+    $('#apply-leave-modal').append(leaveDetailForm.render().el)
+    $('#leave-application-header').wrap('<div class="modal-header" />')
     $('.modal-header').next('hr').remove()
-    $('#new-leave-application-container').addClass('modal-body')
+    $('#leave-application-container').addClass('modal-body')
     $('#leave-detail-form-actions').addClass('modal-footer')
     $('#apply-leave-modal').modal(backdrop: 'static', 'show')
     $('#apply-leave-modal').on 'hidden', ->

@@ -1,3 +1,7 @@
 table.leave_details td, table.leave_details th {
   vertical-align: middle;
 }
+
+.edit:hover, .cancel:hover {
+  text-decoration: none;
+}

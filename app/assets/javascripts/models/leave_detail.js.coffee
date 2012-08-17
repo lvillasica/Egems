@@ -1,5 +1,8 @@
 class Egems.Models.LeaveDetail extends Backbone.Model
 
+  getId: ->
+    @get 'id'
+
   leaveDate: ->
     @get 'leave_date'
   
