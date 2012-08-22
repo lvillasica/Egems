@@ -31,13 +31,13 @@ class LeaveDetailsController < ApplicationController
     leave_detail_attrs
     respond_with_json
   end
-  
+
   def edit
     @leaves = [@leave_detail.leave]
     leave_detail_attrs if @leave_detail.is_editable?
     respond_with_json
   end
-  
+
   def update
     @leaves = [@leave_detail.leave]
     params[:leave_detail][:leave_type] = @leave_detail.leave_type
@@ -52,11 +52,42 @@ class LeaveDetailsController < ApplicationController
     respond_with_json
   end
 
+  def leave_requests
+    if @employee.is_supervisor?
+      leaves = LeaveDetail.response_by(@employee)
+      js_params[:pending] = merge_name_attr(leaves.supervisor_pending)
+      js_params[:approved] = merge_name_attr(leaves.approved)
+      js_params[:rejected] = merge_name_attr(leaves.rejected)
+      respond_to do |format|
+        format.html { render :template => 'layouts/application'}
+        format.json { render :json => js_params.to_json }
+      end
+    else
+      render_404
+    end
+  end
+
+  def bulk_approve
+    leaves = LeaveDetail.find_all_by_id(params[:approved_ids])
+    leaves.each do |leave|
+      leave.approve!(@employee)
+    end
+    leave_requests
+  end
+
+  def bulk_reject
+    leaves = LeaveDetail.find_all_by_id(params[:rejected_ids])
+    leaves.each do |leave|
+      leave.reject!(@employee)
+    end
+    leave_requests
+  end
+
 private
   def get_employee
     @employee = current_user.employee
   end
-  
+
   def get_leave_detail
     @leave_detail = @employee.leave_details.find_by_id(params[:id])
     if @leave_detail.nil?
@@ -128,6 +159,12 @@ private
     respond_to do | format |
       format.html { render :template => "layouts/application" }
       format.json { render :json => @data.to_json }
+    end
+  end
+
+  def merge_name_attr(leave_details)
+    leave_details.map do |leave_detail|
+      leave_detail.attributes.merge({ :employee_name => leave_detail.employee.full_name })
     end
   end
 

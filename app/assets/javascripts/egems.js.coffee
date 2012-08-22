@@ -8,6 +8,7 @@ window.Egems =
     new Egems.Routers.Timesheets()
     new Egems.Routers.Leaves()
     new Egems.Routers.LeaveDetails()
+    new Egems.Routers.LeaveRequests()
     Backbone.history.start(pushState: true)
 
 $(document).ready ->

@@ -1,0 +1,28 @@
+<h3>Leave Requests</h3>
+<br>
+<% if @leaves.length > 0 :%>
+  <div id="flash_messages"></div>
+  <form method="post" id="leaves-approval-form" accept-charset="UTF-8">
+    <button class="btn btn-primary approve">Approve</button>
+    <button class="btn btn-primary reject">Reject</button>
+    <table id="supervisor_pending_leaves" class="table timesheets leave_details" style="margin-top: 10px">
+      <thead>
+        <tr>
+          <th>
+            <a id="toggle-boxes" class="icon-ok""> All</a>
+          </th>
+          <th>Name</th>
+          <th>Leave Type</th>
+          <th>Date Filed</th>
+          <th>Start Date</th>
+          <th>End Date</th>
+          <th>Duration</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </form>
+<% else :%>
+  <div class="well">No requests found.</div>
+<% end %>

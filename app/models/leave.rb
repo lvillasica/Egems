@@ -3,6 +3,8 @@ class Leave < ActiveRecord::Base
   self.table_name = 'employee_truancies'
   attr_accessible :leave_type, :date_from, :date_to, :leaves_allocated
 
+  SPECIAL_TYPES = ['Maternity Leave', 'Paternity Leave', 'Magna Carta', 'Solo Parent Leave', 'Violence Against Women']
+
   # -------------------------------------------------------
   # Relationships / Associations
   # -------------------------------------------------------

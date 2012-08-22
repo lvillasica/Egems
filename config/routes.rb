@@ -27,11 +27,19 @@ Egems::Application.routes.draw do
     end
 
     match '/delete/autotimein', :to => 'application#delete_session', :via => :post
-    resources :leave_details do
+
+    scope '/leave_details' do
+      match '/requests', to: 'leave_details#leave_requests', as: 'leave_requests', via: 'get'
+      match '/approve', to: 'leave_details#bulk_approve', via: 'post'
+      match '/reject', to: 'leave_details#bulk_reject', via: 'post'
+    end
+
+    resources :leave_details, { :except => [:show, :destroy] } do
       member do
         get :cancel
       end
     end
+
     resources :leaves
     root :to => 'timesheets#index', :as => 'timesheets', :via => :get
   end

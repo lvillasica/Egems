@@ -18,6 +18,8 @@ class Employee < ActiveRecord::Base
                           :foreign_key => :responder_id,
                           :association_foreign_key => :employee_truancy_detail_id
 
+  belongs_to :job_position, :foreign_key => :current_job_position_id
+
   # -------------------------------------------------------
   # Instance Methods
   # -------------------------------------------------------
@@ -48,15 +50,15 @@ class Employee < ActiveRecord::Base
                            .where(["employee_shift_schedules.shift_schedule_id=?", shift.id])
     range.map { |r| Range.new(r.start_date, r.end_date) }
   end
-  
+
   def total_pending_leaves
     leave_details.pending.sum(:leave_unit)
   end
-  
+
   def holidays_within(date_range)
     branch.holidays.within(date_range)
   end
-  
+
   def day_offs_within(date_range)
     day_offs_per_range = []
     scheds = shift_schedules.select("employee_shift_schedules.*").where([
@@ -64,7 +66,7 @@ class Employee < ActiveRecord::Base
       or employee_shift_schedules.shift_schedule_id = ?",
       date_range.first.localtime.utc, date_range.last.localtime.utc, shift_schedule_id
     ])
-    
+
     scheds.each do | sched |
       day_offs = ShiftScheduleDetail.includes(:shift_schedule).where([
         "shift_schedules.id = ? and (shift_schedule_details.am_time_start is null
@@ -81,4 +83,9 @@ class Employee < ActiveRecord::Base
     end
     day_offs_per_range
   end
+
+  def is_supervisor?
+    job_position.is_supervisory == 1
+  end
 end
+

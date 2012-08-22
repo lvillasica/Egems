@@ -47,15 +47,34 @@ class LeaveDetail < ActiveRecord::Base
   scope :active, includes(:leave).where("employee_truancies.status = 1")
   scope :type, lambda { |type| where(:leave_type => type).order(:leave_date) }
   scope :pending, where(:status => 'Pending')
+  scope :approved, where(:status => 'Approved')
+  scope :rejected, where(:status => 'Rejected')
+  scope :supervisor_pending, where("status = 'Pending' or status = 'HR Approved'")
   scope :asc, order(:leave_date, :period)
   scope :find_half_day, lambda { |date, period|
     where("leave_date = ? AND period = ?", date, period)
   }
+
   scope :filed_for, lambda {|date = Time.now.beginning_of_day|
     where(["leave_date <= ? and optional_to_leave_date >= ?", date.utc, date.utc])
   }
+
   scope :exclude_ids, lambda { |ids|
     where(["#{LeaveDetail.table_name}.id NOT IN (?)", ids]) if ids.any?
+  }
+
+  scope :response_by, lambda { |supervisor|
+    supervisor_id = supervisor.id
+    special_leaves = Leave::SPECIAL_TYPES.map { |s| "#{s}"}
+    condition = %q{ case
+                      when leave_type in (?)
+                        then employees.employee_supervisor_id = ? or employees.employee_project_manager_id = ?
+                      else
+                        employee_truancy_detail_responders.responder_id = ?
+                      end
+                  }
+    includes([:responders, :employee])
+    .where([condition, special_leaves, supervisor_id, supervisor_id, supervisor_id])
   }
 
   # -------------------------------------------------------
@@ -111,7 +130,7 @@ class LeaveDetail < ActiveRecord::Base
   def end_date
     self[:optional_to_leave_date]
   end
-  
+
   def end_date_was
     self.optional_to_leave_date_was
   end
@@ -156,10 +175,26 @@ class LeaveDetail < ActiveRecord::Base
       responders << managers
     end
   end
-  
+
   def set_old_date_entries
     @old_leave_date_local = self.leave_date_was.localtime.to_date
     @old_end_date_local = self.end_date_was.localtime.to_date
+  end
+
+  def approve!(supervisor)
+    update_column(:status, 'Approved')
+    update_column(:responder_id, supervisor.id)
+    update_column(:responded_on, Time.now)
+  end
+
+  def reject!(supervisor)
+    update_column(:status, 'Rejected')
+    update_column(:responder_id, supervisor.id)
+    update_column(:responded_on, Time.now)
+  end
+
+  def needs_hr_approval?
+    ['Maternity Leave', 'Paternity Leave', 'Magna Carta', 'Solo Parent Leave', 'Violence Against Women'].include?(leave_type)
   end
 
   def is_whole_day?
@@ -175,7 +210,7 @@ class LeaveDetail < ActiveRecord::Base
   def is_half_day?
     [1, 2].include?(period) && leave_unit == 0.5
   end
-  
+
   def is_editable?
     case leave_type
     when "Vacation Leave", "Maternity Leave", "Magna Carta"
@@ -278,7 +313,7 @@ class LeaveDetail < ActiveRecord::Base
       end
     end
   end
-  
+
   def recompute_timesheets_without_leaves
     @employee ||= employee
     @leave ||= leave
@@ -296,6 +331,29 @@ class LeaveDetail < ActiveRecord::Base
       entry.update_column(:minutes_excess, entry.minutes_excess)
       entry.update_column(:minutes_undertime, entry.minutes_undertime)
       entry.put_remarks
+    end
+  end
+
+  def send_email_notification
+    recipients = [employee]
+
+    employee.hr_personnel.each do |hr|
+      recipients << hr unless employee.current_department_id == 4
+    end if leaves_for_hr_approval.include?(self.leave.leave_type)
+
+    if employee.immediate_supervisor == employee.project_manager
+      recipients << employee.project_manager
+    else
+      recipients.concat([employee.project_manager,employee.immediate_supervisor]).compact
+    end
+
+    recipients.compact.each do |recipient|
+      begin
+        LeaveDetailMailer.leave_approval(employee, self, recipient).deliver
+      rescue Net::SMTPAuthenticationError, Net::SMTPServerBusy, Net::SMTPSyntaxError, Net::SMTPFatalError, Net::SMTPUnknownError => e
+        errors[:base] << "There was a problem on sending the email notification to #{recipient.email}: #{e.message}"
+        next
+      end
     end
   end
 
@@ -335,7 +393,7 @@ private
       return true
     end
   end
-  
+
   def validate_leave_validity
     if @leave.nil?
       errors[:base] << "You don't have enough leave credits for #{@leave_date_local}."
@@ -464,7 +522,7 @@ private
   def validate_leave_unit
     units = ([1, 2].include?(period) ? 0.5 : @leave_dates.count)
     if ["Maternity Leave", "Magna Carta"].include?(self.leave_type)
-      total_days = units - 1 
+      total_days = units - 1
     else
       total_days = units - (@day_offs + @holidays).uniq.count
     end
@@ -514,7 +572,7 @@ private
 
   def send_email_notification
     recipients = [employee]
-    
+
     employee.hr_personnel.each do |hr|
       recipients << hr unless employee.current_department_id == 4
     end if leaves_for_hr_approval.include?(self.leave.leave_type)
@@ -534,11 +592,11 @@ private
       end
     end
   end
-  
+
   def set_email_action_sent
     @email_action = "sent"
   end
-  
+
   def set_email_action_edited
     @email_action = "edited"
   end

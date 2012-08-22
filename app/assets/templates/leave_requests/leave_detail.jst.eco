@@ -1,0 +1,13 @@
+<td><input value="<%= @leave.getId() %>" type="checkbox"></td>
+<td><%= @leave.filedBy() %></td>
+<td><%= @leave.leaveType() %></td>
+<td><%= @mixins.format_date @leave.dateFiled() %></td>
+<td><%= @mixins.format_date @leave.leaveDate() %></td>
+<td><%= @mixins.format_date @leave.endDate() %></td>
+<td><%= @leave.leaveUnit() %></td>
+<td>
+  <a id="leave-details" href="#" rel="popover" data-placement='left' data-content="<%= @leave.details() %>"
+    onclick="event.preventDefault()">
+    <i class="icon-comment"></i>
+  </a>
+</td>
