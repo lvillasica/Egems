@@ -9,6 +9,10 @@ class Egems.Routers.LeaveDetails extends Backbone.Router
     $('#main-container').html(newLeaveDetail.render().el)
   
   editLeaveDetail: (id) ->
-    @model = new Egems.Models.LeaveDetail($('#data-container').data('leave-detail'))
-    editLeaveDetail = new Egems.Views.EditLeaveDetail(model: @model)
-    $('#main-container').html(editLeaveDetail.render().el)
+    if $('#data-container').data('leave-detail') is undefined
+      alert "You cannot edit this leave with id ##{id}."
+      Backbone.history.navigate('/leaves', true)
+    else
+      @model = new Egems.Models.LeaveDetail($('#data-container').data('leave-detail'))
+      editLeaveDetail = new Egems.Views.EditLeaveDetail(model: @model)
+      $('#main-container').html(editLeaveDetail.render().el)
