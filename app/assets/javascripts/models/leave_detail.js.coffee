@@ -45,3 +45,16 @@ class Egems.Models.LeaveDetail extends Backbone.Model
   periodInWords: ->
     periods = ["Whole Day", "AM", "PM", "Range"]
     periods[@period()]
+  
+  isEditable: ->
+    switch @leaveType()
+      when "Vacation Leave", "Maternity Leave", "Magna Carta"
+        minDate = new Date().addDays(1).clearTime()
+        return new Date(@leaveDate()).clearTime() >= minDate
+      else
+        return true
+  
+  isCancelable: ->
+    # TODO
+    return true
+

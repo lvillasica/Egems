@@ -12,7 +12,7 @@ class Egems.Views.LeaveDetail extends Backbone.View
   render: ->
     $(@el).html(@template(
       leave_detail: @model
-      mixins: $.extend(Egems.Mixins.Defaults)
+      mixins: $.extend(Egems.Mixins.Defaults, Egems.Mixins.LeaveDetails)
     ))
     @initActionsTooltip()
     this
@@ -29,7 +29,9 @@ class Egems.Views.LeaveDetail extends Backbone.View
       dataType: 'json'
       success: (data) =>
         leave = new Egems.Views.LeavesIndex()
-        if data.leave_detail == undefined or data.leave_detail == null
+        if data is null
+          alert "You cannot edit this leave."
+        else if data.leave_detail == undefined or data.leave_detail == null
           leave.showError(data.flash_messages)
         else
           leave.showLeaveForm(data, Egems.Views.EditLeaveDetail)

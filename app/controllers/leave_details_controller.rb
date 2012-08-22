@@ -34,7 +34,7 @@ class LeaveDetailsController < ApplicationController
   
   def edit
     @leaves = [@leave_detail.leave]
-    leave_detail_attrs
+    leave_detail_attrs if @leave_detail.is_editable?
     respond_with_json
   end
   

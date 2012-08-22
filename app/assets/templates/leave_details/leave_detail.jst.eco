@@ -6,11 +6,4 @@
 <td><%= __safe @leave_detail.getResponders().join("<br />") %></td>
 <td><%= @leave_detail.status() %></td>
 <td>&nbsp;</td>
-<td>
-  <a class="edit" href="/leave_details/<%= @leave_detail.getId() %>/edit">
-    <i class="icon-edit"></i>
-  </a>&nbsp;
-  <a class="cancel" href="/leave_details/<%= @leave_detail.getId() %>/cancel">
-    <i class="icon-remove"></i>
-  </a>
-</td>
+<td><%= __safe @mixins.leave_detail_actions(@leave_detail) %></td>

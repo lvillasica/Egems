@@ -36,7 +36,9 @@ class LeaveDetail < ActiveRecord::Base
   before_create :set_default_responders
   before_create :set_email_action_sent
   before_update :set_email_action_edited
+  before_update :set_old_date_entries
   after_save :recompute_timesheets
+  after_update :recompute_timesheets_without_leaves
   after_save :send_email_notification
 
   # -------------------------------------------------------
@@ -109,6 +111,10 @@ class LeaveDetail < ActiveRecord::Base
   def end_date
     self[:optional_to_leave_date]
   end
+  
+  def end_date_was
+    self.optional_to_leave_date_was
+  end
 
   # returns {<mm/dd/yyyy> to <mm/dd/yyyy> or <mm/dd/yyyy AM/PM> or <mm/dd/yyyy>}
   def dated_on
@@ -150,6 +156,11 @@ class LeaveDetail < ActiveRecord::Base
       responders << managers
     end
   end
+  
+  def set_old_date_entries
+    @old_leave_date_local = self.leave_date_was.localtime.to_date
+    @old_end_date_local = self.end_date_was.localtime.to_date
+  end
 
   def is_whole_day?
     @employee ||= employee
@@ -163,6 +174,16 @@ class LeaveDetail < ActiveRecord::Base
 
   def is_half_day?
     [1, 2].include?(period) && leave_unit == 0.5
+  end
+  
+  def is_editable?
+    case leave_type
+    when "Vacation Leave", "Maternity Leave", "Magna Carta"
+      min_date = Date.today + 1.day
+      return leave_date.localtime.to_date >= min_date
+    else
+      return true
+    end
   end
 
   def recompute_timesheets
@@ -255,6 +276,26 @@ class LeaveDetail < ActiveRecord::Base
           entry.put_remarks
         end
       end
+    end
+  end
+  
+  def recompute_timesheets_without_leaves
+    @employee ||= employee
+    @leave ||= leave
+    @leave_dates ||= (leave_date.localtime.to_date .. end_date.localtime.to_date)
+    @day_offs ||= get_day_offs
+    @holidays ||= get_holidays
+    old_leave_dates = (@old_leave_date_local .. @old_end_date_local)
+    dates = (old_leave_dates.to_a - @leave_dates.to_a) - (@day_offs + @holidays)
+    active_timesheet = dates.map { |date| @employee.timesheets.by_date(date.to_time).asc }
+    active_timesheet.flatten.compact.each do |entry|
+      entry.set_minutes_late
+      entry.compute_minutes
+      entry.update_column(:minutes_late, entry.minutes_late)
+      entry.update_column(:duration, entry.duration)
+      entry.update_column(:minutes_excess, entry.minutes_excess)
+      entry.update_column(:minutes_undertime, entry.minutes_undertime)
+      entry.put_remarks
     end
   end
 

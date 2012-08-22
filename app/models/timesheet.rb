@@ -288,7 +288,7 @@ class Timesheet < ActiveRecord::Base
     if @first_timesheet.new_record?
       @first_timesheet.remarks = remarks_ unless remarks_.empty?
     else
-      @first_timesheet.update_column(:remarks, remarks_) unless remarks_.empty?
+      @first_timesheet.update_column(:remarks, remarks_)
     end
   end
 
