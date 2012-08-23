@@ -26,7 +26,7 @@ class Egems.Views.LeaveDetail extends Backbone.View
   
   highlightRow: ->
     rowpos = $(@el).position().top - ($(window).height() / 2)
-    $('html').animate({scrollTop: rowpos}, 'slow')
+    $('html, body').animate({scrollTop: rowpos}, 'slow')
     $(@el).effect("highlight", {}, 3000)
 
   
