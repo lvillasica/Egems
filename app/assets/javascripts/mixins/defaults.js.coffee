@@ -32,6 +32,7 @@ Egems.Mixins.Defaults =
 
   flash_messages: (flash) ->
     flashes = ""
+    $('div.alert').remove()
     alert_classes =
       alert: "error"
       error: "error"

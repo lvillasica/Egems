@@ -2,6 +2,9 @@ class Egems.Models.LeaveDetail extends Backbone.Model
 
   getId: ->
     @get 'id'
+  
+  leaveId: ->
+    @get 'employee_truancy_id'
 
   leaveDate: ->
     @get 'leave_date'
@@ -66,4 +69,4 @@ class Egems.Models.LeaveDetail extends Backbone.Model
 
   isCancelable: ->
     # TODO
-    return true
+    return @status() is 'Pending' or @status() is 'Approved'

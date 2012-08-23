@@ -20,7 +20,7 @@ class Egems.Views.LeavesAccordion extends Backbone.View
       success: (data) =>
         collection = new Egems.Collections.LeaveDetails()
         collection.reset(data.leave_details)
-        leaveDetailsIndex = new Egems.Views.LeaveDetailsIndex(collection: collection)
+        leaveDetailsIndex = new Egems.Views.LeaveDetailsIndex(collection: collection, leaves: @collection)
         accordionGroup = new Egems.Views.AccordionGroup(collection: leaveType)
         @$('#accordion2').append(accordionGroup.render().el)
         @$("#accordion2 ##{ leaveTypeTrimmed } .accordion-inner").html(leaveDetailsIndex.render().el)

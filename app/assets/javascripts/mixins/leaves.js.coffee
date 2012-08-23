@@ -18,3 +18,8 @@ Egems.Mixins.Leaves =
       return header + body + closeBtn
     else
       return errorMsg
+  
+  updateNotif: (totalPending) ->
+    popoverContent = "You have #{ totalPending } leaves waiting for approval."
+    $('#notif').attr('data-content', popoverContent)
+    $('#total_pending_leaves').html(totalPending)

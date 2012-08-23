@@ -24,7 +24,6 @@ class LeaveDetailsController < ApplicationController
     if @leave_detail.save
       flash_message(:notice, "#{@leave_detail.leave_type} dated on #{@leave_detail.dated_on} was successfully created.")
       flash_message(:warning, @leave_detail.errors.full_messages) if @leave_detail.errors.any?
-      js_params[:total_pending] = @employee.total_pending_leaves
     else
       flash_message(:error, @leave_detail.errors.full_messages) if @leave_detail.errors.any?
     end
@@ -44,10 +43,16 @@ class LeaveDetailsController < ApplicationController
     if @leave_detail.update_attributes(params[:leave_detail])
       flash_message(:notice, "#{@leave_detail.leave_type} dated on #{@leave_detail.dated_on} was successfully updated.")
       flash_message(:warning, @leave_detail.errors.full_messages) if @leave_detail.errors.any?
-      js_params[:total_pending] = @employee.total_pending_leaves
     else
       flash_message(:error, @leave_detail.errors.full_messages) if @leave_detail.errors.any?
     end
+    leave_detail_attrs
+    respond_with_json
+  end
+  
+  def cancel
+    @leaves = [@leave_detail.leave]
+    @leave_detail.cancel!
     leave_detail_attrs
     respond_with_json
   end
@@ -148,8 +153,11 @@ private
       :end_date => @leave_detail.end_date,
       :employee_leaves => leaves_allocations,
       :day_offs => @employee.day_offs_within(leave_range),
-      :holidays => @employee.holidays_within(leave_range)
+      :holidays => @employee.holidays_within(leave_range),
+      :leave_total_pending => @leave.total_pending,
+      :leave_remaining_balance => @leave.remaining_balance
     })
+    js_params[:total_pending] = @employee.total_pending_leaves
     js_params[:flash_messages] = flash.to_hash
     flash.discard # make sure error msgs don't show on other page
     @data = js_params

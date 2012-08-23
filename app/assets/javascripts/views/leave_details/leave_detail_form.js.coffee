@@ -7,7 +7,9 @@ class Egems.Views.LeaveDetailForm extends Backbone.View
     'submit #leave_detail_form': 'submitForm'
 
   initialize: ->
-    _.extend(this, Egems.Mixins.Defaults)
+    _.extend(this, Egems.Mixins.Defaults, Egems.Mixins.Leaves)
+    @leaves = @options.leaves
+    @oldData = @options.oldData
     @leaveTypeFld = null
     @leaveDateFld = null
     @endDateFld = null
@@ -243,38 +245,48 @@ class Egems.Views.LeaveDetailForm extends Backbone.View
       beforeSend: (jqXHR, settings) =>
         @disableFormActions() if @inModal()
       success: (data) =>
+        @oldData.set attributes if @oldData
         @enableFormActions() if @inModal()
         flash_messages = data.flash_messages
         if flash_messages.error is undefined
-          @exitForm(event)
-          $("#main-container").prepend(@flash_messages(flash_messages))
+          @exitForm(event, data)
           @updateNotif(data.total_pending)
-          $('html, body').animate({scrollTop: 0}, 'slow')
         else
           $('#flash_messages').html(@flash_messages(flash_messages))
 
-  exitForm: (event) ->
+  exitForm: (event, data = null) ->
     event.preventDefault()
     if @inModal()
       if $('#leave-detail-form-actions .cancel').attr('disabled') is undefined
         $('#apply-leave-modal').modal('hide')
         if event.type is 'submit'
           if Backbone.history.fragment is 'leaves'
-            leaves = new Egems.Routers.Leaves()
-            leaves.index()
+            if @options.edit
+              leave = @leaves.get(@oldData.leaveId())
+              leave.set
+                total_pending: data.leave_detail.leave_total_pending
+                remaining_balance: data.leave_detail.leave_remaining_balance
+              @showFlash(data.flash_messages)
+              @oldData.trigger 'highlight'
+            else
+              leaves = new Egems.Routers.Leaves()
+              leaves.index()
+              @showFlash(data.flash_messages)
           else
-            if Backbone.history.fragment == ''
-                timesheets = new Egems.Routers.Timesheets()
-                timesheets.index()
-            else if Backbone.history.fragment == 'leaves'
-                leaves = new Egems.Routers.Leaves()
-                leaves.index()
+            timesheets = new Egems.Routers.Timesheets()
+            timesheets.index()
+            @showFlash(data.flash_messages)
     else
       leaves = new Egems.Routers.Leaves()
       leaves.navigate('leaves', true)
+      @showFlash(data.flash_messages)
 
   inModal: ->
     $('#leave_detail_form').parents('#apply-leave-modal').length == 1
+  
+  showFlash: (flash_messages) ->
+    $("#main-container").prepend(@flash_messages(flash_messages))
+    $('html, body').animate({scrollTop: 0}, 'slow')
   
   enableFormActions: ->
     $('#leave-detail-form-actions .submit').removeAttr('disabled')
@@ -283,9 +295,4 @@ class Egems.Views.LeaveDetailForm extends Backbone.View
   disableFormActions: ->
     $('#leave-detail-form-actions .submit').attr('disabled', true)
     $('#leave-detail-form-actions .cancel').attr('disabled', true)
-
-  updateNotif: (totalPending) ->
-    popoverContent = "You have #{ totalPending } leaves waiting for approval."
-    $('#notif').attr('data-content', popoverContent)
-    $('#total_pending_leaves').html(totalPending)
 

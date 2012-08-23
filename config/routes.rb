@@ -36,7 +36,7 @@ Egems::Application.routes.draw do
 
     resources :leave_details, { :except => [:show, :destroy] } do
       member do
-        get :cancel
+        post :cancel
       end
     end
 

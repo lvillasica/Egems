@@ -192,6 +192,13 @@ class LeaveDetail < ActiveRecord::Base
     update_column(:responder_id, supervisor.id)
     update_column(:responded_on, Time.now)
   end
+  
+  def cancel!
+    update_column(:status, 'Canceled')
+    @leave_dates = (leave_date.localtime.to_date .. end_date.localtime.to_date)
+    dates_without_leaves = @leave_dates.to_a
+    recompute_timesheets_without_leaves(dates_without_leaves)
+  end
 
   def needs_hr_approval?
     ['Maternity Leave', 'Paternity Leave', 'Magna Carta', 'Solo Parent Leave', 'Violence Against Women'].include?(leave_type)
@@ -314,14 +321,15 @@ class LeaveDetail < ActiveRecord::Base
     end
   end
 
-  def recompute_timesheets_without_leaves
+  def recompute_timesheets_without_leaves(dates_without_leaves = nil)
     @employee ||= employee
     @leave ||= leave
     @leave_dates ||= (leave_date.localtime.to_date .. end_date.localtime.to_date)
     @day_offs ||= get_day_offs
     @holidays ||= get_holidays
     old_leave_dates = (@old_leave_date_local .. @old_end_date_local)
-    dates = (old_leave_dates.to_a - @leave_dates.to_a) - (@day_offs + @holidays)
+    dates_without_leaves ||= (old_leave_dates.to_a - @leave_dates.to_a)
+    dates = dates_without_leaves - (@day_offs + @holidays)
     active_timesheet = dates.map { |date| @employee.timesheets.by_date(date.to_time).asc }
     active_timesheet.flatten.compact.each do |entry|
       entry.set_minutes_late
@@ -331,29 +339,6 @@ class LeaveDetail < ActiveRecord::Base
       entry.update_column(:minutes_excess, entry.minutes_excess)
       entry.update_column(:minutes_undertime, entry.minutes_undertime)
       entry.put_remarks
-    end
-  end
-
-  def send_email_notification
-    recipients = [employee]
-
-    employee.hr_personnel.each do |hr|
-      recipients << hr unless employee.current_department_id == 4
-    end if leaves_for_hr_approval.include?(self.leave.leave_type)
-
-    if employee.immediate_supervisor == employee.project_manager
-      recipients << employee.project_manager
-    else
-      recipients.concat([employee.project_manager,employee.immediate_supervisor]).compact
-    end
-
-    recipients.compact.each do |recipient|
-      begin
-        LeaveDetailMailer.leave_approval(employee, self, recipient).deliver
-      rescue Net::SMTPAuthenticationError, Net::SMTPServerBusy, Net::SMTPSyntaxError, Net::SMTPFatalError, Net::SMTPUnknownError => e
-        errors[:base] << "There was a problem on sending the email notification to #{recipient.email}: #{e.message}"
-        next
-      end
     end
   end
 
