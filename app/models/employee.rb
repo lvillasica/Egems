@@ -87,5 +87,8 @@ class Employee < ActiveRecord::Base
   def is_supervisor?
     job_position.is_supervisory == 1
   end
-end
 
+  def is_hr?
+    current_department_id == 4
+  end
+end

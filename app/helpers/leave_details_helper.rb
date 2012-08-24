@@ -17,7 +17,7 @@ module LeaveDetailsHelper
   end
 
   def leaves_for_hr_approval
-    leaves = ["Paternity Leave", "Solo Parent Leave", "Violence Against Women", "Maternity Leave", "Magna Carta"]
+    Leave::SPECIAL_TYPES
   end
-  
+
 end

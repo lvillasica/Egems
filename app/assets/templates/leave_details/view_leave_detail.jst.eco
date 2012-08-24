@@ -1,0 +1,64 @@
+<h4 id="view-details-header">View Leave</h4>
+<% l = @mixins.attrTranslations('leave_detail') %>
+<% sort = @mixins.strArrSort %>
+<div id="view-details-body">
+  <form id="inactive-form" class="form-horizontal" accept-charset="UTF-8">
+    <fieldset>
+      <div class="control-group">
+        <label class="control-label"><%= l 'leave_type' %></label>
+        <div class="controls">
+          <select>
+            <option> <%= @leave_detail.leaveType() %></option>
+          </select>
+        </div>
+      </div>
+
+      <% if @leave_detail.leaveUnit() == 0.5 :%>
+      <div class="control-group">
+        <label class="control-label"><%= l 'period' %></label>
+        <div class="controls">
+          <label class="radio inline">
+            <input type="radio" <%= __safe("checked='checked'") if @leave_detail.period() == 1 %>> AM
+          </label>&nbsp;
+          <label class="radio inline">
+            <input type="radio" <%= __safe("checked='checked'") if @leave_detail.period() == 2 %>> PM
+          </label>
+        </div>
+      </div>
+      <% end %>
+
+      <div class="control-group">
+        <label class="control-label"><%= l 'leave_date' %></label>
+        <div class="controls">
+          <div class="input-append">
+            <input type="text" value="<%= @mixins.format_date @leave_detail.leaveDate() %>" size="30" class="span2">
+          </div>
+        </div>
+      </div>
+
+      <div class="control-group">
+        <label class="control-label"><%= l 'end_date' %></label>
+        <div class="controls">
+          <div class="input-append">
+            <input type="text" value="<%= @mixins.format_date @leave_detail.endDate() %>" size="30" class="span2">
+          </div>
+        </div>
+      </div>
+
+      <div class="control-group">
+        <label class="control-label"><%= l 'leave_unit' %></label>
+        <div class="controls">
+          <input type="text" size="30" class="span1" value="<%= @leave_detail.leaveUnit() %>">
+        </div>
+      </div>
+
+      <div class="control-group">
+        <label class="control-label"><%= l 'details' %></label>
+        <div class="controls">
+          <textarea cols="40" rows="4" class="leave-reason input-xlarge"><%= @leave_detail.details() %></textarea>
+        </div>
+      </div>
+    </fieldset>
+
+  </form>
+</div>

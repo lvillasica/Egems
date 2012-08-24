@@ -46,10 +46,9 @@ class LeaveDetail < ActiveRecord::Base
   # -------------------------------------------------------
   scope :active, includes(:leave).where("employee_truancies.status = 1")
   scope :type, lambda { |type| where(:leave_type => type).order(:leave_date) }
-  scope :pending, where(:status => 'Pending')
   scope :approved, where(:status => 'Approved')
   scope :rejected, where(:status => 'Rejected')
-  scope :supervisor_pending, where("status = 'Pending' or status = 'HR Approved'")
+  scope :pending, where("status = 'Pending' or status = 'HR Approved'")
   scope :asc, order(:leave_date, :period)
   scope :find_half_day, lambda { |date, period|
     where("leave_date = ? AND period = ?", date, period)
@@ -73,7 +72,7 @@ class LeaveDetail < ActiveRecord::Base
                         employee_truancy_detail_responders.responder_id = ?
                       end
                   }
-    includes([:responders, :employee])
+    includes([:responders, :employee]).asc
     .where([condition, special_leaves, supervisor_id, supervisor_id, supervisor_id])
   }
 
@@ -182,15 +181,42 @@ class LeaveDetail < ActiveRecord::Base
   end
 
   def approve!(supervisor)
-    update_column(:status, 'Approved')
-    update_column(:responder_id, supervisor.id)
-    update_column(:responded_on, Time.now)
+    if supervisor == employee
+      errors[:base] << 'Cannot approve your own leave.'
+      return false
+    else
+      if needs_hr_approval?
+        if (status == 'Pending' && supervisor.is_hr?) or is_hr_approved?
+          self.status = supervisor.is_hr? ? 'HR Approved' : 'Approved'
+        else
+          errors[:base] << 'Leave needs HR approval.'
+        end
+      else
+        self.status = 'Approved'
+      end
+      self.responder = supervisor
+      self.responded_on = Time.now
+      if errors.empty?
+        @email_action = "approved"
+        @action_owner = supervisor
+        if self.save(:validate => false)
+          leave.update_column(:leaves_consumed, leave.leaves_consumed.to_f + leave_unit.to_f)
+          return true
+        end
+      else
+        return false
+      end
+    end
   end
 
   def reject!(supervisor)
-    update_column(:status, 'Rejected')
-    update_column(:responder_id, supervisor.id)
-    update_column(:responded_on, Time.now)
+    if supervisor == employee
+      errors[:base] << 'Cannot reject your own leave.'
+    else
+      self.status = 'Rejected'
+      self.responder = supervisor
+      self.responded_on = Time.now
+    end
   end
   
   def cancel!
@@ -201,7 +227,7 @@ class LeaveDetail < ActiveRecord::Base
   end
 
   def needs_hr_approval?
-    ['Maternity Leave', 'Paternity Leave', 'Magna Carta', 'Solo Parent Leave', 'Violence Against Women'].include?(leave_type)
+    Leave::SPECIAL_TYPES.include?(leave_type)
   end
 
   def is_whole_day?
@@ -226,6 +252,10 @@ class LeaveDetail < ActiveRecord::Base
     else
       return true
     end
+  end
+
+  def is_hr_approved?
+    status == 'HR Approved'
   end
 
   def recompute_timesheets
@@ -559,18 +589,19 @@ private
     recipients = [employee]
 
     employee.hr_personnel.each do |hr|
-      recipients << hr unless employee.current_department_id == 4
-    end if leaves_for_hr_approval.include?(self.leave.leave_type)
+      recipients << hr
+    end if leaves_for_hr_approval.include?(leave_type) and !employee.is_hr?
 
-    if employee.immediate_supervisor == employee.project_manager
-      recipients << employee.project_manager
-    else
-      recipients.concat([employee.project_manager,employee.immediate_supervisor]).compact
-    end
+    recipients.concat([employee.project_manager, employee.immediate_supervisor]).uniq
 
     recipients.compact.each do |recipient|
       begin
-        LeaveDetailMailer.leave_approval(employee, self, recipient, @email_action).deliver
+        case @email_action
+        when 'sent', 'edited'
+          LeaveDetailMailer.leave_for_approval(employee, self, recipient, @email_action).deliver
+        when 'approved', 'rejected'
+          LeaveDetailMailer.leave_action(employee, self, recipient, @email_action, @action_owner).deliver
+        end
       rescue Net::SMTPAuthenticationError, Net::SMTPServerBusy, Net::SMTPSyntaxError, Net::SMTPFatalError, Net::SMTPUnknownError => e
         errors[:base] << "There was a problem on sending the email notification to #{recipient.email}: #{e.message}"
         next
@@ -583,7 +614,7 @@ private
   end
 
   def set_email_action_edited
-    @email_action = "edited"
+    @email_action = "edited" if @email_action == 'sent' or @email_action.nil?
   end
 
 end

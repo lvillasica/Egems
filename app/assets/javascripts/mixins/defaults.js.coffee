@@ -14,7 +14,7 @@ Egems.Mixins.Defaults =
 
   format_float: (num) ->
     parseFloat(num).toFixed(1)
-  
+
   strArrSort: (arr) ->
     _.sortBy(arr, (str) -> str)
 
@@ -48,6 +48,14 @@ Egems.Mixins.Defaults =
             """
       flashes += str
     flashes
+
+  listMessageHash: (hash) ->
+    msg = ""
+    for header, body of hash
+      errors = _.map body, (e) ->
+        "<li>" + e + "</li>"
+      msg += "#{header}<ul>#{errors.join("")}</ul>"
+    msg
 
   loadingIndicator: ->
     str = """

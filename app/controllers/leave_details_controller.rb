@@ -60,9 +60,16 @@ class LeaveDetailsController < ApplicationController
   def leave_requests
     if @employee.is_supervisor?
       leaves = LeaveDetail.response_by(@employee)
-      js_params[:pending] = merge_name_attr(leaves.supervisor_pending)
+
+      if @employee.is_hr?
+        js_params[:pending] = merge_name_attr(leaves.pending.reject(&:is_hr_approved?))
+      else
+        js_params[:pending] = merge_name_attr(leaves.pending)
+      end
+
       js_params[:approved] = merge_name_attr(leaves.approved)
       js_params[:rejected] = merge_name_attr(leaves.rejected)
+
       respond_to do |format|
         format.html { render :template => 'layouts/application'}
         format.json { render :json => js_params.to_json }
@@ -73,10 +80,15 @@ class LeaveDetailsController < ApplicationController
   end
 
   def bulk_approve
+    errors = Hash.new
     leaves = LeaveDetail.find_all_by_id(params[:approved_ids])
     leaves.each do |leave|
-      leave.approve!(@employee)
+      unless leave.approve!(@employee)
+        msg = "Can't approve leave dated <#{leave.leave_date.to_date}> of #{leave.employee.full_name}"
+        errors[msg] = leave.errors.full_messages
+      end
     end
+    js_params[:errors] = errors unless errors.empty?
     leave_requests
   end
 

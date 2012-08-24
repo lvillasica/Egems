@@ -52,6 +52,8 @@ class Egems.Views.LeaveRequestsIndex extends Backbone.View
         data: { approved_ids: ids }
         success: (data) =>
           @listLeaves(data)
+          if data.errors != undefined
+            @showErrors(data.errors)
     else
       @noCheckedBox()
 
@@ -70,15 +72,19 @@ class Egems.Views.LeaveRequestsIndex extends Backbone.View
     else
       @noCheckedBox()
 
-  noCheckedBox: ->
-    $('#flash_messages').html @mixins.flash_messages
-      error: 'No selected leave request/s.'
-
-  getCheckedIds: ->
-    _.map $("#leaves-approval-form input[type='checkbox']:checked"), (box) ->
-      $(box).val()
-
   listLeaves: (data) ->
     @collection.approved = data.approved
     @collection.rejected = data.rejected
     @collection.reset(data.pending)
+
+  noCheckedBox: ->
+    $('#flash_messages').html @mixins.flash_messages
+      error: 'No selected leave request/s.'
+
+  showErrors: (errors) ->
+    msg = @mixins.listMessageHash(errors)
+    $('#flash_messages').html @mixins.flash_messages({error: msg})
+
+  getCheckedIds: ->
+    _.map $("#leaves-approval-form input[type='checkbox']:checked"), (box) ->
+      $(box).val()
