@@ -52,7 +52,12 @@ class LeaveDetailsController < ApplicationController
   
   def cancel
     @leaves = [@leave_detail.leave]
-    @leave_detail.cancel!
+    if @leave_detail.cancel!
+      flash_message(:notice, "#{@leave_detail.leave_type} dated on #{@leave_detail.dated_on} was successfully canceled.")
+      flash_message(:warning, @leave_detail.errors.full_messages) if @leave_detail.errors.any?
+    else
+      flash_message(:error, @leave_detail.errors.full_messages) if @leave_detail.errors.any?
+    end
     leave_detail_attrs
     respond_with_json
   end
@@ -139,13 +144,16 @@ private
   end
 
   def init_data
-    js_params[:leave_details] = leave_details_with_responders
+    js_params[:leave_details] = leave_details_additional_attrs
     @data = js_params
   end
 
-  def leave_details_with_responders
+  def leave_details_additional_attrs
     @leave_details.map do | ld |
-      ld.attributes.merge({:get_responders => ld.get_responders})
+      ld.attributes.merge({
+        :get_responders => ld.get_responders,
+        :cancelable => ld.is_cancelable?
+      })
     end
   end
 

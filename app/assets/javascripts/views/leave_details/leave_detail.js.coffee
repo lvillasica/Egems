@@ -7,7 +7,7 @@ class Egems.Views.LeaveDetail extends Backbone.View
     'click a.cancel': 'cancelLeave'
   
   initialize: ->
-    _.extend(this, Egems.Mixins.Leaves)
+    _.extend(this, Egems.Mixins.Defaults, Egems.Mixins.Leaves)
     @model.on('change', @render, this)
     @model.on('highlight', @highlightRow, this)
     @leaves = @options.leaves
@@ -25,9 +25,11 @@ class Egems.Views.LeaveDetail extends Backbone.View
     @$('.cancel').tooltip(title: "Cancel")
   
   highlightRow: ->
-    rowpos = $(@el).position().top - ($(window).height() / 2)
-    $('html, body').animate({scrollTop: rowpos}, 'slow')
-    $(@el).effect("highlight", {}, 3000)
+    setTimeout =>
+      rowpos = $(@el).position().top - ($(window).height() / 2)
+      $('html, body').animate({scrollTop: rowpos}, 'slow')
+      $(@el).effect("highlight", {}, 5000)
+    , 1000
 
   
   editLeave: (event) ->
@@ -53,11 +55,15 @@ class Egems.Views.LeaveDetail extends Backbone.View
         dataType: 'json'
         type: 'POST'
         success: (data) =>
-          @model.set status: data.leave_detail.status
-          @model.trigger 'highlight'
-          @updateNotif(data.total_pending)
-          leave = @leaves.get(@model.leaveId())
-          leave.set
-            total_pending: data.leave_detail.leave_total_pending
-            remaining_balance: data.leave_detail.leave_remaining_balance
+          if data.flash_messages.error
+            alert data.flash_messages.error
+          else
+            @model.set status: data.leave_detail.status, cancelable: false
+            @updateNotif(data.total_pending)
+            leave = @leaves.get(@model.leaveId())
+            leave.set
+              total_pending: data.leave_detail.leave_total_pending
+              remaining_balance: data.leave_detail.leave_remaining_balance
+            @showFlash(data.flash_messages)
+            @model.trigger 'highlight'
 

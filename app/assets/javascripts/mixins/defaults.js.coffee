@@ -48,6 +48,10 @@ Egems.Mixins.Defaults =
             """
       flashes += str
     flashes
+  
+  showFlash: (flash_messages) ->
+    $("#main-container").prepend(@flash_messages(flash_messages))
+    $('html, body').animate({scrollTop: 0}, 'slow')
 
   listMessageHash: (hash) ->
     msg = ""

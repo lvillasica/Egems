@@ -220,10 +220,18 @@ class LeaveDetail < ActiveRecord::Base
   end
   
   def cancel!
-    update_column(:status, 'Canceled')
-    @leave_dates = (leave_date.localtime.to_date .. end_date.localtime.to_date)
-    dates_without_leaves = @leave_dates.to_a
-    recompute_timesheets_without_leaves(dates_without_leaves)
+    if is_cancelable?
+      update_column(:status, 'Canceled')
+      @leave_dates = (leave_date.localtime.to_date .. end_date.localtime.to_date)
+      dates_without_leaves = @leave_dates.to_a
+      recompute_timesheets_without_leaves(dates_without_leaves)
+      @email_action = 'canceled'
+      send_email_notification
+      return true
+    else
+      errors[:base] = "#{leave_type} dated on #{dated_on} is not cancelable."
+      return false
+    end
   end
 
   def needs_hr_approval?
@@ -253,17 +261,27 @@ class LeaveDetail < ActiveRecord::Base
       return true
     end
   end
+  
+  def is_cancelable?
+    ['Pending', 'Approved', 'HR Approved'].include?(status) && with_time_entries? ||
+    ['Pending', 'Approved', 'HR Approved'].include?(status) && leave_date.localtime.to_date > Date.today
+  end
+  
+  def with_time_entries?
+    init_leave_dates_req
+    dates = @leave_dates.to_a - (@day_offs + @holidays)
+    timesheet_by_dates = dates.map do |date|
+      @employee.timesheets.by_date(date.to_time).asc
+    end
+    return timesheet_by_dates.flatten.compact.any?
+  end
 
   def is_hr_approved?
     status == 'HR Approved'
   end
 
   def recompute_timesheets
-    @employee ||= employee
-    @leave ||= leave
-    @leave_dates ||= (leave_date.localtime.to_date .. end_date.localtime.to_date)
-    @day_offs ||= get_day_offs
-    @holidays ||= get_holidays
+    init_leave_dates_req
     dates = @leave_dates.to_a - (@day_offs + @holidays)
     active_timesheet = dates.map { |date| @employee.timesheets.by_date(date.to_time).asc }
     if is_whole_day? || is_range?
@@ -352,11 +370,7 @@ class LeaveDetail < ActiveRecord::Base
   end
 
   def recompute_timesheets_without_leaves(dates_without_leaves = nil)
-    @employee ||= employee
-    @leave ||= leave
-    @leave_dates ||= (leave_date.localtime.to_date .. end_date.localtime.to_date)
-    @day_offs ||= get_day_offs
-    @holidays ||= get_holidays
+    init_leave_dates_req
     old_leave_dates = (@old_leave_date_local .. @old_end_date_local)
     dates_without_leaves ||= (old_leave_dates.to_a - @leave_dates.to_a)
     dates = dates_without_leaves - (@day_offs + @holidays)
@@ -378,7 +392,7 @@ class LeaveDetail < ActiveRecord::Base
     if validate_leave_type && validate_dates && validate_leave_validity && validate_active
       allocated = @leave.leaves_allocated.to_f
       consumed = @leave.leaves_consumed.to_f
-      total_leaves = leave_unit.to_f + consumed + @leave.total_pending.to_f
+      total_leaves = (leave_unit.to_f - leave_unit_was.to_f) + consumed + @leave.total_pending.to_f
       @leave_dates = (@leave_date_local .. @end_date_local)
       @day_offs = get_day_offs
       @holidays = get_holidays
@@ -615,6 +629,14 @@ private
 
   def set_email_action_edited
     @email_action = "edited" if @email_action == 'sent' or @email_action.nil?
+  end
+  
+  def init_leave_dates_req
+    @employee ||= employee
+    @leave ||= leave
+    @leave_dates ||= (leave_date.localtime.to_date .. end_date.localtime.to_date)
+    @day_offs ||= get_day_offs
+    @holidays ||= get_holidays
   end
 
 end

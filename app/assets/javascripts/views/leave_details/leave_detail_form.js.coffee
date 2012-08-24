@@ -88,9 +88,8 @@ class Egems.Views.LeaveDetailForm extends Backbone.View
       when "Maternity Leave", "Magna Carta"
         @minDate = new Date().addDays(1)
         @maxDate = new Date().addYears(1)
-        dateWithAllocation = new Date().addDays(1 + @model.employeeLeaves()[@leaveTypeFld.val()])
         @setDateFldVal(@leaveDateFld, @minDate)
-        @setDateFldVal(@endDateFld, dateWithAllocation)
+        @updateEndDateWithAllocation(new Date(@leaveDateFld.val()))
       else
         @minDate = new Date(@model.leaveStartDate())
         @maxDate = new Date(@model.leaveEndDate())
@@ -114,7 +113,6 @@ class Egems.Views.LeaveDetailForm extends Backbone.View
       dateFld.val(@format_date fldDateVal)
     else
       dateFld.val(@format_date newDateVal)
-    dateFld.val(@format_date newDateVal) if _.include(@calendarLeaves(), @leaveTypeFld.val())
 
   setLeaveUnitFldVal: ->
     offset = if @isHalfDay() then 0.5 else 1
@@ -207,8 +205,7 @@ class Egems.Views.LeaveDetailForm extends Backbone.View
 
   updateEndDateWithAllocation: (date) ->
     newDate = date.addDays(@model.employeeLeaves()[@leaveTypeFld.val()])
-    @setDateFldVal(@endDateFld,newDate)
-
+    @endDateFld.val @format_date newDate
 
   validDates: ->
     validLeaveDate = @validateDateFld(@leaveDateFld)
@@ -283,10 +280,6 @@ class Egems.Views.LeaveDetailForm extends Backbone.View
 
   inModal: ->
     $('#leave_detail_form').parents('#apply-leave-modal').length == 1
-  
-  showFlash: (flash_messages) ->
-    $("#main-container").prepend(@flash_messages(flash_messages))
-    $('html, body').animate({scrollTop: 0}, 'slow')
   
   enableFormActions: ->
     $('#leave-detail-form-actions .submit').removeAttr('disabled')

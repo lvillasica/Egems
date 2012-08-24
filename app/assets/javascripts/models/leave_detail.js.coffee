@@ -68,5 +68,5 @@ class Egems.Models.LeaveDetail extends Backbone.Model
         return true
 
   isCancelable: ->
-    # TODO
-    return @status() is 'Pending' or @status() is 'Approved'
+    @get 'cancelable'
+
