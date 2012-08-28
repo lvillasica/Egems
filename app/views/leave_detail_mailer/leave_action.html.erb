@@ -3,7 +3,18 @@
 <br/>
 <p><%= @receiver_sv %> <%= @type %> request dated { <%= @dated_on %> }.</p>
 <br/>
-<p>To view request, please go to:</p>
+
+<% if @approvers.present? %>
+<p>The request has been sent to the following for appropriate action:</p>
+<ul style='list-style-type: none'>
+  <% @approvers.map(&:full_name).each do |approver| %>
+    <li><%= approver %></li>
+  <% end %>
+</ul>
+<br/>
+<% end %>
+
+<p><%= @receiver_action %></p>
 <a href="<%= url_for(@url) %>"><%= url_for(@url) %></a>
 <br/>
 <p>This is a system generated email. Please do not reply.</p>

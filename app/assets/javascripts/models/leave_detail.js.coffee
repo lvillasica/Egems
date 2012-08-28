@@ -2,7 +2,7 @@ class Egems.Models.LeaveDetail extends Backbone.Model
 
   getId: ->
     @get 'id'
-  
+
   leaveId: ->
     @get 'employee_truancy_id'
 
@@ -54,6 +54,9 @@ class Egems.Models.LeaveDetail extends Backbone.Model
 
   dateFiled: ->
     @get 'created_on'
+
+  respondedOn: ->
+    @get 'responded_on'
 
   periodInWords: ->
     periods = ["Whole Day", "AM", "PM", "Range"]

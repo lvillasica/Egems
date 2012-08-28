@@ -49,7 +49,7 @@ class LeaveDetailsController < ApplicationController
     leave_detail_attrs
     respond_with_json
   end
-  
+
   def cancel
     @leaves = [@leave_detail.leave]
     if @leave_detail.cancel!
@@ -63,16 +63,17 @@ class LeaveDetailsController < ApplicationController
   end
 
   def leave_requests
-    if @employee.is_supervisor?
+    if @employee.can_approve_leaves?
       leaves = LeaveDetail.response_by(@employee)
 
       if @employee.is_hr?
         js_params[:pending] = merge_name_attr(leaves.pending.reject(&:is_hr_approved?))
+        js_params[:approved] = merge_name_attr(leaves.approved_from_hr)
       else
         js_params[:pending] = merge_name_attr(leaves.pending)
+        js_params[:approved] = merge_name_attr(leaves.approved)
       end
 
-      js_params[:approved] = merge_name_attr(leaves.approved)
       js_params[:rejected] = merge_name_attr(leaves.rejected)
 
       respond_to do |format|

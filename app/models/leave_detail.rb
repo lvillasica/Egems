@@ -49,6 +49,7 @@ class LeaveDetail < ActiveRecord::Base
   scope :approved, where(:status => 'Approved')
   scope :rejected, where(:status => 'Rejected')
   scope :pending, where("status = 'Pending' or status = 'HR Approved'")
+  scope :approved_from_hr, where("status = 'HR Approved' or status = 'Approved'")
   scope :asc, order(:leave_date, :period)
   scope :find_half_day, lambda { |date, period|
     where("leave_date = ? AND period = ?", date, period)
@@ -65,15 +66,15 @@ class LeaveDetail < ActiveRecord::Base
   scope :response_by, lambda { |supervisor|
     supervisor_id = supervisor.id
     special_leaves = Leave::SPECIAL_TYPES.map { |s| "#{s}"}
-    condition = %q{ case
-                      when leave_type in (?)
-                        then employees.employee_supervisor_id = ? or employees.employee_project_manager_id = ?
-                      else
-                        employee_truancy_detail_responders.responder_id = ?
-                      end
+    condition = %q{ employee_truancy_detail_responders.responder_id = ? or
+                    case when leave_type in (?)
+                      then employees2.employee_supervisor_id = ? or employees2.employee_project_manager_id = ?
+                    end
                   }
-    includes([:responders, :employee]).asc
-    .where([condition, special_leaves, supervisor_id, supervisor_id, supervisor_id])
+
+    includes(:responders).asc
+    .joins("LEFT OUTER JOIN employees employees2 ON employees2.id = employee_truancy_details.employee_id")
+    .where([condition, supervisor_id, special_leaves, supervisor_id, supervisor_id])
   }
 
   # -------------------------------------------------------
@@ -167,11 +168,10 @@ class LeaveDetail < ActiveRecord::Base
   end
 
   def set_default_responders
-    if leaves_for_hr_approval.include?(self.leave_type)
-      responders << @employee.hr_personnel
+    if needs_hr_approval?
+      self.responders = @employee.hr_personnel.compact.uniq
     else
-      managers = [employee.project_manager, employee.immediate_supervisor].compact.uniq
-      responders << managers
+      self.responders = [employee.project_manager, employee.immediate_supervisor].compact.uniq
     end
   end
 
@@ -187,7 +187,12 @@ class LeaveDetail < ActiveRecord::Base
     else
       if needs_hr_approval?
         if (status == 'Pending' && supervisor.is_hr?) or is_hr_approved?
-          self.status = supervisor.is_hr? ? 'HR Approved' : 'Approved'
+          if supervisor.is_hr?
+            self.status = 'HR Approved'
+            self.responders << [employee.immediate_supervisor, employee.project_manager].compact.uniq
+          else
+            self.status = 'Approved'
+          end
         else
           errors[:base] << 'Leave needs HR approval.'
         end
@@ -200,7 +205,9 @@ class LeaveDetail < ActiveRecord::Base
         @email_action = "approved"
         @action_owner = supervisor
         if self.save(:validate => false)
-          leave.update_column(:leaves_consumed, leave.leaves_consumed.to_f + leave_unit.to_f)
+          if is_approved?
+            leave.update_column(:leaves_consumed, leave.leaves_consumed.to_f + leave_unit.to_f)
+          end
           return true
         end
       else
@@ -218,7 +225,7 @@ class LeaveDetail < ActiveRecord::Base
       self.responded_on = Time.now
     end
   end
-  
+
   def cancel!
     if is_cancelable?
       update_column(:status, 'Canceled')
@@ -268,6 +275,10 @@ class LeaveDetail < ActiveRecord::Base
 
   def is_hr_approved?
     status == 'HR Approved'
+  end
+
+  def is_approved?
+    status == 'Approved'
   end
 
   def recompute_timesheets
@@ -590,15 +601,14 @@ private
   end
 
   def send_email_notification
-    recipients = [employee]
+    recipients = Array.new(responders.uniq)
+    recipients << employee unless responders.include?(employee)
 
-    employee.hr_personnel.each do |hr|
-      recipients << hr
-    end if leaves_for_hr_approval.include?(leave_type) and !employee.is_hr?
+    if needs_hr_approval? && is_approved?
+      recipients = recipients - employee.hr_personnel
+    end
 
-    recipients.concat([employee.project_manager, employee.immediate_supervisor]).uniq
-
-    recipients.compact.each do |recipient|
+    recipients.uniq.compact.each do |recipient|
       begin
         case @email_action
         when 'sent', 'edited', 'canceled'

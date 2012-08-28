@@ -33,8 +33,9 @@ class Employee < ActiveRecord::Base
 
   def hr_personnel
     emp_branch_id = self.branch_id
+    supervisor_hr_id = 61
     hr = Employee.joins('LEFT OUTER JOIN departments d on d.id = employees.current_department_id').
-         where("employees.branch_id = #{ emp_branch_id } and d.code='HR'")
+         where("employees.branch_id = #{ emp_branch_id } and d.code='HR' and current_job_position_id = #{supervisor_hr_id }")
   end
 
   def shift_schedule(date=Time.now)
@@ -91,4 +92,13 @@ class Employee < ActiveRecord::Base
   def is_hr?
     current_department_id == 4
   end
+
+  def is_supervisor_hr?
+    current_department_id == 4 && current_job_position_id == 61
+  end
+
+  def can_approve_leaves?
+    is_supervisor? or is_supervisor_hr?
+  end
+
 end

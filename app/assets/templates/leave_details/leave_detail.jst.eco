@@ -5,5 +5,5 @@
 <td class="mins"><%= @leave_detail.periodInWords() %></td>
 <td><%= __safe @leave_detail.getResponders().join("<br />") %></td>
 <td><%= @leave_detail.status() %></td>
-<td>&nbsp;</td>
+<td><%= @mixins.format_date @leave_detail.respondedOn() %></td>
 <td><%= __safe @mixins.leave_detail_actions(@leave_detail) %></td>
