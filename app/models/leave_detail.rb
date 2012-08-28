@@ -251,16 +251,6 @@ class LeaveDetail < ActiveRecord::Base
   def is_half_day?
     [1, 2].include?(period) && leave_unit == 0.5
   end
-
-  def is_editable?
-    case leave_type
-    when "Vacation Leave", "Maternity Leave", "Magna Carta"
-      min_date = Date.today + 1.day
-      return leave_date.localtime.to_date >= min_date
-    else
-      return true
-    end
-  end
   
   def is_cancelable?
     ['Pending', 'Approved', 'HR Approved'].include?(status) && with_time_entries? ||
@@ -611,7 +601,7 @@ private
     recipients.compact.each do |recipient|
       begin
         case @email_action
-        when 'sent', 'edited'
+        when 'sent', 'edited', 'canceled'
           LeaveDetailMailer.leave_for_approval(employee, self, recipient, @email_action).deliver
         when 'approved', 'rejected'
           LeaveDetailMailer.leave_action(employee, self, recipient, @email_action, @action_owner).deliver

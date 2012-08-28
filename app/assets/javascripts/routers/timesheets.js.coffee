@@ -2,7 +2,7 @@ class Egems.Routers.Timesheets extends Backbone.Router
   routes:
     '': 'index'
 
-  initialize: ->
+  initializeCollection: ->
     @collection = new Egems.Collections.Timesheets()
     @collection.fetch()
     @collection.on('reset', @checkInvalid, this)
@@ -15,6 +15,7 @@ class Egems.Routers.Timesheets extends Backbone.Router
       $('#main-container').html(index.render().el)
 
   index: ->
+    @initializeCollection()
     index = new Egems.Views.TimesheetsIndex(collection: @collection)
     $('#main-container').html(index.render().el)
     index.updateDateTabs()
