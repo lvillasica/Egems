@@ -33,6 +33,7 @@ class LeaveDetail < ActiveRecord::Base
   # -------------------------------------------------------
   before_save :set_period
   before_validation :set_leave
+  before_create :set_created_on
   before_create :set_default_responders
   before_create :set_email_action_sent
   before_update :set_email_action_edited
@@ -92,8 +93,8 @@ class LeaveDetail < ActiveRecord::Base
       self.active.each do |ld|
         local_leave_date = ld.leave_date.localtime.to_date
         local_end_date = ld.optional_to_leave_date.localtime.to_date rescue
-                         (local_leave_date + ld.leave_unit.ceil.days) - 1.day
-        if ld.leave_unit > 1
+                         (local_leave_date + ld.leave_unit.to_f.ceil.days) - 1.day
+        if ld.leave_unit.to_f > 1
           leave_start = local_leave_date
           leave_end = local_end_date
           if leaves_for_hr_approval.include?(ld.leave_type)
@@ -104,12 +105,12 @@ class LeaveDetail < ActiveRecord::Base
           leave_dates.each do |day|
             units_per_leave_date[day.to_s] = 1.0
           end
-        elsif ld.leave_unit < 1 && units_per_leave_date[local_leave_date.to_s]
-          units_per_leave_date[local_leave_date.to_s] += ld.leave_unit
-        elsif ld.leave_unit < 1 && !units_per_leave_date[local_leave_date.to_s]
-          units_per_leave_date[local_leave_date.to_s] = ld.leave_unit
+        elsif ld.leave_unit.to_f < 1 && units_per_leave_date[local_leave_date.to_s]
+          units_per_leave_date[local_leave_date.to_s] += ld.leave_unit.to_f
+        elsif ld.leave_unit.to_f < 1 && !units_per_leave_date[local_leave_date.to_s]
+          units_per_leave_date[local_leave_date.to_s] = ld.leave_unit.to_f
         else
-          units_per_leave_date[local_leave_date.to_s] = ld.leave_unit
+          units_per_leave_date[local_leave_date.to_s] = ld.leave_unit.to_f
         end
       end
       return units_per_leave_date
@@ -179,6 +180,10 @@ class LeaveDetail < ActiveRecord::Base
     @old_leave_date_local = self.leave_date_was.localtime.to_date
     @old_end_date_local = self.end_date_was.localtime.to_date
   end
+  
+  def set_created_on
+    self.created_on = Time.now.utc
+  end
 
   def approve!(supervisor)
     if supervisor == employee
@@ -247,16 +252,16 @@ class LeaveDetail < ActiveRecord::Base
 
   def is_whole_day?
     @employee ||= employee
-    return (period == 0 && leave_unit == 1) ||
+    return (period == 0 && leave_unit.to_f == 1) ||
       @employee.leave_details.filed_for(leave_date.localtime).sum(:leave_unit) == 1
   end
 
   def is_range?
-    period == 3 && leave_unit > 1
+    period == 3 && leave_unit.to_f > 1
   end
 
   def is_half_day?
-    [1, 2].include?(period) && leave_unit == 0.5
+    [1, 2].include?(period) && leave_unit.to_f == 0.5
   end
   
   def is_cancelable?
@@ -498,7 +503,7 @@ private
     @units_per_leave_date = @employee.leave_details.exclude_ids([self.id])
                             .get_units_per_leave_date(nwd)
     maxed_out_leaves = []
-    units = ((@leave_dates.count > 1)? 1 : leave_unit)
+    units = ((@leave_dates.count > 1)? 1 : leave_unit.to_f)
     @leave_dates.each do |day|
       if (@units_per_leave_date[day.to_s].to_f + units) > 1
         maxed_out_leaves << day
@@ -514,7 +519,7 @@ private
   end
 
   def validate_whole_day
-    if [0, 3].include?(period) && leave_unit < 1
+    if [0, 3].include?(period) && leave_unit.to_f < 1
       errors[:leave_unit] << "should not be less than 1 if not a half day leave."
     end
   end
@@ -533,7 +538,7 @@ private
                           if applying for a half day leave."
       end
 
-      if leave_unit != 0.5
+      if leave_unit.to_f != 0.5
         errors[:leave_unit] << "should be equal to 0.5 if applying
                                 for a half day leave."
       end
@@ -542,7 +547,9 @@ private
 
   def validate_date_of_filing
     if ["Sick Leave", "Emergency Leave"].include?(leave_type) && @end_date_local == Date.today
-      if [0, 2].include?(period) || (period == 1 && Time.now < Time.parse("12pm"))
+      shift_sched_detail = @employee.shift_schedule.detail_by_day(@leave_date_local.wday)
+      pm_start = shift_sched_detail.pm_time_start
+      if [0, 2].include?(period) || (period == 1 && Time.now < Time.parse("#{pm_start.hour}:#{pm_start.min}"))
         errors[:base] << "Date of filing should always be after the
                           availment of leave."
       end
@@ -557,7 +564,7 @@ private
       total_days = units - (@day_offs + @holidays).uniq.count
     end
     total_days = 0.0 if total_days < 0
-    if leave_unit != total_days
+    if leave_unit.to_f != total_days
       errors[:leave_unit] << "is invalid."
     end
   end

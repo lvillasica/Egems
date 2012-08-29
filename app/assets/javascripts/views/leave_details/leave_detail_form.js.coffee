@@ -124,9 +124,9 @@ class Egems.Views.LeaveDetailForm extends Backbone.View
       leaveUnit = parseFloat((days + offset) - @nonWorkingDays().length).toFixed(1)
 
     if leaveUnit >= 0
-      @leaveUnitFld.val(leaveUnit)
+      @leaveUnitFld.val(leaveUnit).trigger('change')
     else
-      @leaveUnitFld.val(parseFloat(0.0).toFixed(1))
+      @leaveUnitFld.val(parseFloat(0.0).toFixed(1)).trigger('change')
 
   setDates: ->
     @startDate = Date.parse(@leaveDateFld.val())
@@ -214,10 +214,10 @@ class Egems.Views.LeaveDetailForm extends Backbone.View
 
   validateDateFld: ( field ) ->
     if Date.parse(field.val()) is null || @validateDateFormat(field.val()) is false
-      field.closest('.control-group').addClass('error')
+      @addClassError(field)
       return false
     else
-      field.closest('.control-group').removeClass('error')
+      @removeClassError(field)
       return true
 
   validateDateFormat: (dateStr) ->
