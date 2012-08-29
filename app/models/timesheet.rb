@@ -271,14 +271,15 @@ class Timesheet < ActiveRecord::Base
     if leaves.present?
       sum = leaves.sum(&:leave_unit)
       if sum == 0.5
-        remarks_ << 'Leave Filed'
+        remarks_ << ((leaves.first.is_approved?) ? 'Leave Approved' : 'Leave Filed')
         periods = { 1 => 'PM', 2 => 'AM' }
         if @first_timesheet == self && @first_timesheet.new_record?
           period = periods[leaves.first.period]
           remarks_ << "#{period} AWOL"
         end
       else
-        remarks_ << 'Leave Filed'
+        remarks_ << 'Leave Approved' if leaves.approved.present?
+        remarks_ << 'Leave Filed' if leaves.pending.present?
       end
     else
       remarks_ << 'AWOL' if @first_timesheet == self && @first_timesheet.is_awol?
@@ -472,4 +473,3 @@ class Timesheet < ActiveRecord::Base
     employee.timesheets.by_date(date.localtime).first.nil?
   end
 end
-
