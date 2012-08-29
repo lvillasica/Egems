@@ -196,9 +196,9 @@ class Egems.Views.LeaveDetailForm extends Backbone.View
           @endDateFld.val(@format_date @maxDate)
       @updateEndDateWithAllocation(@startDate) if _.include(@calendarLeaves(), @leaveTypeFld.val())
       @dateSelector(@endDateFld, {minDate: @startDate, maxDate: @maxDate})
-      @setHalfDay()
       @setLeaveUnitFldVal()
       @disableAttr()
+      @setHalfDay()
 
   calendarLeaves: ->
     leaves = ["Magna Carta", "Maternity Leave"]
@@ -242,11 +242,11 @@ class Egems.Views.LeaveDetailForm extends Backbone.View
       beforeSend: (jqXHR, settings) =>
         @disableFormActions() if @inModal()
       success: (data) =>
-        @oldData.set attributes if @oldData
         @enableFormActions() if @inModal()
         flash_messages = data.flash_messages
         if flash_messages.error is undefined
           @exitForm(event, data)
+          @oldData.set attributes if @oldData
           @updateNotif(data.total_pending)
         else
           $('#flash_messages').html(@flash_messages(flash_messages))
