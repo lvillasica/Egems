@@ -31,10 +31,10 @@ class Egems.Views.LeaveRequestsIndex extends Backbone.View
     switch className
       when "icon-ok"
         $(event.target).removeClass('icon-ok').addClass('icon-remove')
-        $("#leaves-approval-form input[type='checkbox']").attr('checked', true)
+        $("#leaves-approval-form input[type='checkbox']:not(:disabled)").attr('checked', true)
       when "icon-remove"
         $(event.target).removeClass('icon-remove').addClass('icon-ok')
-        $("#leaves-approval-form input[type='checkbox']").attr('checked', false)
+        $("#leaves-approval-form input[type='checkbox']:not(:disabled)").attr('checked', false)
 
   toggleAccordion: (event) ->
     event.preventDefault()

@@ -67,14 +67,14 @@ class LeaveDetailsController < ApplicationController
       leaves = LeaveDetail.response_by(@employee)
 
       if @employee.is_hr?
-        js_params[:pending] = merge_name_attr(leaves.pending.reject(&:is_hr_approved?))
-        js_params[:approved] = merge_name_attr(leaves.approved_from_hr)
+        js_params[:pending] = attrs(leaves.pending.reject(&:is_hr_approved?))
+        js_params[:approved] = attrs(leaves.approved_from_hr)
       else
-        js_params[:pending] = merge_name_attr(leaves.pending)
-        js_params[:approved] = merge_name_attr(leaves.approved)
+        js_params[:pending] = attrs(leaves.pending)
+        js_params[:approved] = attrs(leaves.approved)
       end
 
-      js_params[:rejected] = merge_name_attr(leaves.rejected)
+      js_params[:rejected] = attrs(leaves.rejected)
 
       respond_to do |format|
         format.html { render :template => 'layouts/application'}
@@ -191,9 +191,11 @@ private
     end
   end
 
-  def merge_name_attr(leave_details)
+  def attrs(leave_details)
     leave_details.map do |leave_detail|
-      leave_detail.attributes.merge({ :employee_name => leave_detail.employee.full_name })
+      leave_detail.attributes.merge({
+        :employee_name => leave_detail.employee.full_name,
+        :is_approvable => leave_detail.is_approvable_by?(@employee) })
     end
   end
 

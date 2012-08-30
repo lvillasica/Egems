@@ -170,7 +170,7 @@ class LeaveDetail < ActiveRecord::Base
 
   def set_default_responders
     if needs_hr_approval?
-      self.responders = @employee.hr_personnel.compact.uniq
+      self.responders = @employee.hr_personnel.compact.uniq unless @employee.is_hr?
     else
       self.responders = [employee.project_manager, employee.immediate_supervisor].compact.uniq
     end
@@ -263,12 +263,12 @@ class LeaveDetail < ActiveRecord::Base
   def is_half_day?
     [1, 2].include?(period) && leave_unit.to_f == 0.5
   end
-  
+
   def is_cancelable?
     ['Pending', 'Approved', 'HR Approved'].include?(status) && with_time_entries? ||
     ['Pending', 'Approved', 'HR Approved'].include?(status) && leave_date.localtime.to_date > Date.today
   end
-  
+
   def with_time_entries?
     init_leave_dates_req
     dates = @leave_dates.to_a - (@day_offs + @holidays)
@@ -278,12 +278,27 @@ class LeaveDetail < ActiveRecord::Base
     return timesheet_by_dates.flatten.compact.any?
   end
 
+  def is_approvable_by?(supervisor)
+    unless is_approved?
+      if supervisor.is_supervisor_hr?
+        return true if responders.include?(supervisor) && is_pending? && needs_hr_approval?
+      elsif supervisor.is_supervisor?
+        return true if responders.include?(supervisor) && (is_pending? || (needs_hr_approval? && is_hr_approved?))
+      end
+    end
+    return false
+  end
+
   def is_hr_approved?
     status == 'HR Approved'
   end
 
   def is_approved?
     status == 'Approved'
+  end
+
+  def is_pending?
+    status == 'Pending'
   end
 
   def recompute_timesheets
@@ -637,7 +652,7 @@ private
   def set_email_action_edited
     @email_action = "edited" if @email_action == 'sent' or @email_action.nil?
   end
-  
+
   def init_leave_dates_req
     @employee ||= employee
     @leave ||= leave

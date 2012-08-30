@@ -23,6 +23,6 @@ class Egems.Views.LeaveRequest extends Backbone.View
     $('#view-details-header').prepend('<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>')
     $('.modal-header').next('hr').remove()
     $('#view-details-body').addClass('modal-body')
-    $('#view-details-modal').modal(backdrop: 'static', 'show')
+    $('#view-details-modal').modal('show')
     $('#view-details-modal').on 'hidden', ->
       $(this).remove()
