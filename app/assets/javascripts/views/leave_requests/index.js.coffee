@@ -54,6 +54,8 @@ class Egems.Views.LeaveRequestsIndex extends Backbone.View
           @listLeaves(data)
           if data.errors != undefined
             @showErrors(data.errors)
+          else
+            @showSuccessMsg(data.success)
     else
       @noCheckedBox()
 
@@ -84,6 +86,9 @@ class Egems.Views.LeaveRequestsIndex extends Backbone.View
   showErrors: (errors) ->
     msg = @mixins.listMessageHash(errors)
     $('#flash_messages').html @mixins.flash_messages({error: msg})
+
+  showSuccessMsg: (msg) ->
+    $("#flash_messages").html @mixins.flash_messages(msg)
 
   getCheckedIds: ->
     _.map $("#leaves-approval-form input[type='checkbox']:checked"), (box) ->

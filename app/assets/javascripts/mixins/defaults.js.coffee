@@ -37,6 +37,7 @@ Egems.Mixins.Defaults =
       alert: "error"
       error: "error"
       notice: "success"
+      success: "success"
       warning: "block"
       info: "info"
     for name, msg of flash
@@ -48,14 +49,14 @@ Egems.Mixins.Defaults =
             """
       flashes += str
     flashes
-  
+
   showFlash: (flash_messages) ->
     $("#main-container").prepend(@flash_messages(flash_messages))
     $('html, body').animate({scrollTop: 0}, 'slow')
-  
+
   addClassError: (field) ->
     field.closest('.control-group').addClass('error')
-  
+
   removeClassError: (field) ->
     field.closest('.control-group').removeClass('error')
 
