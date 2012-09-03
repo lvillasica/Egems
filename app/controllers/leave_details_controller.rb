@@ -40,7 +40,7 @@ class LeaveDetailsController < ApplicationController
   def update
     @leaves = [@leave_detail.leave]
     params[:leave_detail][:leave_type] = @leave_detail.leave_type
-    if @leave_detail.update_attributes(params[:leave_detail])
+    if @leave_detail.update_attributes_and_reset_status(params[:leave_detail])
       flash_message(:notice, "#{@leave_detail.leave_type} dated on #{@leave_detail.dated_on} was successfully updated.")
       flash_message(:warning, @leave_detail.errors.full_messages) if @leave_detail.errors.any?
     else

@@ -1,7 +1,7 @@
 class LeaveDetail < ActiveRecord::Base
 
   self.table_name = 'employee_truancy_details'
-  attr_accessible :leave_type, :leave_date, :end_date, :leave_unit, :details, :period
+  attr_accessible :leave_type, :leave_date, :end_date, :leave_unit, :details, :period, :status
 
   # -------------------------------------------------------
   # Modules
@@ -183,6 +183,11 @@ class LeaveDetail < ActiveRecord::Base
   
   def set_created_on
     self.created_on = Time.now.utc
+  end
+  
+  def update_attributes_and_reset_status(attrs)
+    attrs.merge!(:status => 'Pending') unless status.eql?('Pending')
+    update_attributes(attrs)
   end
 
   def approve!(supervisor)

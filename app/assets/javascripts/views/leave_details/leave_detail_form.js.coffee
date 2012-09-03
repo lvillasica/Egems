@@ -246,6 +246,7 @@ class Egems.Views.LeaveDetailForm extends Backbone.View
         flash_messages = data.flash_messages
         if flash_messages.error is undefined
           @exitForm(event, data)
+          $.extend(attributes, {status: data.leave_detail.status})
           @oldData.set attributes if @oldData
           @updateNotif(data.total_pending)
         else
