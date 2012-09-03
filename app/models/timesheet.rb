@@ -28,6 +28,7 @@ class Timesheet < ActiveRecord::Base
   belongs_to :next_day_shift_schedule, class_name: 'ShiftSchedule'
   belongs_to :next_day_shift_schedule_detail, class_name: 'ShiftScheduleDetail'
   belongs_to :employee
+  has_one    :overtime, :foreign_key => 'id', :primary_key => 'id'
 
   # -------------------------------------------------------
   # Callbacks

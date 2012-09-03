@@ -101,6 +101,22 @@ class TimesheetsController < ApplicationController
     end
   end
 
+  def new_overtime
+    if request.get?
+      date_filed =  Date.today.to_time
+      overtime_date = self.date.to_time
+      overtime_id = self.id
+      duration = self.minutes_excess
+      overtime = @employee.overtimes.new({id: overtime_id})
+      js_params[:overtime] = overtime.attributes.merge({
+        :duration => duration,
+        :date_filed => date_filed,
+        :date_of_overtime => overtime_date
+      })
+    end
+    respond_with_json
+  end
+
 private
   def get_employee
     @employee = current_user.employee

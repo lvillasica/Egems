@@ -37,8 +37,11 @@
             <div class="nav-collapse collapse">
               <% current_uri = request.env['PATH_INFO'] %>
               <ul class="nav">
-                <li class="<%= set_active(current_uri =~ /time/ || current_uri.eql?('/')) %>">
+                <li class="<%= set_active(current_uri =~ /timesheet/ || current_uri.eql?('/')) %>">
                   <a href="<%= timesheets_path %>">Timesheets</a>
+                </li>
+                 <li class="<%= set_active(current_uri =~ /overtime/ || current_uri.eql?('/overtimes')) %>">
+                  <a href="<%= overtimes_path %>">Overtime</a>
                 </li>
                 <li class="dropdown <%= set_active(current_uri =~ /leave/) %>">
                   <a class="leaves-lnk" href="#" data-toggle="dropdown">Leaves <i class="caret"></i></a>

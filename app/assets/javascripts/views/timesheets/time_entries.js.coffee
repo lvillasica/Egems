@@ -4,6 +4,7 @@ class Egems.Views.TimeEntries extends Backbone.View
 
   events: ->
     "click td.remarks.leavable" : "linkToLeaveFile"
+    "click td#overtime_apply" : "overtimeApplication"
 
   initialize: ->
     @collection.on('reset', @render, this)
@@ -32,3 +33,16 @@ class Egems.Views.TimeEntries extends Backbone.View
           leave.showError(data.flash_messages)
         else
           leave.showLeaveForm(data)
+
+  overtimeApplication: (event) ->
+    event.preventDefault()
+    minutes_excess = $(event.target).parents("tr").find("td#texcess").text()
+    if $("#apply-overtime-modal").length == 0
+      $('#main-container').append('<div id="apply-overtime-modal" class="modal hide fade" />')
+    $.ajax
+      url: 'overtimes/new'
+      data: @model
+      dataType: 'json'
+      success: (data) ->
+        overtime = new Egems.Views.NewOvertimeEntry(model: data)
+        overtime.showOvertimeForm(data)

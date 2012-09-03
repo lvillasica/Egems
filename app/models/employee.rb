@@ -12,11 +12,16 @@ class Employee < ActiveRecord::Base
   belongs_to :branch
   has_many :leaves, :class_name => 'Leave'
   has_many :leave_details
+  has_many :overtimes
   has_many :responded_leave_details, :class_name => 'LeaveDetail', :foreign_key => :responder_id
   has_and_belongs_to_many :for_response_leave_details, :class_name => 'LeaveDetail',
                           :join_table => 'employee_truancy_detail_responders',
                           :foreign_key => :responder_id,
                           :association_foreign_key => :employee_truancy_detail_id
+  has_and_belongs_to_many :for_response_overtimes, :class_name => 'Overtime',
+                          :join_table => 'overtime_actions',
+                          :foreign_key => :responder_id,
+                          :association_foreign_key => :employee_overtime_id
 
   belongs_to :job_position, :foreign_key => :current_job_position_id
 

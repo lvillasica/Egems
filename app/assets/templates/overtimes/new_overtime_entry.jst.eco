@@ -1,0 +1,7 @@
+<h3 id="overtime-application-header"> New Overtime Application</h3>
+<hr/>
+<div id="overtime-application-container"></div>
+<div id="overtime-action" class="form-actions">
+  <button class="btn btn-primary submit">Create</button>
+  <button class="btn cancel">Cancel</button>
+</div>

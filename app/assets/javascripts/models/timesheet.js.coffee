@@ -11,3 +11,6 @@ class Egems.Models.Timesheet extends Backbone.Model
 
   timeOut: ->
     @get 'time_out'
+
+  id: ->
+    @get 'id'

@@ -9,6 +9,7 @@ window.Egems =
     new Egems.Routers.Leaves()
     new Egems.Routers.LeaveDetails()
     new Egems.Routers.LeaveRequests()
+    new Egems.Routers.Overtimes()
     Backbone.history.start(pushState: true)
 
 $(document).ready ->

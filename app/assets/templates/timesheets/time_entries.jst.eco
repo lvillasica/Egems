@@ -11,6 +11,7 @@
       <th>Late</th>
       <th>Undertime</th>
       <th>Excess</th>
+      <th>Actions</th>
     </tr>
     </thead>
     <tbody></tbody>

@@ -1,0 +1,21 @@
+<% if @overtime.length >= 1 : %> 
+  <h3 style="width:50%; display:inline-block">Overtimes</h3>
+  <hr/>
+  <table id="overtimes_tbl" class="table timesheets">
+    <thead>
+      <tr>
+        <th>Date Filed</th>
+        <th>Overtime Date</th>
+        <th>Duration</th>
+        <th>Duration Approved</th>
+        <th>Status</th>
+        <th>Responder</th>
+        <th>Response Date</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+<% else : %>
+  <div class="well"> No data found. </div>
+<% end %>
