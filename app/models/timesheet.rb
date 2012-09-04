@@ -29,6 +29,10 @@ class Timesheet < ActiveRecord::Base
   belongs_to :next_day_shift_schedule_detail, class_name: 'ShiftScheduleDetail'
   belongs_to :employee
   has_one    :overtime, :foreign_key => 'id', :primary_key => 'id'
+  has_and_belongs_to_many :responders, :class_name => "Employee",
+                          :join_table => "timesheet_actions",
+                          :foreign_key => :employee_timesheet_id,
+                          :association_foreign_key => :responder_id
 
   # -------------------------------------------------------
   # Callbacks
@@ -177,10 +181,10 @@ class Timesheet < ActiveRecord::Base
     type = time_out ? 'time_in' : 'time_out'
     t_date = time_out ? t_date : date.localtime
     self.attributes = { "#{type}" => time, "date" => t_date.beginning_of_day }
+    self.responders << [employee.project_manager, employee.immediate_supervisor].compact.uniq
 
     begin
       if self.save!
-        #Time in after manual timeout only if Time in is clicked.
         self.class.time_in!(employee) if type.eql?("time_out")
         send_invalid_timesheet_notification(type)
         return true
@@ -191,14 +195,11 @@ class Timesheet < ActiveRecord::Base
   end
 
   def send_invalid_timesheet_notification(type)
-    recipients = [employee]
-    if employee.immediate_supervisor == employee.project_manager
-      recipients << employee.project_manager
-    else
-      recipients.concat([employee.project_manager,employee.immediate_supervisor]).compact
-    end
+    binding.pry
+    recipients = Array.new(responders)
+    recipients << employee
 
-    recipients.compact.each do |recipient|
+    recipients.uniq.compact.each do |recipient|
       begin
       TimesheetMailer.invalid_timesheet(employee, self, type, recipient).deliver
       rescue Net::SMTPAuthenticationError, Net::SMTPServerBusy, Net::SMTPSyntaxError, Net::SMTPFatalError, Net::SMTPUnknownError => e
