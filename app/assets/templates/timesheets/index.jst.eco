@@ -1,5 +1,7 @@
-<p class="btn-group">
+<div id="timesheet-controls" style="display:inline-block; width:100%;">
+<p class="btn-group" style="display:inline-block;">
   <a href="#" class="btn btn-large" id="time-in-btn">Time In</a>
   <a href="#" class="btn btn-large" id="time-out-btn">Time Out</a>
 </p>
+</div>
 <br/>

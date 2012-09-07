@@ -53,6 +53,8 @@ class Timesheet < ActiveRecord::Base
   scope :no_timeout,  :conditions => ["time_in is not null and time_out is null"]
   scope :desc, :order => 'time_in desc, created_on desc'
   scope :asc, :order => 'time_in asc'
+  scope :last_entries, lambda { |time| where("time_out < ?", time.utc) }
+  scope :later_entries, lambda { |time| where("time_in > ?", time.utc) }
   scope :within, lambda { |range|
     start_date, end_date = range
     asc
@@ -210,6 +212,42 @@ class Timesheet < ActiveRecord::Base
       return false
     end
   end
+  
+  def manual_entry(attrs)
+    time_in = validate_time_attrs(attrs[:timein])
+    time_out = validate_time_attrs(attrs[:timeout])
+    errors[:time_in] << 'is invalid' unless time_in
+    errors[:time_out] << 'is invalid' unless time_out
+    if time_in && time_out
+      invalid_timesheets = employee.timesheets.latest(time_in).no_timeout +
+                           employee.timesheets.previous(time_in).no_timeout
+      raise NoTimeoutError if invalid_timesheets.present?
+      self.attributes = {
+        :date => Time.parse(attrs[:timein][:date]),
+        :time_in => time_in,
+        :time_out => time_out
+      }
+      if self.save
+        send_invalid_timesheet_notification("manual time in & out")
+        return true
+      else
+        return false
+      end
+    else
+      return false
+    end
+  end
+  
+  def validate_time_attrs(attrs)
+    begin
+      t_date = attrs[:date] ? Time.parse(attrs[:date]) : date.localtime.to_date
+      t_hour = Time.parse(attrs[:hour] + attrs[:meridian]).strftime("%H")
+      t_min = attrs[:min]
+      return Time.local(t_date.year, t_date.month, t_date.day, t_hour, t_min)
+    rescue
+      return nil
+    end
+  end
 
   def send_invalid_timesheet_notification(type)
     recipients = Array.new(responders)
@@ -236,9 +274,15 @@ class Timesheet < ActiveRecord::Base
         errors[:base] << "Time out (#{t_o}) shouldn't be later than current time."
       end
 
-      last_entry = employee.timesheets.order(:created_on).last
+      last_entry = employee.timesheets.last_entries(time_in_without_adjustment).desc.first
       if last_entry && last_entry.time_out && time_in_without_adjustment < last_entry.time_out
         errors[:base] << "Time in should be later than last entries."
+      end
+      
+      later_entry = employee.timesheets.later_entries(time_in_without_adjustment).asc.first
+      if later_entry && time_out > later_entry.time_in_without_adjustment
+        lti = format_short_time_with_sec(later_entry.time_in_without_adjustment)
+        errors[:base] << "Time out (#{t_o}) shouldn't be later than next entry's time in (#{lti})."
       end
     end
   end

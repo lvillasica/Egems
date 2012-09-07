@@ -63,7 +63,7 @@
                 <%= render partial: "layouts/notification" unless leave_unit_sum.zero? || leave_unit_sum.nil? %>
                 <li class="divider-vertical"></li>
                 <li>
-                <%= link_to "<i class=\"icon-off\"></i> Signout".html_safe,
+                <%= link_to "<i class=\"icon-signout\"></i> Signout".html_safe,
                   signout_path, :method => :delete %>
                 </li>
               </ul>

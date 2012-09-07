@@ -1,0 +1,35 @@
+<h3>Manual Time Entry</h3>
+<hr />
+<div id="form-body">
+<form id="manual-entry-form" class="form-horizontal">
+  <div id="flash_messages"></div>
+  <div class="control-group">
+    <label class="control-label"><strong>Timein</strong></label>
+    <div class="controls">
+      <input name="timein[hour]" class="time" maxlength="2" size="2" type="text" value="" placeholder="hh" />
+      <input name="timein[min]" class="time" maxlength="2" size="2" type="text" value="" placeholder="mm" />
+      <select name="timein[meridian]" class="time">
+        <option value="AM">AM</option>
+        <option value="PM">PM</option>
+      </select>
+      <input name="timein[date]" class="time" size="30" type="text" style="width: 100px;" value="<%= @date %>" disabled />
+    </div>
+  </div>
+  <div class="control-group">
+    <label class="control-label"><strong>Timeout</strong></label>
+    <div class="controls">
+      <input name="timeout[hour]" class="time" maxlength="2" size="2" type="text" value="" placeholder="hh" />
+      <input name="timeout[min]" class="time" maxlength="2" size="2" type="text" value="" placeholder="mm" />
+      <select name="timeout[meridian]" class="time">
+        <option value="AM">AM</option>
+        <option value="PM">PM</option>
+      </select>
+      <input name="timeout[date]" class="time" size="30" type="text" style="width: 100px;" value="<%= @date %>">
+    </div>
+  </div>
+</form>
+</div>
+<div id="form-controls">
+  <button class="btn btn-primary submit">Submit</button>
+  <a class="btn cancel" href="#">Cancel</a>
+</div>

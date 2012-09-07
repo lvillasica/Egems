@@ -49,6 +49,26 @@ class TimesheetsController < ApplicationController
     @timesheet = Timesheet.find_by_id(params[:id])
     save_manual_timeentry('timeout', params[:timeout])
   end
+  
+  def manual_time_entry
+    @timesheet = @employee.timesheets.new
+    begin
+      if @timesheet.manual_entry(params)
+        get_active_timesheets(@timesheet.date.localtime)
+      else
+        flash_message(:error, @timesheet.errors.full_messages) if @timesheet.errors.any?
+        js_params[:flash_messages] = flash.to_hash
+        flash.discard
+      end
+    rescue Timesheet::NoTimeoutError
+      time = @timesheet.validate_time_attrs(params[:timein])
+      invalid_timesheets = @employee.timesheets.latest(time).no_timeout +
+                           @employee.timesheets.previous(time).no_timeout
+      @invalid_timesheet = invalid_timesheets.first
+      js_params[:error] = ['error', flash_message(:alert, :no_timeout)]
+    end
+    respond_with_json
+  end
 
   def manual_timesheet_requests
     if @employee.is_supervisor?

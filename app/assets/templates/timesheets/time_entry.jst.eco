@@ -21,9 +21,6 @@
   <td id="texcess" class="mins" rowspan="<%= @size %>">
     <%= @mixins.format_in_hours collection.sum_minutes('minutes_excess') %>
   </td>
-  <td id="overtime_apply">
-    <%- '<a href="timesheets/overtimes/new" title="Apply for overtime"><i class="icon-time icon-large"></i></a>' if collection.sum_minutes('minutes_excess') > 0 %>
-  </td>
 <% else: %>
   <td><%= @mixins.format_long_time @timeEntry.timeIn() %></td>
   <td><%= @mixins.format_long_time @timeEntry.timeOut() %></td>

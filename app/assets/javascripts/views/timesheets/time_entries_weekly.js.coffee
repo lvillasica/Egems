@@ -7,4 +7,5 @@ class Egems.Views.TimeEntriesWeekly extends Backbone.View
       timeEntriesPerDay: @collection
       mixins: $.extend(Egems.Mixins.Defaults, Egems.Mixins.Timesheets)
     ))
+    $('#actions-container').remove()
     this

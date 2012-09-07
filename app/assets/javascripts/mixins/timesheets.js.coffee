@@ -39,6 +39,17 @@ Egems.Mixins.Timesheets =
     else
       return false
 
+  isAwol: (remarks) ->
+    if remarks != null
+      remarks = _.map(remarks.split(///[ ]*,[ ]*///), (x) ->
+        return x.toUpperCase().trim())
+      forLeave = ['AWOL']
+      if _.isEmpty(_.intersection(forLeave, remarks)) == false
+        return true
+      else
+        return false
+    else
+      return false
 
   getDayOfWeek: (date) ->
     dateOnly = date.clone().clearTime()
