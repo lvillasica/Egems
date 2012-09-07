@@ -1,5 +1,26 @@
 module TimesheetsHelper
 
+  def timesheet_top_nav(current_user, current_uri)
+    if current_user.employee.is_supervisor?
+      nav = %Q{
+              <li class="dropdown #{set_active(current_uri =~ /timesheet/)}">
+                <a class="timesheets-lnk" href="#" data-toggle="dropdown">Timesheets <i class="caret"></i></a>
+                <ul class="dropdown-menu">
+                  <li>#{link_to "My Timecard", timesheets_path}</li>
+                  <li>#{link_to "Timesheet Requests", timesheet_requests_path}</li>
+                </ul>
+              </li>
+              }
+    else
+      nav = %Q{
+              <li class="#{set_active(current_uri =~ /timesheet/ || current_uri.eql?('/'))}">
+                <a href="#{timesheets_path}">Timesheets</a>
+              </li>
+              }
+    end
+    nav.html_safe
+  end
+
   def timesheet_navs(active_time)
     active_time ||= Time.now.beginning_of_day
     if active_time.is_a?(Array)
@@ -102,7 +123,7 @@ module TimesheetsHelper
       end
   end
 
- 
+
 
 #----------------------------------------------------------------
 # Autopopulate manual timeout entry

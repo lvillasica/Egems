@@ -78,3 +78,9 @@ Egems.Mixins.Defaults =
             </div>
           </div>
           """
+
+  getMinsDiff: (start, end) ->
+    start = new Date(start)
+    end = new Date(end)
+    totalDiff = start.getTime() - end.getTime()
+    Math.abs(Math.ceil(totalDiff/1000/60))

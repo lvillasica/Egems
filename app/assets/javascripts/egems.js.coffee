@@ -6,6 +6,7 @@ window.Egems =
   Mixins: {}
   init: ->
     new Egems.Routers.Timesheets()
+    new Egems.Routers.TimesheetRequests()
     new Egems.Routers.Leaves()
     new Egems.Routers.LeaveDetails()
     new Egems.Routers.LeaveRequests()

@@ -67,14 +67,14 @@ class LeaveDetail < ActiveRecord::Base
   scope :response_by, lambda { |supervisor|
     supervisor_id = supervisor.id
     special_leaves = Leave::SPECIAL_TYPES.map { |s| "#{s}"}
-    condition = %q{ employee_truancy_detail_responders.responder_id = ? or
+    condition = %Q{ #{LeaveDetailResponder.table_name}.responder_id = ? or
                     case when leave_type in (?)
                       then employees2.employee_supervisor_id = ? or employees2.employee_project_manager_id = ?
                     end
                   }
 
     includes(:responders).asc
-    .joins("LEFT OUTER JOIN employees employees2 ON employees2.id = employee_truancy_details.employee_id")
+    .joins("LEFT OUTER JOIN #{Employee.table_name} employees2 ON employees2.id = #{LeaveDetail.table_name}.employee_id")
     .where([condition, supervisor_id, special_leaves, supervisor_id, supervisor_id])
   }
 
@@ -170,7 +170,7 @@ class LeaveDetail < ActiveRecord::Base
 
   def set_default_responders
     if needs_hr_approval?
-      self.responders = @employee.hr_personnel.compact.uniq unless @employee.is_hr?
+      self.responders = employee.hr_personnel.compact.uniq unless employee.is_hr?
     else
       self.responders = [employee.project_manager, employee.immediate_supervisor].compact.uniq
     end
@@ -180,11 +180,11 @@ class LeaveDetail < ActiveRecord::Base
     @old_leave_date_local = self.leave_date_was.localtime.to_date
     @old_end_date_local = self.end_date_was.localtime.to_date
   end
-  
+
   def set_created_on
     self.created_on = Time.now.utc
   end
-  
+
   def update_attributes_and_reset_status(attrs)
     attrs.merge!(:status => 'Pending') unless status.eql?('Pending')
     update_attributes(attrs)

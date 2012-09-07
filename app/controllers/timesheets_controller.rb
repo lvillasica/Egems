@@ -50,6 +50,18 @@ class TimesheetsController < ApplicationController
     save_manual_timeentry('timeout', params[:timeout])
   end
 
+  def manual_timesheet_requests
+    if @employee.is_supervisor?
+      js_params[:pending] = attrs Timesheet.response_by(@employee).pending_manual
+      respond_to do |format|
+        format.html { render :template => 'layouts/application' }
+        format.json { render :json => js_params.to_json }
+      end
+    else
+      render_404
+    end
+  end
+
   def timesheets_nav
     @active_time = (params['time'].blank? ? Time.now.beginning_of_day : Time.parse(params['time']))
     get_active_timesheets(@active_time)
@@ -180,6 +192,14 @@ private
       end
     end
     timesheets
+  end
+
+  def attrs(timesheets)
+    timesheets.map do |timesheet|
+      timesheet.attributes.merge({
+        :employee_name => timesheet.employee.full_name,
+        :time_in => timesheet.time_in_without_adjustment })
+    end
   end
 
 end

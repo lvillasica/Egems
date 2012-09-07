@@ -15,7 +15,6 @@ class Egems.Views.LeaveRequest extends Backbone.View
 
   viewDetails: (event) ->
     event.preventDefault()
-    console.log "@viewDetails"
     details = new Egems.Views.ViewLeaveDetail(model: @model)
     $('#main-container').append('<div id="view-details-modal" class="modal hide fade" />')
     $('#view-details-modal').append(details.render().el)

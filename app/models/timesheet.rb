@@ -1,4 +1,5 @@
 class Timesheet < ActiveRecord::Base
+
   # -------------------------------------------------------
   # Errors
   # -------------------------------------------------------
@@ -29,6 +30,8 @@ class Timesheet < ActiveRecord::Base
   belongs_to :next_day_shift_schedule_detail, class_name: 'ShiftScheduleDetail'
   belongs_to :employee
   has_one    :overtime, :foreign_key => 'id', :primary_key => 'id'
+  has_many   :actions, :class_name => 'TimesheetAction',
+                       :foreign_key => 'employee_timesheet_id'
   has_and_belongs_to_many :responders, :class_name => "Employee",
                           :join_table => "timesheet_actions",
                           :foreign_key => :employee_timesheet_id,
@@ -57,6 +60,13 @@ class Timesheet < ActiveRecord::Base
     .where(["date between ? and ?",
              start_date.utc, end_date.utc])
   }
+
+  scope :response_by, lambda { |supervisor|
+    asc.includes(:responders)
+    .where(["#{TimesheetAction.table_name}.responder_id = ?", supervisor.id])
+  }
+
+  scope :pending_manual, includes(:responders).where(["#{TimesheetAction.table_name}.response = 'Pending'"])
 
   # -------------------------------------------------------
   # Class Methods
@@ -178,8 +188,15 @@ class Timesheet < ActiveRecord::Base
       time = nil
     end
 
-    type = time_out ? 'time_in' : 'time_out'
-    t_date = time_out ? t_date : date.localtime
+    if time_out
+      type = 'time_in'
+      self.is_valid = 3     # manual time in
+    else
+      type = 'time_out'
+      t_date = date.localtime
+      self.is_valid = 2     # manual time out
+    end
+
     self.attributes = { "#{type}" => time, "date" => t_date.beginning_of_day }
     self.responders << [employee.project_manager, employee.immediate_supervisor].compact.uniq
 
@@ -195,7 +212,6 @@ class Timesheet < ActiveRecord::Base
   end
 
   def send_invalid_timesheet_notification(type)
-    binding.pry
     recipients = Array.new(responders)
     recipients << employee
 

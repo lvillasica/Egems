@@ -25,6 +25,7 @@ Egems::Application.routes.draw do
       match '/:time/week', to: 'timesheets#timesheets_nav_week', as: 'timesheets_nav_week', via: 'post'
       match '/leaves/new', to: 'timesheets#new_leave', as: 'timesheets_new_leave', via: 'get'
       match '/overtimes/new', to: 'timesheets#new_overtime', as: 'timesheets_new_overtime', via: 'get'
+      match '/requests', to: 'timesheets#manual_timesheet_requests', as: 'timesheet_requests', via: 'get'
     end
 
     match '/delete/autotimein', :to => 'application#delete_session', :via => :post
@@ -40,7 +41,7 @@ Egems::Application.routes.draw do
         post :cancel
       end
     end
-    
+
     resources :overtimes
     resources :leaves
 

@@ -1,0 +1,22 @@
+<h3>Timesheet Requests</h3>
+<br>
+
+<form id="timesheets-approval-form">
+<br>
+<p class="small-note">* Time entries in bold-italic are manual inputs from employee.</p>
+<table class="table table-condensed timesheets" id="timesheet-requests-tbl" style="margin-top: 5px">
+  <thead>
+    <tr>
+      <th><a id="toggle-boxes" class="icon-ok""> All</a></th>
+      <th>Name</th>
+      <th>Date</th>
+      <th>Time In</th>
+      <th>Time Out</th>
+      <th>Total Hours</th>
+      <th>Details</th>
+    </tr>
+  </thead>
+  <tbody>
+  </tbody>
+</table>
+</form>

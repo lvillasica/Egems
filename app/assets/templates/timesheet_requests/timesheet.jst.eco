@@ -1,0 +1,7 @@
+<td><input value="<%= @timesheet.getId() %>" type="checkbox"></td>
+<td><%= @timesheet.employeeName() %></td>
+<td><%= @mixins.format_date @timesheet.date() %></td>
+<td id="time-in"><%= @mixins.format_long_time @timesheet.timeIn() %></td>
+<td id="time-out"><%= @mixins.format_long_time @timesheet.timeOut() %></td>
+<td><%= @mixins.format_in_hours @mixins.getMinsDiff(@timesheet.timeIn(), @timesheet.timeOut()) %></td>
+<td><a href="" role="button" class="timesheet-details" data-toggle="modal"><i class="icon-comment"></i></a></td>

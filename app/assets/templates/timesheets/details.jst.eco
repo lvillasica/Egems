@@ -1,0 +1,47 @@
+<h4 id="view-details-header">Timesheet Details</h4>
+
+<div id="view-details-body">
+  <table class="table table-condensed" id="details-tbl">
+    <tr>
+      <th>Employee</th>
+      <td><%= @timesheet.employeeName() %></td>
+    </tr>
+    <tr>
+      <th>Date</th>
+      <td><%= @mixins.format_date @timesheet.date() %></td>
+    </tr>
+    <tr>
+      <% if @timesheet.validity() == 3 :%>
+      <th>Time In (Manual)</th>
+      <% else :%>
+      <th>Time In</th>
+      <% end %>
+      <td><%= @mixins.format_long_time @timesheet.timeIn() %></td>
+    </tr>
+    <tr>
+      <% if @timesheet.validity() == 2 :%>
+      <th>Time Out (Manual)</th>
+      <% else :%>
+      <th>Time Out</th>
+      <% end %>
+      <td><%= @mixins.format_long_time @timesheet.timeOut() %></td>
+    </tr>
+    <tr>
+      <th>Total Hours</th>
+      <td><%= @mixins.format_in_hours @mixins.getMinsDiff(@timesheet.timeIn(), @timesheet.timeOut()) %></td>
+    </tr>
+    <tr>
+      <th>Late</th>
+      <td><%= @mixins.format_in_hours @timesheet.late() %></td>
+    </tr>
+    <tr>
+      <th>Undertime</th>
+      <td><%= @mixins.format_in_hours @timesheet.undertime() %></td>
+    </tr>
+    <tr>
+      <th>Excess</th>
+      <td><%= @mixins.format_in_hours @timesheet.excess() %></td>
+    </tr>
+  </table>
+  </div>
+</div>
