@@ -96,7 +96,7 @@ class LeaveDetailsController < ApplicationController
     end
 
     if errors.empty?
-      js_params[:success] = { success: "Leaves successfully approved." }
+      js_params[:success] = { success: "Leave/s successfully approved." }
     else
       js_params[:errors] = errors
     end

@@ -212,7 +212,7 @@ class Timesheet < ActiveRecord::Base
       return false
     end
   end
-  
+
   def manual_entry(attrs)
     time_in = validate_time_attrs(attrs[:timein])
     time_out = validate_time_attrs(attrs[:timeout])
@@ -237,7 +237,7 @@ class Timesheet < ActiveRecord::Base
       return false
     end
   end
-  
+
   def validate_time_attrs(attrs)
     begin
       t_date = attrs[:date] ? Time.parse(attrs[:date]) : date.localtime.to_date
@@ -246,6 +246,20 @@ class Timesheet < ActiveRecord::Base
       return Time.local(t_date.year, t_date.month, t_date.day, t_hour, t_min)
     rescue
       return nil
+    end
+  end
+
+  def send_action_notification(type, action_owner, action)
+    recipients = Array.new(responders)
+    recipients << employee
+
+    recipients.uniq.compact.each do |recipient|
+      begin
+        TimesheetMailer.timesheet_action(employee, self, recipient, type, action, action_owner).deliver
+      rescue Net::SMTPAuthenticationError, Net::SMTPServerBusy, Net::SMTPSyntaxError, Net::SMTPFatalError, Net::SMTPUnknownError => e
+        errors[:base] << "Time entry was updated however there was problem with email notification to #{recipient.email}: #{e.message}"
+        next
+      end
     end
   end
 
@@ -260,6 +274,25 @@ class Timesheet < ActiveRecord::Base
         errors[:base] << "Time entry was updated however there was problem with email notification to #{recipient.email}: #{e.message}"
         next
       end
+    end
+  end
+
+  def approve!(supervisor)
+    action = actions.where(:responder_id => supervisor.id).first
+    if action
+      action.response = 'Approved'
+      action.approved_time_out = case is_valid
+      when 2
+        time_out
+        type = 'time_out'
+      when 3
+        time_in_without_adjustment
+        type = 'time_in'
+      end
+      action.save
+      send_action_notification(type, supervisor, "approved")
+    else
+       errors[:base] << "You no permission to approve this time entry."
     end
   end
 
@@ -278,7 +311,7 @@ class Timesheet < ActiveRecord::Base
       if last_entry && last_entry.time_out && time_in_without_adjustment < last_entry.time_out
         errors[:base] << "Time in should be later than last entries."
       end
-      
+
       later_entry = employee.timesheets.later_entries(time_in_without_adjustment).asc.first
       if later_entry && time_out > later_entry.time_in_without_adjustment
         lti = format_short_time_with_sec(later_entry.time_in_without_adjustment)

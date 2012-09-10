@@ -22,19 +22,20 @@ Egems::Application.routes.draw do
 
     scope '/timesheets' do
       match '/manual_time_entry', to: 'timesheets#manual_time_entry', as: 'timesheets_manual_entry', via: 'post'
-      match '/:time', to: 'timesheets#timesheets_nav', as: 'timesheets_nav', via: 'post'
-      match '/:time/week', to: 'timesheets#timesheets_nav_week', as: 'timesheets_nav_week', via: 'post'
       match '/leaves/new', to: 'timesheets#new_leave', as: 'timesheets_new_leave', via: 'get'
       match '/overtimes/new', to: 'timesheets#new_overtime', as: 'timesheets_new_overtime', via: 'get'
       match '/requests', to: 'timesheets#manual_timesheet_requests', as: 'timesheet_requests', via: 'get'
+      match '/approve', to: 'timesheets#bulk_approve', as: 'timesheets_approve', via: 'post'
+      match '/:time', to: 'timesheets#timesheets_nav', as: 'timesheets_nav', via: 'post'
+      match '/:time/week', to: 'timesheets#timesheets_nav_week', as: 'timesheets_nav_week', via: 'post'
     end
 
     match '/delete/autotimein', :to => 'application#delete_session', :via => :post
 
     scope '/leave_details' do
       match '/requests', to: 'leave_details#leave_requests', as: 'leave_requests', via: 'get'
-      match '/approve', to: 'leave_details#bulk_approve', via: 'post'
-      match '/reject', to: 'leave_details#bulk_reject', via: 'post'
+      match '/approve', to: 'leave_details#bulk_approve', as: 'leave_details_approve', via: 'post'
+      match '/reject', to: 'leave_details#bulk_reject', as: 'leave_details_reject', via: 'post'
     end
 
     resources :leave_details, { :except => [:show, :destroy] } do

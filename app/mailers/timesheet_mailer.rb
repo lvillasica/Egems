@@ -23,6 +23,19 @@ class TimesheetMailer < BaseMailer
     end
 
     mail(:to      => @recipient.email,
-         :subject => "[eGems]#{@receiver_sv} sent a #{@type} request for approval")
+         :subject => "[eGEMS]#{@receiver_sv} sent a #{@type} request for approval")
+  end
+
+  def timesheet_action(requester, timesheet, recipient=requester, type, action, action_owner)
+    @receiver_sv = (recipient == action_owner) ? "You have #{action} " : "#{action_owner.full_name} has #{action} "
+    @receiver_sv << (recipient == requester ? "your" : "#{requester.full_name}'s")
+    @recipient = recipient
+    @requester = requester
+    @type = type.capitalize.dasherize
+    @time = timesheet[type]
+    @approvers = timesheet.responders.compact.uniq
+
+    mail(:to      => @recipient.email,
+         :subject => "[eGEMS] #{@requester.full_name} #{@type} request has been #{action}")
   end
 end

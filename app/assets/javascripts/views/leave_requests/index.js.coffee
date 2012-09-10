@@ -81,7 +81,7 @@ class Egems.Views.LeaveRequestsIndex extends Backbone.View
 
   noCheckedBox: ->
     $('#flash_messages').html @mixins.flash_messages
-      error: 'No selected leave request/s.'
+      error: 'No selected leave request.'
 
   showErrors: (errors) ->
     msg = @mixins.listMessageHash(errors)

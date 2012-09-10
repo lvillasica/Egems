@@ -82,6 +82,24 @@ class TimesheetsController < ApplicationController
     end
   end
 
+  def bulk_approve
+    errors = Hash.new
+    timesheets = Timesheet.find_all_by_id(params[:approved_ids])
+    timesheets.each do |timesheet|
+      unless timesheet.approve!(@employee)
+        msg = "Can't approve time entry of #{timesheet.employee.full_name}"
+        errors[msg] = timesheet.errors.full_messages
+      end
+    end
+
+    if errors.empty?
+      js_params[:success] = { success: "Timesheet/s successfully approved." }
+    else
+      js_params[:errors] = errors
+    end
+    manual_timesheet_requests
+  end
+
   def timesheets_nav
     @active_time = (params['time'].blank? ? Time.now.beginning_of_day : Time.parse(params['time']))
     get_active_timesheets(@active_time)

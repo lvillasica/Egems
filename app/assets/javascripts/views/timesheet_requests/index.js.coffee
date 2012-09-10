@@ -5,6 +5,7 @@ class Egems.Views.TimesheetRequestsIndex extends Backbone.View
 
   events: ->
     "click #toggle-boxes" : "toggleCheckedBoxes"
+    "click #timesheets-approval-form .approve" : "approveCheckedBoxes"
 
   initialize: ->
     @collection.on('reset', @render, this)
@@ -29,3 +30,33 @@ class Egems.Views.TimesheetRequestsIndex extends Backbone.View
       when "icon-remove"
         $(event.target).removeClass('icon-remove').addClass('icon-ok')
         $("#timesheets-approval-form table tr td input[type='checkbox']:not(:disabled)").attr('checked', false)
+
+  approveCheckedBoxes: (event) ->
+    event.preventDefault()
+    ids = @getCheckedIds()
+
+    if ids.length > 0
+      $.ajax
+        url: '/timesheets/approve'
+        dataType: 'JSON'
+        type: 'POST'
+        data: { approved_ids: ids }
+        success: (data) =>
+          @collection.reset(data.pending)
+          if data.errors != undefined
+            @showErrors(data.errors)
+          else
+            @showSuccessMsg(data.success)
+    else
+      @noCheckedBox()
+
+  getCheckedIds: ->
+    _.map $("#timesheets-approval-form input[type='checkbox']:checked"), (box) ->
+      $(box).val()
+
+  noCheckedBox: ->
+    $('#flash_messages').html @mixins.flash_messages
+      error: 'No selected timesheet request.'
+
+  showSuccessMsg: (msg) ->
+    $("#flash_messages").html @mixins.flash_messages(msg)

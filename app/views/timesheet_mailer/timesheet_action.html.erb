@@ -1,0 +1,20 @@
+
+<p>Hi <%= @recipient.full_name %>,</p>
+<br/>
+<p><%= @receiver_sv %> <%= @type %> request { <%= format_time_in_long_with_date(@time) %> }.</p>
+<br/>
+
+<% if @approvers.present? %>
+<p>The request has been sent to the following for appropriate action:</p>
+<ul style='list-style-type: none'>
+  <% @approvers.map(&:full_name).each do |approver| %>
+    <li><%= approver %></li>
+  <% end %>
+</ul>
+<br/>
+<% end %>
+
+<p>This is a system generated email. Please do not reply.</p>
+<br/>
+<p>Regards,</p>
+<p>eGEMs</p>
