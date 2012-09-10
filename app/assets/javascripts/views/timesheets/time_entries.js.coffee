@@ -60,7 +60,7 @@ class Egems.Views.TimeEntries extends Backbone.View
 
   linkToLeaveFile: (event) =>
     event.preventDefault()
-    if $(event.target).parents("tr")
+    if $(event.target).parents("tr").length > 0
       date = $(event.target).parents("tr").find("td#tdate").text()
     else
       date = $("td#tdate").text()
