@@ -68,7 +68,9 @@ class Timesheet < ActiveRecord::Base
     .where(["#{TimesheetAction.table_name}.responder_id = ?", supervisor.id])
   }
 
-  scope :pending_manual, includes(:responders).where(["#{TimesheetAction.table_name}.response = 'Pending'"])
+  scope :pending_manual,  includes(:responders).where(["#{TimesheetAction.table_name}.response = 'Pending'"])
+  scope :approved_manual, includes(:responders).where(["#{TimesheetAction.table_name}.response = 'Approved'"])
+  scope :rejected_manual, includes(:responders).where(["#{TimesheetAction.table_name}.response = 'Rejected'"])
 
   # -------------------------------------------------------
   # Class Methods
@@ -278,22 +280,34 @@ class Timesheet < ActiveRecord::Base
   end
 
   def approve!(supervisor)
-    action = actions.where(:responder_id => supervisor.id).first
-    if action
+    type = case is_valid
+           when 2 then 'time_out'
+           when 3 then 'time_in'
+           end
+    actions.each do |action|
       action.response = 'Approved'
-      action.approved_time_out = case is_valid
-      when 2
-        time_out
-        type = 'time_out'
-      when 3
-        time_in_without_adjustment
-        type = 'time_in'
-      end
+      time = (type == 'time_in') ? time_in_without_adjustment : time_out
+      action.approved_time_out = time
       action.save
-      send_action_notification(type, supervisor, "approved")
-    else
-       errors[:base] << "You no permission to approve this time entry."
     end
+    send_action_notification(type, supervisor, "approved")
+    return actions.present?
+  end
+
+  def reject!(supervisor)
+    type = case is_valid
+           when 2 then 'time_out'
+           when 3 then 'time_in'
+           end
+    actions.each do |action|
+      action.response = 'Rejected'
+      if action.save
+        timesheets_today = employee.timesheets.by_date(date.localtime).asc.reject{ |t| t.time_in > time_in }
+        timesheets_today.each(&:zero_computations)
+      end
+    end
+    send_action_notification(type, supervisor, "rejected")
+    return actions.present?
   end
 
   def invalid_entries
@@ -322,37 +336,42 @@ class Timesheet < ActiveRecord::Base
 
   def compute_minutes
     if time_out
-      @timesheets_today = employee.timesheets.by_date(date.localtime).asc
-                                  .reject{ |t| t.id == id || t.time_in > time_in }
+      timesheets_ = employee.timesheets.asc
+                            .where(["#{Timesheet.table_name}.id <> ? or #{Timesheet.table_name}.time_in > ?", id, time_in])
+      @timesheets_today = timesheets_.by_date(date.localtime)
       @first_timesheet = @timesheets_today.first || self
 
-      if is_within_shift?
-        if @timesheets_today.empty?
-          @valid_time_out = get_valid_time_out
-          self.duration = ((time_out - time_in) / 1.minute).floor
-          self.minutes_undertime = get_minutes_undertime
-          self.minutes_excess = get_minutes_excess
-        else
-          @valid_time_out = @first_timesheet.get_valid_time_out
-          self.duration = ((time_out - @first_timesheet.time_in) / 1.minute).floor
-          self.minutes_undertime = get_minutes_undertime
-          self.minutes_excess = get_minutes_excess
+      if timesheets_.rejected_manual.empty?
+        if is_within_shift?
+          if @timesheets_today.empty?
+            @valid_time_out = get_valid_time_out
+            self.duration = ((time_out - time_in) / 1.minute).floor
+            self.minutes_undertime = get_minutes_undertime
+            self.minutes_excess = get_minutes_excess
+          else
+            @valid_time_out = @first_timesheet.get_valid_time_out
+            self.duration = ((time_out - @first_timesheet.time_in) / 1.minute).floor
+            self.minutes_undertime = get_minutes_undertime
+            self.minutes_excess = get_minutes_excess
 
-          @timesheets_today.each do |prev|
-            prev.update_column(:duration, 0)
-            prev.update_column(:minutes_excess, 0)
-            prev.update_column(:minutes_undertime, 0)
+            @timesheets_today.each(&:zero_computations)
           end
-        end
-      else
-        if !is_work_day? or (is_work_day? && @timesheets_today.select(&:is_within_shift?).present?)
-          undertimes = @timesheets_today.sum(&:minutes_undertime)
-          self.duration = ((time_out - time_in) / 1.minute).floor
-          self.minutes_undertime = 0
-          self.minutes_excess = undertimes > 0 ? 0 : duration
+        else
+          if !is_work_day? or (is_work_day? && @timesheets_today.select(&:is_within_shift?).present?)
+            undertimes = @timesheets_today.sum(&:minutes_undertime)
+            self.duration = ((time_out - time_in) / 1.minute).floor
+            self.minutes_undertime = 0
+            self.minutes_excess = undertimes > 0 ? 0 : duration
+          end
         end
       end
     end
+  end
+
+  def zero_computations
+    self.update_column(:duration, 0)
+    self.update_column(:minutes_excess, 0)
+    self.update_column(:minutes_undertime, 0)
   end
 
   def put_remarks

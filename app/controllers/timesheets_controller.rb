@@ -49,7 +49,7 @@ class TimesheetsController < ApplicationController
     @timesheet = Timesheet.find_by_id(params[:id])
     save_manual_timeentry('timeout', params[:timeout])
   end
-  
+
   def manual_time_entry
     @timesheet = @employee.timesheets.new
     begin
@@ -92,11 +92,23 @@ class TimesheetsController < ApplicationController
       end
     end
 
-    if errors.empty?
-      js_params[:success] = { success: "Timesheet/s successfully approved." }
-    else
-      js_params[:errors] = errors
+    js_params[:success] = { success: "Timesheet/s successfully approved." } if errors.empty?
+    js_params[:errors] = errors if errors.present?
+    manual_timesheet_requests
+  end
+
+  def bulk_reject
+    errors = Hash.new
+    timesheets = Timesheet.find_all_by_id(params[:rejected_ids])
+    timesheets.each do |timesheet|
+      unless timesheet.reject!(@employee)
+        msg = "Can't reject time entry of #{timesheet.employee.full_name}"
+        errors[msg] = timesheet.errors.full_messages
+      end
     end
+
+    js_params[:success] = { success: "Timesheet/s successfully rejected." } if errors.empty?
+    js_params[:errors] = errors if errors.present?
     manual_timesheet_requests
   end
 

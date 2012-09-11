@@ -2,10 +2,11 @@
 <br>
 
 <% if @timesheets.length > 0 :%>
-    <div id="flash_messages"></div>
+  <div id="flash_messages"></div>
   <form id="timesheets-approval-form">
   <br>
   <button class="btn btn-primary approve">Approve</button>
+  <button class="btn btn-primary reject">Reject</button>
   <p class="small-note">* Time entries in bold-italic are manual inputs from employee.</p>
   <table class="table table-condensed timesheets" id="timesheet-requests-tbl" style="margin-top: 5px">
     <thead>

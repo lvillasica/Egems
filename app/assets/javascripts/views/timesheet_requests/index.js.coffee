@@ -6,6 +6,7 @@ class Egems.Views.TimesheetRequestsIndex extends Backbone.View
   events: ->
     "click #toggle-boxes" : "toggleCheckedBoxes"
     "click #timesheets-approval-form .approve" : "approveCheckedBoxes"
+    "click #timesheets-approval-form .reject" : "rejectCheckedBoxes"
 
   initialize: ->
     @collection.on('reset', @render, this)
@@ -41,6 +42,25 @@ class Egems.Views.TimesheetRequestsIndex extends Backbone.View
         dataType: 'JSON'
         type: 'POST'
         data: { approved_ids: ids }
+        success: (data) =>
+          @collection.reset(data.pending)
+          if data.errors != undefined
+            @showErrors(data.errors)
+          else
+            @showSuccessMsg(data.success)
+    else
+      @noCheckedBox()
+
+  rejectCheckedBoxes: (event) ->
+    event.preventDefault()
+    ids = @getCheckedIds()
+
+    if ids.length > 0
+      $.ajax
+        url: '/timesheets/reject'
+        dataType: 'JSON'
+        type: 'POST'
+        data: { rejected_ids: ids }
         success: (data) =>
           @collection.reset(data.pending)
           if data.errors != undefined

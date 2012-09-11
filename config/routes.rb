@@ -26,6 +26,7 @@ Egems::Application.routes.draw do
       match '/overtimes/new', to: 'timesheets#new_overtime', as: 'timesheets_new_overtime', via: 'get'
       match '/requests', to: 'timesheets#manual_timesheet_requests', as: 'timesheet_requests', via: 'get'
       match '/approve', to: 'timesheets#bulk_approve', as: 'timesheets_approve', via: 'post'
+      match '/reject', to: 'timesheets#bulk_reject', as: 'timesheets_reject', via: 'post'
       match '/:time', to: 'timesheets#timesheets_nav', as: 'timesheets_nav', via: 'post'
       match '/:time/week', to: 'timesheets#timesheets_nav_week', as: 'timesheets_nav_week', via: 'post'
     end
