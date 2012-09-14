@@ -22,6 +22,7 @@ Egems::Application.routes.draw do
 
     scope '/timesheets' do
       match '/manual_time_entry', to: 'timesheets#manual_time_entry', as: 'timesheets_manual_entry', via: 'post'
+      match '/edit_manual_entry', to: 'timesheets#edit_manual_entry', as: 'timesheets_edit_manual', via: 'put'
       match '/leaves/new', to: 'timesheets#new_leave', as: 'timesheets_new_leave', via: 'get'
       match '/overtimes/new', to: 'timesheets#new_overtime', as: 'timesheets_new_overtime', via: 'get'
       match '/requests', to: 'timesheets#manual_timesheet_requests', as: 'timesheet_requests', via: 'get'

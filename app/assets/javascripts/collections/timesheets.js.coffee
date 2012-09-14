@@ -13,3 +13,6 @@ class Egems.Collections.Timesheets extends Backbone.Collection
     for timesheet in @models
       sum += parseFloat(timesheet.get(attribute))
     return sum
+  
+  editableEntries: ->
+    @where(is_editable: true)

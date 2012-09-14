@@ -35,3 +35,6 @@ class Egems.Models.Timesheet extends Backbone.Model
 
   employeeName: ->
     @get 'employee_name'
+  
+  isEditable: ->
+    @get 'is_editable'

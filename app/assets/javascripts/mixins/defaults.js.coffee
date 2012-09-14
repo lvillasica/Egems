@@ -11,6 +11,15 @@ Egems.Mixins.Defaults =
 
   format_day_only: (date) ->
     res = I18n.strftime(new Date(date), '%a')
+  
+  getHour: (time) ->
+    I18n.strftime(new Date(time), '%I')
+  
+  getMin: (time) ->
+    I18n.strftime(new Date(time), '%M')
+  
+  getMeridian: (time) ->
+    I18n.strftime(new Date(time), '%p')
 
   format_float: (num) ->
     parseFloat(num).toFixed(1)

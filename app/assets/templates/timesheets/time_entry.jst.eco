@@ -7,21 +7,21 @@
       <span class='remarks-text'><%= remark %></span><br/>
     <% end %>
   </td>
-  <td class="time"><%= @mixins.format_long_time @timeEntry.timeIn() %></td>
-  <td class="time"><%= @mixins.format_long_time @timeEntry.timeOut() %></td>
-  <td class="mins" rowspan="<%= @size %>">
+  <td class="time in"><%= @mixins.format_long_time @timeEntry.timeIn() %></td>
+  <td class="time out"><%= @mixins.format_long_time @timeEntry.timeOut() %></td>
+  <td class="mins duration" rowspan="<%= @size %>">
     <%= @mixins.format_in_hours collection.sum_minutes('duration') %>
   </td>
-  <td class="mins" rowspan="<%= @size %>">
+  <td class="mins late" rowspan="<%= @size %>">
     <%= @mixins.format_in_hours collection.sum_minutes('minutes_late') %>
   </td>
-  <td class="mins" rowspan="<%= @size %>">
+  <td class="mins undertime" rowspan="<%= @size %>">
     <%= @mixins.format_in_hours collection.sum_minutes('minutes_undertime') %>
   </td>
-  <td id="texcess" class="mins" rowspan="<%= @size %>">
+  <td id="texcess" class="mins excess" rowspan="<%= @size %>">
     <%= @mixins.format_in_hours collection.sum_minutes('minutes_excess') %>
   </td>
 <% else: %>
-  <td><%= @mixins.format_long_time @timeEntry.timeIn() %></td>
-  <td><%= @mixins.format_long_time @timeEntry.timeOut() %></td>
+  <td class="time in"><%= @mixins.format_long_time @timeEntry.timeIn() %></td>
+  <td class="time out"><%= @mixins.format_long_time @timeEntry.timeOut() %></td>
 <% end %>

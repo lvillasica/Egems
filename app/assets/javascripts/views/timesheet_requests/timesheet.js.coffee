@@ -19,10 +19,13 @@ class Egems.Views.TimesheetRequest extends Backbone.View
     this
 
   labelManuality: ->
-    if @model.validity() == 2
-      @$('td#time-out').addClass("manual-time")
-    else if @model.validity() == 3
-      @$('td#time-in').addClass("manual-time")
+    switch @model.validity()
+      when 2
+        @$('td#time-out').addClass("manual-time")
+      when 3
+        @$('td#time-in').addClass("manual-time")
+      when 4
+        @$('td#time-in, td#time-out').addClass("manual-time")
 
   viewDetails: (event) =>
     event.preventDefault()

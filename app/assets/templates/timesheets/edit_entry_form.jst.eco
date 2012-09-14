@@ -1,0 +1,16 @@
+
+<input name="<%= @action %>[hour]" class="time" maxlength="2" size="1" type="text"
+       value="<%= @mixins.getHour @time %>" placeholder="hh" />
+<input name="<%= @action %>[min]" class="time" maxlength="2" size="1" type="text"
+       value="<%= @mixins.getMin @time %>" placeholder="mm" />
+<select name="<%= @action %>[meridian]" style="width:45px" class="time">
+  <option value="AM" <%- 'selected = "selected"' if @mixins.getMeridian(@time) is 'am' %>>
+    AM
+  </option>
+  <option value="PM" <%- 'selected = "selected"' if @mixins.getMeridian(@time) is 'pm' %>>
+    PM
+  </option>
+</select>
+<input name="<%= @action %>[date]" class="time" size="30" type="text"
+       style="width: 70px;" value="<%= @mixins.format_date @model.date() %>" />
+<a class="submit-trigger" href="#"><i class="icon-ok"></i></a>

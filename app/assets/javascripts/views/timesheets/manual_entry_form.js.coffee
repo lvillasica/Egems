@@ -32,14 +32,14 @@ class Egems.Views.ManualEntryForm extends Backbone.View
     .submit()
   
   getAttributes: ->
-    'timein[hour]': $('input[name="timein[hour]"]').val()
-    'timein[min]': $('input[name="timein[min]"]').val()
-    'timein[meridian]': $('select[name="timein[meridian]"]').val()
+    'timein[hour]': @$('input[name="timein[hour]"]').val()
+    'timein[min]': @$('input[name="timein[min]"]').val()
+    'timein[meridian]': @$('select[name="timein[meridian]"]').val()
     'timein[date]': @date
-    'timeout[hour]': $('input[name="timeout[hour]"]').val()
-    'timeout[min]': $('input[name="timeout[min]"]').val()
-    'timeout[meridian]': $('select[name="timeout[meridian]"]').val()
-    'timeout[date]': $('input[name="timeout[date]"]').val()
+    'timeout[hour]': @$('input[name="timeout[hour]"]').val()
+    'timeout[min]': @$('input[name="timeout[min]"]').val()
+    'timeout[meridian]': @$('select[name="timeout[meridian]"]').val()
+    'timeout[date]': @$('input[name="timeout[date]"]').val()
   
   submitForm: (event) ->
     event.preventDefault()

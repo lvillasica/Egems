@@ -56,9 +56,7 @@ class TimesheetsController < ApplicationController
       if @timesheet.manual_entry(params)
         get_active_timesheets(@timesheet.date.localtime)
       else
-        flash_message(:error, @timesheet.errors.full_messages) if @timesheet.errors.any?
-        js_params[:flash_messages] = flash.to_hash
-        flash.discard
+        set_flash
       end
     rescue Timesheet::NoTimeoutError
       time = @timesheet.validate_time_attrs(params[:timein])
@@ -68,6 +66,20 @@ class TimesheetsController < ApplicationController
       js_params[:error] = ['error', flash_message(:alert, :no_timeout)]
     end
     respond_with_json
+  end
+  
+  def edit_manual_entry
+    @timesheet = @employee.timesheets.find_by_id(params[:id])
+    if @timesheet.update_manual_entry(params)
+      js_params[:time_entry] = @timesheet
+      set_flash(:info)
+    else
+      set_flash
+    end
+    respond_to do |format|
+      format.html { render :template => 'layouts/application' }
+      format.json { render :json => js_params.to_json }
+    end
   end
 
   def manual_timesheet_requests
@@ -238,7 +250,10 @@ private
       end
     else
       timesheets = @employee_timesheets_active.map do |t|
-        t.attributes.merge({ :time_in => t.time_in_without_adjustment })
+        t.attributes.merge({
+          :time_in => t.time_in_without_adjustment,
+          :is_editable => t.is_editable?
+        })
       end
     end
     timesheets
@@ -250,6 +265,12 @@ private
         :employee_name => timesheet.employee.full_name,
         :time_in => timesheet.time_in_without_adjustment })
     end
+  end
+  
+  def set_flash(type = :error)
+    flash_message(type, @timesheet.errors.full_messages) if @timesheet.errors.any?
+    js_params[:flash_messages] = flash.to_hash
+    flash.discard
   end
 
 end

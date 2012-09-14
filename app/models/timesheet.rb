@@ -7,7 +7,7 @@ class Timesheet < ActiveRecord::Base
   class NoTimeinError < StandardError; end
 
   self.table_name = 'employee_timesheets'
-  attr_accessible :date, :time_in, :time_out
+  attr_accessible :date, :time_in, :time_out, :is_valid
 
   # -------------------------------------------------------
   # Modules
@@ -53,8 +53,14 @@ class Timesheet < ActiveRecord::Base
   scope :no_timeout,  :conditions => ["time_in is not null and time_out is null"]
   scope :desc, :order => 'time_in desc, created_on desc'
   scope :asc, :order => 'time_in asc'
-  scope :last_entries, lambda { |time| where("time_out < ?", time.utc) }
-  scope :later_entries, lambda { |time| where("time_in > ?", time.utc) }
+  scope :last_entries, lambda { |timesheet|
+    where("time_out < ? and Date(date) <= Date(?)",
+           timesheet.time_out.utc, timesheet.date.utc)
+  }
+  scope :later_entries, lambda { |timesheet|
+    where("time_in > ? and Date(date) >= Date(?)",
+           timesheet.time_in.utc, timesheet.date.utc)
+  }
   scope :within, lambda { |range|
     start_date, end_date = range
     asc
@@ -71,6 +77,15 @@ class Timesheet < ActiveRecord::Base
   scope :pending_manual,  includes(:responders).where(["#{TimesheetAction.table_name}.response = 'Pending'"])
   scope :approved_manual, includes(:responders).where(["#{TimesheetAction.table_name}.response = 'Approved'"])
   scope :rejected_manual, includes(:responders).where(["#{TimesheetAction.table_name}.response = 'Rejected'"])
+  
+  scope :editable_entries, lambda {
+    ids = all.map { |t| t.id if t.actions.pending_or_rejected.any? }
+    where(:id => ids.compact)
+  }
+  
+  scope :exclude, lambda { |timesheets|
+    where('id not in (?)', timesheets.map(&:id))
+  }
 
   # -------------------------------------------------------
   # Class Methods
@@ -216,21 +231,23 @@ class Timesheet < ActiveRecord::Base
   end
 
   def manual_entry(attrs)
-    time_in = validate_time_attrs(attrs[:timein])
-    time_out = validate_time_attrs(attrs[:timeout])
-    errors[:time_in] << 'is invalid' unless time_in
-    errors[:time_out] << 'is invalid' unless time_out
-    if time_in && time_out
-      invalid_timesheets = employee.timesheets.latest(time_in).no_timeout +
-                           employee.timesheets.previous(time_in).no_timeout
+    timein = validate_time_attrs(attrs[:timein])
+    timeout = validate_time_attrs(attrs[:timeout])
+    errors[:time_in] << 'is invalid' unless timein
+    errors[:time_out] << 'is invalid' unless timeout
+    if timein && timeout
+      invalid_timesheets = employee.timesheets.latest(timein).no_timeout +
+                           employee.timesheets.previous(timein).no_timeout
       raise NoTimeoutError if invalid_timesheets.present?
       self.attributes = {
         :date => Time.parse(attrs[:timein][:date]),
-        :time_in => time_in,
-        :time_out => time_out
+        :time_in => timein,
+        :time_out => timeout,
+        :is_valid => 4     # manual time in & out
       }
+      self.responders << [employee.project_manager, employee.immediate_supervisor].compact.uniq
       if self.save
-        send_invalid_timesheet_notification("manual time in & out")
+        send_invalid_timesheet_notification("time in & out")
         return true
       else
         return false
@@ -238,6 +255,44 @@ class Timesheet < ActiveRecord::Base
     else
       return false
     end
+  end
+  
+  def update_manual_entry(attrs)
+    if [2, 3, 4].include?(is_valid)
+      if attrs[:timein]
+        time = validate_time_attrs(attrs[:timein])
+        type = 'time_in'
+      elsif attrs[:timeout]
+        time = validate_time_attrs(attrs[:timeout])
+        type = 'time_out'
+      end
+      
+      if time
+        if !is_changed?(type, time)
+          errors[:base] << 'Nothing changed.'
+          return true
+        end
+        
+        self.attributes = { type.to_sym => time }
+        if self.save
+          reset_actions_response
+          send_action_notification(type, employee, "updated")
+          return true
+        else
+          return false
+        end
+      else
+        errors[type.to_sym] << 'is invalid.'
+        return false
+      end
+    else
+      errors[:base] << 'Not a manual entry.'
+      return false
+    end
+  end
+  
+  def reset_actions_response
+    actions.each { |a| a.update_column(:response, 'Pending') unless a.is_pending? }
   end
 
   def validate_time_attrs(attrs)
@@ -320,13 +375,15 @@ class Timesheet < ActiveRecord::Base
       if time_out > Time.now.utc
         errors[:base] << "Time out (#{t_o}) shouldn't be later than current time."
       end
-
-      last_entry = employee.timesheets.last_entries(time_in_without_adjustment).desc.first
+      
+      last_entry = employee.timesheets.exclude([self])
+                   .last_entries(self).desc.first
       if last_entry && last_entry.time_out && time_in_without_adjustment < last_entry.time_out
         errors[:base] << "Time in should be later than last entries."
       end
 
-      later_entry = employee.timesheets.later_entries(time_in_without_adjustment).asc.first
+      later_entry = employee.timesheets.exclude([self, last_entry])
+                    .later_entries(self).asc.first
       if later_entry && time_out > later_entry.time_in_without_adjustment
         lti = format_short_time_with_sec(later_entry.time_in_without_adjustment)
         errors[:base] << "Time out (#{t_o}) shouldn't be later than next entry's time in (#{lti})."
@@ -446,6 +503,14 @@ class Timesheet < ActiveRecord::Base
     timesheets = @timesheets_today
     timesheets << self unless @timesheets_today.include?(self)
     timesheets.sum(&:minutes_excess) > 0
+  end
+  
+  def is_editable?
+    actions.pending_or_rejected.any?
+  end
+  
+  def is_changed?(type, time)
+    read_attribute(type.to_sym).localtime != time
   end
 
   def set_minutes_late

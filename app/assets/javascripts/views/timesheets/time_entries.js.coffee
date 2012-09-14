@@ -28,10 +28,12 @@ class Egems.Views.TimeEntries extends Backbone.View
     remarks = @collection.first().remarks()
     fileLeave = @titleRemarks(remarks)
     minsExcess = @collection.sum_minutes('minutes_excess')
+    editableEntries = @collection.editableEntries()
     # push to actions ['actionName', 'actionSelectorID']
     actions.push([fileLeave, 'fileLeave']) unless fileLeave is ""
     actions.push(['File Overtime', 'fileOvertime']) if minsExcess > 0
     actions.push(['Manual Time Entry', 'manualTimeEntry']) if @isAwol(remarks)
+    actions.push(['Edit Manual Entries', 'editManual']) if editableEntries.length > 0
     return actions
   
   showActionsBtn: (actions) ->
@@ -56,7 +58,8 @@ class Egems.Views.TimeEntries extends Backbone.View
   setActionsEvents: ->
     $('#fileLeave').click @linkToLeaveFile
     $('#fileOvertime').click @overtimeApplication
-    $('#manualTimeEntry').click @manualTimeInModal
+    $('#manualTimeEntry').click @manualTimeEntryModal
+    $('#editManual').click @editEntriesModal
 
   linkToLeaveFile: (event) =>
     event.preventDefault()
@@ -90,11 +93,16 @@ class Egems.Views.TimeEntries extends Backbone.View
         overtime = new Egems.Views.NewOvertimeEntry(model: data)
         overtime.showOvertimeForm(data)
 
-  manualTimeInModal: (event) =>
+  manualTimeEntryModal: (event) =>
     event.preventDefault()
     date = $("td#tdate").text().trim()
     $('#main-container').append('<div id="manual-entry-modal" class="modal hide fade" />')
     form = new Egems.Views.ManualEntryForm(collection: @collection, date: date)
     $('#manual-entry-modal').append(form.render().el)
     form.showAsModal()
+  
+  editEntriesModal: (event) =>
+    event.preventDefault()
+    for entry in @collection.editableEntries()
+      entry.trigger('editEntry')
 
