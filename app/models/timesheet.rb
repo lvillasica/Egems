@@ -382,13 +382,14 @@ class Timesheet < ActiveRecord::Base
       
       exclude_lst = []
       exclude_lst << self unless self.new_record?
-      last_entry = employee.timesheets.exclude(exclude_lst.compact)
-                   .last_entries(self).desc.first
+      last_entries = employee.timesheets.exclude(exclude_lst.compact)
+                     .last_entries(self).desc
+      last_entry = last_entries.first
       if last_entry && last_entry.time_out && time_in_without_adjustment < last_entry.time_out
         errors[:base] << "Time in should be later than last entries."
       end
       
-      exclude_lst << last_entry
+      exclude_lst = exclude_lst + last_entries
       later_entry = employee.timesheets.exclude(exclude_lst.compact)
                     .later_entries(self).asc.first
       if later_entry && time_out > later_entry.time_in_without_adjustment

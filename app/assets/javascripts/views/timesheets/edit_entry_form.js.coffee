@@ -20,10 +20,15 @@ class Egems.Views.EditEntryForm extends Backbone.View
       mixins: $.extend(Egems.Mixins.Defaults, Egems.Mixins.Timesheets)
     ))
     @initActionTooltip()
+    @disableDateField() if @action is 'timein'
     this
   
   initActionTooltip: ->
     $(@el).find('.submit-trigger').tooltip(title: 'Done', placement: 'right')
+  
+  disableDateField: ->
+    if @model is @model.collection.first()
+      @$("input[name='#{ @action }[date]']").attr('disabled', true)
   
   setAction: (action) ->
     @action = action
@@ -39,11 +44,15 @@ class Egems.Views.EditEntryForm extends Backbone.View
     
   getAttributes: ->
     attrs = {}
+    date = if @action is 'timein' and @model is @model.collection.first()
+      @format_date @model.date()
+    else
+      @$("input[name='#{ @action }[date]']").val()
     attrs["id"] = @model.id
     attrs["#{ @action }[hour]"] = @$("input[name='#{ @action }[hour]']").val()
     attrs["#{ @action }[min]"] = @$("input[name='#{ @action }[min]']").val()
     attrs["#{ @action }[meridian]"] = @$("select[name='#{ @action }[meridian]']").val()
-    attrs["#{ @action }[date]"] = @$("input[name='#{ @action }[date]']").val()
+    attrs["#{ @action }[date]"] = date
     return attrs
   
   resetModel: (data) ->
