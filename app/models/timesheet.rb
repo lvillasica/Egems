@@ -84,7 +84,11 @@ class Timesheet < ActiveRecord::Base
   }
   
   scope :exclude, lambda { |timesheets|
-    where('id not in (?)', timesheets.map(&:id))
+    if timesheets.any?
+      where('id not in (?)', timesheets.map(&:id))
+    else
+      where(:id => all.map(&:id).compact)
+    end
   }
 
   # -------------------------------------------------------
@@ -376,13 +380,16 @@ class Timesheet < ActiveRecord::Base
         errors[:base] << "Time out (#{t_o}) shouldn't be later than current time."
       end
       
-      last_entry = employee.timesheets.exclude([self])
+      exclude_lst = []
+      exclude_lst << self unless self.new_record?
+      last_entry = employee.timesheets.exclude(exclude_lst.compact)
                    .last_entries(self).desc.first
       if last_entry && last_entry.time_out && time_in_without_adjustment < last_entry.time_out
         errors[:base] << "Time in should be later than last entries."
       end
-
-      later_entry = employee.timesheets.exclude([self, last_entry])
+      
+      exclude_lst << last_entry
+      later_entry = employee.timesheets.exclude(exclude_lst.compact)
                     .later_entries(self).asc.first
       if later_entry && time_out > later_entry.time_in_without_adjustment
         lti = format_short_time_with_sec(later_entry.time_in_without_adjustment)
