@@ -1,7 +1,8 @@
 <li class="divider-vertical">
 </li>
 <li>
-  <a id="notif" href="/leaves" rel="popover" title="Notifications" data-placement="bottom" data-content="<%= "You have #{"%g" % leave_unit_sum } leaves waiting for approval." %>">
+  <a id="notif" href="/leaves" rel="popover" title="Notifications" data-placement="bottom"
+     data-content="<%= "You have #{ pluralize leave_unit_sum, 'leave' } waiting for approval." %>">
 	<span class="badge badge-important">
 	  <span id='total_pending_leaves'><%= "%g" % leave_unit_sum %></span>
 	  <i class="icon-flag icon-white"></i>

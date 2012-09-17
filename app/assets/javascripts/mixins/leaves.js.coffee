@@ -20,6 +20,25 @@ Egems.Mixins.Leaves =
       return errorMsg
   
   updateNotif: (totalPending) ->
-    popoverContent = "You have #{ totalPending } leaves waiting for approval."
+    p = Egems.Mixins.Defaults.simplePluralize
+    popoverContent = "You have #{ p totalPending, 'leave' } waiting for approval."
+    @insertNotif() if $('#notif').length is 0
     $('#notif').attr('data-content', popoverContent)
     $('#total_pending_leaves').html(totalPending)
+  
+  insertNotif: ->
+    nav = $('#user-control-nav')
+    $("""
+    <li class="divider-vertical"></li>
+    <li>
+      <a id="notif" href="/leaves">
+        <span class="badge badge-important">
+	        <span id="total_pending_leaves"></span>
+	        <i class="icon-flag icon-white"></i>
+	      </span>
+      </a>
+    </li>
+    """)
+    .insertAfter(nav.find('li:first'))
+    $('#notif').popover(title: 'Notifications', placement: 'bottom', content: '')
+  

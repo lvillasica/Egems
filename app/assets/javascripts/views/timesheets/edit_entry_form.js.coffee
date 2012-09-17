@@ -19,6 +19,8 @@ class Egems.Views.EditEntryForm extends Backbone.View
       time: @time
       mixins: $.extend(Egems.Mixins.Defaults, Egems.Mixins.Timesheets)
     ))
+    $('.alert, .tooltip').remove()
+    $('.error').removeClass('error')
     @initActionTooltip()
     @disableDateField() if @action is 'timein'
     this

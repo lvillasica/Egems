@@ -93,3 +93,8 @@ Egems.Mixins.Defaults =
     end = new Date(end)
     totalDiff = start.getTime() - end.getTime()
     Math.abs(Math.ceil(totalDiff/1000/60))
+  
+  simplePluralize: (num, commonStr) ->
+    res = "#{ parseFloat(num).toFixed(1) } #{ commonStr }"
+    return if num is 1 then res else res + 's'
+    
