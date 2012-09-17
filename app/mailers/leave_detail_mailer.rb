@@ -9,7 +9,7 @@ class LeaveDetailMailer < BaseMailer
     @dated_on  = leave_detail.dated_on
 
     @approvers = Array.new(leave_detail.responders - [requester])
-    if leave_detail.needs_hr_approval? && leave_detail.is_hr_approved?
+    if leave_detail.needs_hr_action? && leave_detail.is_hr_approved?
       @approvers = @approvers - [requester.immediate_supervisor, requester.project_manager]
     end
     @approvers.compact.uniq!

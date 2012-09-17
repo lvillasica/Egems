@@ -1,9 +1,10 @@
 <h3>Leave Requests</h3>
 <br>
+<div id="flash_messages"></div>
 <% if @leaves.length > 0 :%>
-  <div id="flash_messages"></div>
   <form method="post" id="leaves-approval-form" accept-charset="UTF-8">
     <button class="btn btn-primary approve">Approve</button>
+    <button class="btn btn-primary reject">Reject</button>
     <table id="supervisor_pending_leaves" class="table timesheets leave_details" style="margin-top: 10px">
       <thead>
         <tr>

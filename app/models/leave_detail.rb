@@ -169,10 +169,17 @@ class LeaveDetail < ActiveRecord::Base
   end
 
   def set_default_responders
-    if needs_hr_approval?
+    if needs_hr_action?
       self.responders = employee.hr_personnel.compact.uniq unless employee.is_hr?
     else
       self.responders = [employee.project_manager, employee.immediate_supervisor].compact.uniq
+    end
+  end
+
+
+  def update_responders(responders=[])
+    responders.compact.uniq.each do |responder|
+      self.responders << responder unless self.responders.include?(responder)
     end
   end
 
@@ -191,15 +198,12 @@ class LeaveDetail < ActiveRecord::Base
   end
 
   def approve!(supervisor)
-    if supervisor == employee
-      errors[:base] << 'Cannot approve your own leave.'
-      return false
-    else
-      if needs_hr_approval?
+    if is_respondable_by?(supervisor)
+      if needs_hr_action?
         if (status == 'Pending' && supervisor.is_hr?) or is_hr_approved?
           if supervisor.is_hr?
             self.status = 'HR Approved'
-            self.responders << [employee.immediate_supervisor, employee.project_manager].compact.uniq
+            update_responders([employee.immediate_supervisor, employee.project_manager])
           else
             self.status = 'Approved'
           end
@@ -220,20 +224,32 @@ class LeaveDetail < ActiveRecord::Base
           end
           return true
         end
-      else
-        return false
       end
+    else
+      errors[:base] << 'Cannot approve own leave.' if employee == supervisor
     end
+    return false
   end
 
   def reject!(supervisor)
-    if supervisor == employee
-      errors[:base] << 'Cannot reject your own leave.'
-    else
+    if is_respondable_by?(supervisor)
       self.status = 'Rejected'
       self.responder = supervisor
       self.responded_on = Time.now
+      if supervisor.is_hr?
+        update_responders([employee.immediate_supervisor, employee.project_manager])
+      end
+      @email_action = 'rejected'
+      @action_owner = supervisor
+      if self.save(:validate => false)
+        @leave_dates = (leave_date.localtime.to_date .. end_date.localtime.to_date)
+        recompute_timesheets_without_leaves(@leave_dates.to_a)
+        return true
+      end
+    else
+      errors[:base] << 'Cannot reject own leave. Cancel you leave instead.' if employee == supervisor
     end
+    return false
   end
 
   def cancel!
@@ -251,7 +267,7 @@ class LeaveDetail < ActiveRecord::Base
     end
   end
 
-  def needs_hr_approval?
+  def needs_hr_action?
     Leave::SPECIAL_TYPES.include?(leave_type)
   end
 
@@ -283,12 +299,13 @@ class LeaveDetail < ActiveRecord::Base
     return timesheet_by_dates.flatten.compact.any?
   end
 
-  def is_approvable_by?(supervisor)
-    unless is_approved?
+  def is_respondable_by?(supervisor)
+    return false if employee == supervisor
+    if is_pending? or is_hr_approved?
       if supervisor.is_supervisor_hr?
-        return true if responders.include?(supervisor) && is_pending? && needs_hr_approval?
+        return true if responders.include?(supervisor) && is_pending? && needs_hr_action?
       elsif supervisor.is_supervisor?
-        return true if responders.include?(supervisor) && (is_pending? || (needs_hr_approval? && is_hr_approved?))
+        return true if responders.include?(supervisor) && (is_pending? || (needs_hr_action? && is_hr_approved?))
       end
     end
     return false
@@ -300,6 +317,10 @@ class LeaveDetail < ActiveRecord::Base
 
   def is_approved?
     status == 'Approved'
+  end
+
+  def is_rejected?
+    status == 'Rejected'
   end
 
   def is_pending?
@@ -631,7 +652,7 @@ private
     recipients = Array.new(responders.uniq)
     recipients << employee unless responders.include?(employee)
 
-    if needs_hr_approval? && is_approved?
+    if needs_hr_action? && is_approved?
       recipients = recipients - employee.hr_personnel
     end
 

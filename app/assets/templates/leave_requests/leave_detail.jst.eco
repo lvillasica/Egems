@@ -1,4 +1,4 @@
-<td><input value="<%= @leave.getId() %>" type="checkbox" <%= __safe("disabled") if @leave.isApprovable() == false %> ></td>
+<td><input value="<%= @leave.getId() %>" type="checkbox" <%= __safe("disabled") if @leave.isRespondable() == false %> ></td>
 <td><%= @leave.filedBy() %></td>
 <td><%= @leave.leaveType() %></td>
 <td><%= @mixins.format_date @leave.dateFiled() %></td>

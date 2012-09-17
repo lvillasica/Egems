@@ -201,7 +201,6 @@ class Timesheet < ActiveRecord::Base
   end
 
   def manual_update(attrs={})
-    #TODO: invalid date & time format
     begin
       t_date = attrs[:date] ? Time.parse(attrs[:date]) : date.localtime.to_date
       t_hour = Time.parse(attrs[:hour] + attrs[:meridian]).strftime("%H")
@@ -220,7 +219,11 @@ class Timesheet < ActiveRecord::Base
       self.is_valid = 2     # manual time out
     end
 
-    self.attributes = { "#{type}" => time, "date" => t_date.beginning_of_day }
+    remarks_ = remarks.split(', ')
+    remarks_ << 'For Verification'
+    remarks_ << remarks_.uniq.compact.join(', ')
+
+    self.attributes = { "#{type}" => time, "date" => t_date.beginning_of_day, "remarks" => remarks_ }
     self.responders << [employee.project_manager, employee.immediate_supervisor].compact.uniq
 
     begin
@@ -349,6 +352,13 @@ class Timesheet < ActiveRecord::Base
       action.approved_time_out = time
       action.save
     end
+
+    remarks_ = remarks.split(', ')
+    remarks_.delete('For Verification')
+    remarks_ << 'Verified'
+    remarks_ << remarks_.uniq.compact.join(', ')
+    self.update_column(:remarks, remarks_)
+
     send_action_notification(type, supervisor, "approved")
     return actions.present?
   end
@@ -401,19 +411,18 @@ class Timesheet < ActiveRecord::Base
 
   def compute_minutes
     if time_out
-      timesheets_ = employee.timesheets.asc
-                            .where(["#{Timesheet.table_name}.id <> ? or #{Timesheet.table_name}.time_in > ?", id, time_in])
-      @timesheets_today = timesheets_.by_date(date.localtime)
+      timesheets_today = employee.timesheets.by_date(date.localtime).asc
+      @timesheets_today = timesheets_today.reject{ |t| t.id == id || t.time_in > time_in }
       @first_timesheet = @timesheets_today.first || self
 
-      if timesheets_.rejected_manual.empty?
-        if is_within_shift?
-          if @timesheets_today.empty?
-            @valid_time_out = get_valid_time_out
-            self.duration = ((time_out - time_in) / 1.minute).floor
-            self.minutes_undertime = get_minutes_undertime
-            self.minutes_excess = get_minutes_excess
-          else
+      if is_within_shift?
+        if @timesheets_today.empty?
+          @valid_time_out = get_valid_time_out
+          self.duration = ((time_out - time_in) / 1.minute).floor
+          self.minutes_undertime = get_minutes_undertime
+          self.minutes_excess = get_minutes_excess
+        else
+          if timesheets_today.rejected_manual.empty?
             @valid_time_out = @first_timesheet.get_valid_time_out
             self.duration = ((time_out - @first_timesheet.time_in) / 1.minute).floor
             self.minutes_undertime = get_minutes_undertime
@@ -421,13 +430,13 @@ class Timesheet < ActiveRecord::Base
 
             @timesheets_today.each(&:zero_computations)
           end
-        else
-          if !is_work_day? or (is_work_day? && @timesheets_today.select(&:is_within_shift?).present?)
-            undertimes = @timesheets_today.sum(&:minutes_undertime)
-            self.duration = ((time_out - time_in) / 1.minute).floor
-            self.minutes_undertime = 0
-            self.minutes_excess = undertimes > 0 ? 0 : duration
-          end
+        end
+      else
+        if !is_work_day? or (is_work_day? && @timesheets_today.select(&:is_within_shift?).present? && timesheets_today.rejected_manual.empty?)
+          undertimes = @timesheets_today.sum(&:minutes_undertime)
+          self.duration = ((time_out - time_in) / 1.minute).floor
+          self.minutes_undertime = 0
+          self.minutes_excess = undertimes > 0 ? 0 : duration
         end
       end
     end
@@ -442,23 +451,35 @@ class Timesheet < ActiveRecord::Base
   def put_remarks
     @timesheets_today = employee.timesheets.by_date(date.localtime).asc
     @first_timesheet = @timesheets_today.first || self
+
     remarks_ = Array.new
-    remarks_ << 'Late' if @first_timesheet.is_late?
+    remarks_ << 'Late'  if @first_timesheet.is_late?
     remarks_ << 'Undertime' if is_undertime?
 
     leaves = employee.leave_details.filed_for(date.localtime)
     if leaves.present?
-      sum = leaves.sum(&:leave_unit)
-      if sum == 0.5
-        remarks_ << ((leaves.first.is_approved?) ? 'Leave Approved' : 'Leave Filed')
-        periods = { 1 => 'PM', 2 => 'AM' }
+      if leaves.sum(&:leave_unit) == 0.5
+        leave = leaves.first
+        case leave.status
+        when 'Pending'
+          remarks_ << 'Leave Filed'
+        when 'Approved'
+          remarks_ << 'Leave Approved'
+        when 'Rejected'
+          remarks_ << 'Leave Rejected'
+          periods = { 1 => 'AM', 2 => 'PM' }
+          remarks_ << "#{periods[leave.period]} AWOL" if @timesheets_today.empty?
+        end
+
         if @first_timesheet == self && @first_timesheet.new_record?
-          period = periods[leaves.first.period]
-          remarks_ << "#{period} AWOL"
+          periods = { 1 => 'PM', 2 => 'AM'}
+          remarks_ << "#{periods[leave.period]} AWOL"
         end
       else
         remarks_ << 'Leave Approved' if leaves.approved.present?
         remarks_ << 'Leave Filed' if leaves.pending.present?
+        remarks_ << 'Leave Rejected' if leaves.rejected.present?
+        remarks_ << 'AWOL' if remarks_.include?('Leave Rejected') && @first_timesheet.new_record?
       end
     else
       remarks_ << 'AWOL' if @first_timesheet == self && @first_timesheet.is_awol?

@@ -1,8 +1,8 @@
 <h3>Timesheet Requests</h3>
 <br>
+<div id="flash_messages"></div>
 
 <% if @timesheets.length > 0 :%>
-  <div id="flash_messages"></div>
   <form id="timesheets-approval-form">
   <br>
   <button class="btn btn-primary approve">Approve</button>

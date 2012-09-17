@@ -65,5 +65,5 @@ class Egems.Models.LeaveDetail extends Backbone.Model
   isCancelable: ->
     @get 'cancelable'
 
-  isApprovable: ->
-    @get 'is_approvable'
+  isRespondable: ->
+    @get 'is_respondable'

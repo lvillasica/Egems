@@ -94,21 +94,22 @@ class LeaveDetailsController < ApplicationController
         errors[msg] = leave.errors.full_messages
       end
     end
-
-    if errors.empty?
-      js_params[:success] = { success: "Leave/s successfully approved." }
-    else
-      js_params[:errors] = errors
-    end
-
+    js_params[:success] = { success: "Leave/s successfully approved." } if errors.empty?
+    js_params[:errors] = errors unless errors.empty?
     leave_requests
   end
 
   def bulk_reject
+    errors = Hash.new
     leaves = LeaveDetail.find_all_by_id(params[:rejected_ids])
     leaves.each do |leave|
-      leave.reject!(@employee)
+      unless leave.reject!(@employee)
+        msg = "Can't reject leave dated <#{leave.leave_date.localtime.to_date}> of #{leave.employee.full_name}"
+        errors[msg] = leave.errors.full_messages
+      end
     end
+    js_params[:success] = { success: "Leave/s successfully rejected." } if errors.empty?
+    js_params[:errors] = errors unless errors.empty?
     leave_requests
   end
 
@@ -201,7 +202,7 @@ private
     leave_details.map do |leave_detail|
       leave_detail.attributes.merge({
         :employee_name => leave_detail.employee.full_name,
-        :is_approvable => leave_detail.is_approvable_by?(@employee) })
+        :is_respondable => leave_detail.is_respondable_by?(@employee) })
     end
   end
 
