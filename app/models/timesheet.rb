@@ -7,7 +7,7 @@ class Timesheet < ActiveRecord::Base
   class NoTimeinError < StandardError; end
 
   self.table_name = 'employee_timesheets'
-  attr_accessible :date, :time_in, :time_out, :is_valid
+  attr_accessible :date, :time_in, :time_out, :is_valid, :remarks
 
   # -------------------------------------------------------
   # Modules
@@ -77,12 +77,12 @@ class Timesheet < ActiveRecord::Base
   scope :pending_manual,  includes(:responders).where(["#{TimesheetAction.table_name}.response = 'Pending'"])
   scope :approved_manual, includes(:responders).where(["#{TimesheetAction.table_name}.response = 'Approved'"])
   scope :rejected_manual, includes(:responders).where(["#{TimesheetAction.table_name}.response = 'Rejected'"])
-  
+
   scope :editable_entries, lambda {
     ids = all.map { |t| t.id if t.actions.pending_or_rejected.any? }
     where(:id => ids.compact)
   }
-  
+
   scope :exclude, lambda { |timesheets|
     if timesheets.any?
       where('id not in (?)', timesheets.map(&:id))
@@ -219,11 +219,7 @@ class Timesheet < ActiveRecord::Base
       self.is_valid = 2     # manual time out
     end
 
-    remarks_ = remarks.split(', ')
-    remarks_ << 'For Verification'
-    remarks_ << remarks_.uniq.compact.join(', ')
-
-    self.attributes = { "#{type}" => time, "date" => t_date.beginning_of_day, "remarks" => remarks_ }
+    self.attributes = { "#{type}" => time, "date" => t_date.beginning_of_day }
     self.responders << [employee.project_manager, employee.immediate_supervisor].compact.uniq
 
     begin
@@ -263,7 +259,7 @@ class Timesheet < ActiveRecord::Base
       return false
     end
   end
-  
+
   def update_manual_entry(attrs)
     if [2, 3, 4].include?(is_valid)
       if attrs[:timein]
@@ -273,13 +269,13 @@ class Timesheet < ActiveRecord::Base
         time = validate_time_attrs(attrs[:timeout])
         type = 'time_out'
       end
-      
+
       if time
         if !is_changed?(type, time)
           errors[:base] << 'Nothing changed.'
           return true
         end
-        
+
         self.attributes = { type.to_sym => time }
         if self.save
           reset_actions_response
@@ -297,7 +293,7 @@ class Timesheet < ActiveRecord::Base
       return false
     end
   end
-  
+
   def reset_actions_response
     actions.each { |a| a.update_column(:response, 'Pending') unless a.is_pending? }
   end
@@ -353,12 +349,7 @@ class Timesheet < ActiveRecord::Base
       action.save
     end
 
-    remarks_ = remarks.split(', ')
-    remarks_.delete('For Verification')
-    remarks_ << 'Verified'
-    remarks_ << remarks_.uniq.compact.join(', ')
-    self.update_column(:remarks, remarks_)
-
+    self.put_remarks
     send_action_notification(type, supervisor, "approved")
     return actions.present?
   end
@@ -375,6 +366,8 @@ class Timesheet < ActiveRecord::Base
         timesheets_today.each(&:zero_computations)
       end
     end
+
+    self.put_remarks
     send_action_notification(type, supervisor, "rejected")
     return actions.present?
   end
@@ -389,7 +382,7 @@ class Timesheet < ActiveRecord::Base
       if time_out > Time.now.utc
         errors[:base] << "Time out (#{t_o}) shouldn't be later than current time."
       end
-      
+
       exclude_lst = []
       exclude_lst << self unless self.new_record?
       last_entries = employee.timesheets.exclude(exclude_lst.compact)
@@ -398,7 +391,7 @@ class Timesheet < ActiveRecord::Base
       if last_entry && last_entry.time_out && time_in_without_adjustment < last_entry.time_out
         errors[:base] << "Time in should be later than last entries."
       end
-      
+
       exclude_lst = exclude_lst + last_entries
       later_entry = employee.timesheets.exclude(exclude_lst.compact)
                     .later_entries(self).asc.first
@@ -452,45 +445,68 @@ class Timesheet < ActiveRecord::Base
     @timesheets_today = employee.timesheets.by_date(date.localtime).asc
     @first_timesheet = @timesheets_today.first || self
 
-    remarks_ = Array.new
-    remarks_ << 'Late'  if @first_timesheet.is_late?
-    remarks_ << 'Undertime' if is_undertime?
+    @remarks = Array.new
+    @remarks << 'Late'  if @first_timesheet.is_late?
+    @remarks << 'Undertime' if is_undertime?
 
     leaves = employee.leave_details.filed_for(date.localtime)
     if leaves.present?
-      if leaves.sum(&:leave_unit) == 0.5
-        leave = leaves.first
-        case leave.status
-        when 'Pending'
-          remarks_ << 'Leave Filed'
-        when 'Approved'
-          remarks_ << 'Leave Approved'
-        when 'Rejected'
-          remarks_ << 'Leave Rejected'
-          periods = { 1 => 'AM', 2 => 'PM' }
-          remarks_ << "#{periods[leave.period]} AWOL" if @timesheets_today.empty?
-        end
+      @remarks += remarks_leave_details(leaves)
+    else
+      @remarks << 'AWOL' if @first_timesheet == self && @first_timesheet.is_awol?
+    end
 
-        if @first_timesheet == self && @first_timesheet.new_record?
-          periods = { 1 => 'PM', 2 => 'AM'}
-          remarks_ << "#{periods[leave.period]} AWOL"
-        end
-      else
-        remarks_ << 'Leave Approved' if leaves.approved.present?
-        remarks_ << 'Leave Filed' if leaves.pending.present?
-        remarks_ << 'Leave Rejected' if leaves.rejected.present?
-        remarks_ << 'AWOL' if remarks_.include?('Leave Rejected') && @first_timesheet.new_record?
+    @remarks += remarks_manual_update
+
+    @remarks = @remarks.uniq.compact.join(', ')
+    if @first_timesheet.new_record?
+      @first_timesheet.remarks = @remarks.to_s
+    else
+      @first_timesheet.update_column(:remarks, @remarks.to_s)
+    end
+  end
+
+  def remarks_leave_details(leaves)
+    r = Array.new
+    if leaves.sum(&:leave_unit) == 0.5
+      leave = leaves.first
+      case leave.status
+      when 'Pending'
+        r << 'Leave Filed'
+      when 'Approved'
+        r << 'Leave Approved'
+      when 'Rejected'
+        r << 'Leave Rejected'
+        periods = { 1 => 'AM', 2 => 'PM' }
+        r << "#{periods[leave.period]} AWOL" if @timesheets_today.empty?
+      end
+
+      if @first_timesheet == self && @first_timesheet.new_record?
+        periods = { 1 => 'PM', 2 => 'AM'}
+        r << "#{periods[leave.period]} AWOL"
       end
     else
-      remarks_ << 'AWOL' if @first_timesheet == self && @first_timesheet.is_awol?
+      r << 'Leave Approved' if leaves.approved.present?
+      r << 'Leave Filed' if leaves.pending.present?
+      r << 'Leave Rejected' if leaves.rejected.present?
+      r << 'AWOL' if r.include?('Leave Rejected') && @first_timesheet.new_record?
     end
+    r
+  end
 
-    remarks_ = remarks_.uniq.compact.join(', ')
-    if @first_timesheet.new_record?
-      @first_timesheet.remarks = remarks_ unless remarks_.empty?
-    else
-      @first_timesheet.update_column(:remarks, remarks_)
+  def remarks_manual_update
+    r = Array.new
+    if is_valid == 2 or is_valid == 3
+      @timesheets_today ||= employee.timesheets.by_date(date.localtime).asc
+      if @timesheets_today.pending_manual.present?
+        r << 'For Verification'
+      elsif @timesheets_today.rejected_manual.present?
+        r << 'Not Verified'
+      elsif @timesheets_today.approved_manual.present?
+        r << 'Verified'
+      end
     end
+    r
   end
 
   def recompute_minutes_for_leaves
@@ -533,11 +549,11 @@ class Timesheet < ActiveRecord::Base
     timesheets << self unless @timesheets_today.include?(self)
     timesheets.sum(&:minutes_excess) > 0
   end
-  
+
   def is_editable?
     actions.pending_or_rejected.any?
   end
-  
+
   def is_changed?(type, time)
     read_attribute(type.to_sym).localtime != time
   end
