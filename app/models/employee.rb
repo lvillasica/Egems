@@ -14,14 +14,15 @@ class Employee < ActiveRecord::Base
   has_many :leave_details
   has_many :overtimes
   has_many :responded_leave_details, :class_name => 'LeaveDetail', :foreign_key => :responder_id
+  has_many :responded_overtimes, :class_name => 'OvertimeAction', :foreign_key => :responder_id
   has_and_belongs_to_many :for_response_leave_details, :class_name => 'LeaveDetail',
                           :join_table => 'employee_truancy_detail_responders',
                           :foreign_key => :responder_id,
                           :association_foreign_key => :employee_truancy_detail_id
-  has_and_belongs_to_many :for_response_overtimes, :class_name => 'Overtime',
-                          :join_table => 'overtime_actions',
+  has_and_belongs_to_many :for_response_overtimes, :class_name => 'OvertimeAction',
+                          :join_table => 'overtime_action_responders',
                           :foreign_key => :responder_id,
-                          :association_foreign_key => :employee_overtime_id
+                          :association_foreign_key => :overtime_action_id
   has_and_belongs_to_many :for_response_timesheets, :class_name => 'Timesheet',
                           :join_table => 'timesheet_actions',
                           :foreign_key => :responder_id,

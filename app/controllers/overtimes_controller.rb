@@ -11,16 +11,20 @@ class OvertimesController < ApplicationController
   end
 
   def new
-    @overtime = @employee.overtimes.new(params[:overtime])
-    js_params[:overtime] = @overtime
-    respond_with_json
+    if request.xhr?
+      @overtime = @employee.overtimes.new(params[:overtime])
+      js_params[:overtime] = @overtime
+      respond_with_json
+    else
+      redirect_to :timesheets
+    end
   end
 
   def create
     @overtime = @employee.overtimes.new(params[:overtime])
     if @overtime.save
       flash_message(:notice, "Overtime dated on #{ view_context.format_date @overtime.date_of_overtime }
-                              with a duration of #{ @overtime.duration } was
+                              with a duration of #{ view_context.format_in_hours @overtime.duration } was
                               successfully created.")
       flash_message(:warning, @overtime.errors.full_messages) if @overtime.errors.any?
     else

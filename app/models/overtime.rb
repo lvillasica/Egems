@@ -11,11 +11,8 @@ class Overtime < ActiveRecord::Base
   # Relationships / Associations
   # -------------------------------------------------------
   belongs_to :employee
-  #belongs_to :responder, :class_name => "Employee", :foreign_key => "responder"
-  #has_and_belongs_to_many :responders, :class_name => "Employee",
-  #                        :join_table => "overtime_actions",
-  #                        :foreign_key => :employee_overtime_id,
-  #                        :association_foreign_key => :responder_id
+  has_one :action, :class_name => "OvertimeAction",
+                   :foreign_key => :employee_overtime_id
 
   # -------------------------------------------------------
   # Validations
@@ -27,7 +24,9 @@ class Overtime < ActiveRecord::Base
   # -------------------------------------------------------
   # Callbacks
   # -------------------------------------------------------
-  #before_create :set_default_responders
+  before_create :set_created_on
+  before_save :reset_status
+  after_create :set_action
   #after_create :send_email_notification
 
   # -------------------------------------------------------
@@ -38,12 +37,24 @@ class Overtime < ActiveRecord::Base
   # -------------------------------------------------------
   # Instance Methods
   # -------------------------------------------------------
+  def set_created_on
+    self.created_on = Time.now.utc
+  end
+  
+  def set_action
+    self.create_action
+  end
+  
   def set_default_responders
     #self.responders << [@employee.project_manager,@employee.immediate_supervisor].compact.uniq
   end
 
   def get_responders
     #responders.map { |responder| responder.full_name }
+  end
+  
+  def reset_status
+    self.status = 'Pending' unless self.status.eql?('Pending')
   end
   
   def maxDuration
