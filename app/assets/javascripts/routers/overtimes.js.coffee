@@ -1,9 +1,8 @@
 class Egems.Routers.Overtimes extends Backbone.Router
   routes:
     'overtimes': 'index'
-    'overtimes/new': 'newOvertimeEntry'
 
-  initialize: ->
+  initializeCollection: ->
     @collection = new Egems.Collections.Overtimes()
     data = $('#data-container').data('overtime')
     if data is not undefined
@@ -15,9 +14,6 @@ class Egems.Routers.Overtimes extends Backbone.Router
           @collection.reset(response.overtime)
 
   index: ->
+    @initializeCollection()
     index = new Egems.Views.OvertimesIndex(collection: @collection)
     $('#main-container').html(index.render().el)
-
-  newOvertimeEntry: ->
-    newOvertime =  new Egems.Views.NewOvertimeEntry()
-    $('#main-container').html(newOvertime.render().el)

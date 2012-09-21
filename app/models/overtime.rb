@@ -5,29 +5,29 @@ class Overtime < ActiveRecord::Base
   attr_accessible :date_filed, :date_of_overtime, :work_details, :duration, :duration_approved, :status
 
   include ApplicationHelper
+  include TimesheetsHelper
 
   # -------------------------------------------------------
   # Relationships / Associations
   # -------------------------------------------------------
   belongs_to :employee
-  belongs_to :timesheet
   #belongs_to :responder, :class_name => "Employee", :foreign_key => "responder"
-  has_and_belongs_to_many :responders, :class_name => "Employee",
-                          :join_table => "overtime_actions",
-                          :foreign_key => :employee_overtime_id,
-                          :association_foreign_key => :responder_id
+  #has_and_belongs_to_many :responders, :class_name => "Employee",
+  #                        :join_table => "overtime_actions",
+  #                        :foreign_key => :employee_overtime_id,
+  #                        :association_foreign_key => :responder_id
 
   # -------------------------------------------------------
   # Validations
   # -------------------------------------------------------
   validates_presence_of :work_details, :duration
   validates_numericality_of :duration
+  validate :invalid_input
 
   # -------------------------------------------------------
   # Callbacks
   # -------------------------------------------------------
-  before_save :set_default_responders
-  before_create :validate_duration
+  #before_create :set_default_responders
   #after_create :send_email_notification
 
   # -------------------------------------------------------
@@ -38,28 +38,23 @@ class Overtime < ActiveRecord::Base
   # -------------------------------------------------------
   # Instance Methods
   # -------------------------------------------------------
-
-  
   def set_default_responders
-    responders = [@employee.project_manager,@employee.immediate_supervisor].compact.uniq
+    #self.responders << [@employee.project_manager,@employee.immediate_supervisor].compact.uniq
   end
 
   def get_responders
-    responders.map { |responder| responder.full_name  }
+    #responders.map { |responder| responder.full_name }
+  end
+  
+  def maxDuration
+    employee.timesheets.by_date(date_of_overtime.localtime).sum(:minutes_excess)
   end
 
-  #private
-  def get_minutes_excess
-    #get the id of the timesheet's overtime and then get the excess of the timesheet
-    timesheet_id   = self.id
-    excess = @employee.timesheets.find(timesheet_id).minutes_excess
-
-  end
-
-  def validate_duration
-    #duration must not exceed the excess hours and must not be less than 0
-    unless duration <= get_minutes_excess && duration > 0
-      errors[:overtime] << "Duration applied must not be less than 1 and greater than #{get_minutes_excess} minutes."
+  def invalid_input
+    if duration.minutes < 1.hour
+      errors[:duration] << "must not be less than 1 hour."
+    elsif duration.minutes > maxDuration.minutes
+      errors[:duration] << "must not exceed #{ format_in_hours maxDuration }"
     end
   end
 

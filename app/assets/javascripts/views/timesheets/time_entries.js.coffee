@@ -7,7 +7,7 @@ class Egems.Views.TimeEntries extends Backbone.View
     "click td#overtime_apply" : "overtimeApplication"
 
   initialize: ->
-    _.extend(this, Egems.Mixins.Timesheets)
+    _.extend(this, Egems.Mixins.Timesheets, Egems.Mixins.Defaults)
     @collection.on('reset', @render, this)
 
   render: ->
@@ -27,11 +27,11 @@ class Egems.Views.TimeEntries extends Backbone.View
     actions = new Array()
     remarks = @collection.first().remarks()
     fileLeave = @titleRemarks(remarks)
-    minsExcess = @collection.sum_minutes('minutes_excess')
+    minsExcess = parseInt(@collection.sum_minutes('minutes_excess')) or 0
     editableEntries = @collection.editableEntries()
     # push to actions ['actionName', 'actionSelectorID']
     actions.push([fileLeave, 'fileLeave']) unless fileLeave is ""
-    actions.push(['File Overtime', 'fileOvertime']) if minsExcess > 0
+    actions.push(['File Overtime', 'fileOvertime']) if minsExcess > 60 and @collection.overtime is null
     actions.push(['Manual Time Entry', 'manualTimeEntry']) if @isAwol(remarks)
     actions.push(['Edit Manual Entries', 'editManual']) if editableEntries.length > 0
     return actions
@@ -59,7 +59,7 @@ class Egems.Views.TimeEntries extends Backbone.View
     $('#fileLeave').click @linkToLeaveFile
     $('#fileOvertime').click @overtimeApplication
     $('#manualTimeEntry').click @manualTimeEntryModal
-    $('#editManual').click @editEntriesModal
+    $('#editManual').click @triggerEditEntries
 
   linkToLeaveFile: (event) =>
     event.preventDefault()
@@ -83,15 +83,21 @@ class Egems.Views.TimeEntries extends Backbone.View
   overtimeApplication: (event) =>
     event.preventDefault()
     minutes_excess = $("td#texcess").text() #$(event.target).parents("tr").find("td#texcess").text()
-    if $("#apply-overtime-modal").length == 0
-      $('#main-container').append('<div id="apply-overtime-modal" class="modal hide fade" />')
+    $('#main-container').append('<div id="apply-overtime-modal" class="modal hide fade" />')
     $.ajax
       url: 'overtimes/new'
-      data: @model
+      data: @getOvertimeParams()
       dataType: 'json'
-      success: (data) ->
-        overtime = new Egems.Views.NewOvertimeEntry(model: data)
-        overtime.showOvertimeForm(data)
+      success: (data) =>
+        model = new Egems.Models.Overtime(data.overtime)
+        view = new Egems.Views.NewOvertimeEntry(model: model)
+        view.showOvertimeForm(data)
+  
+  getOvertimeParams: ->
+    params =
+      'overtime[date_filed]': new Date()
+      'overtime[date_of_overtime]': new Date(@collection.first().date())
+      'overtime[duration]': @collection.sum_minutes('minutes_excess')
 
   manualTimeEntryModal: (event) =>
     event.preventDefault()
@@ -101,7 +107,7 @@ class Egems.Views.TimeEntries extends Backbone.View
     $('#manual-entry-modal').append(form.render().el)
     form.showAsModal()
   
-  editEntriesModal: (event) =>
+  triggerEditEntries: (event) =>
     event.preventDefault()
     for entry in @collection.editableEntries()
       entry.trigger('editEntry')

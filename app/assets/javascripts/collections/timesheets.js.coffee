@@ -6,6 +6,7 @@ class Egems.Collections.Timesheets extends Backbone.Collection
   parse: (response, xhr) ->
     this.invalid_timesheet = response.invalid_timesheet
     this.error = response.error
+    this.overtime = response.overtime
     return response.employee_timesheets_active
 
   sum_minutes: (attribute) ->

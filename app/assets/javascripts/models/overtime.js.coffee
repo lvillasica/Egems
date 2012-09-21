@@ -6,7 +6,7 @@ class Egems.Models.Overtime extends Backbone.Model
   dateOfOvertime: ->
     @get 'date_of_overtime'
 
-  workDetails: ->
+  details: ->
     @get 'work_details'
 
   duration: ->

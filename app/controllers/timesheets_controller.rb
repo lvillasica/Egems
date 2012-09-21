@@ -200,6 +200,8 @@ private
     @employee ||= get_employee
     @employee_timesheets_active = @employee.timesheets.by_date(active_time).asc
                                            .unemptize(@employee, active_time)
+    js_params[:overtime] = @employee.overtimes
+                                    .find_by_date_of_overtime(active_time.utc)
   end
 
   def get_invalid_timesheet

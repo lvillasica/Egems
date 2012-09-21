@@ -97,4 +97,15 @@ Egems.Mixins.Defaults =
   simplePluralize: (num, commonStr) ->
     res = "#{ parseFloat(num).toFixed(1) } #{ commonStr }"
     return if num is 1 then res else res + 's'
+  
+  getHoursFromMins: (minutes) ->
+    return parseInt(minutes / 60)
+  
+  getMinsFromMins: (minutes) ->
+    return parseInt(minutes % 60)
+  
+  hrsToMins: (hrs, mins) ->
+    h = parseInt(hrs) or 0
+    m = parseInt(mins) or 0
+    return (h * 60) + m
     

@@ -28,12 +28,11 @@ class Egems.Views.DateNavs extends Backbone.View
     activeTime = new Date($('#week-picker').val().split(" ")[0])
     time = @getDayOfWeek(activeTime.clone())[$(event.target).text().toLowerCase()]
     path = "/timesheets/#{time}"
-    $.ajax
+    @collection.fetch
       type: 'POST'
       dataType: 'json'
       url: path
-      success: (data) =>
-        @collection.reset(data.employee_timesheets_active)
+      success: (col, data) =>
         @activateDateTab(new Date(time))
 
   gotoWeek: (event) ->

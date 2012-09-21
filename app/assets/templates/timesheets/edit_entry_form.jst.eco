@@ -13,4 +13,4 @@
 </select>
 <input name="<%= @action %>[date]" class="time" size="30" type="text"
        style="width: 70px;" value="<%= @mixins.format_date @model.date() %>" />
-<a class="submit-trigger" href="#"><i class="icon-ok"></i></a>
+<a class="submit-trigger no_decor" href="#"><i class="icon-ok"></i></a>

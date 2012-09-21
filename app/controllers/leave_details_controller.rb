@@ -5,7 +5,7 @@ class LeaveDetailsController < ApplicationController
   before_filter :get_employee
   before_filter :get_leave_detail, :only => [:edit, :update, :cancel]
   before_filter :get_leave
-  before_filter :set_js_params, :only => [:new]
+  before_filter :set_non_working_days, :only => [:new]
 
   def index
     @leave_details = @leave.leave_details.active.asc if @leave
@@ -145,7 +145,7 @@ private
     end
   end
 
-  def set_js_params
+  def set_non_working_days
     leave_range = (@leave.date_from .. @leave.date_to)
     js_params[:day_offs] = @employee.day_offs_within(leave_range)
     js_params[:holidays] = @employee.holidays_within(leave_range)
