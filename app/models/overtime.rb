@@ -25,9 +25,10 @@ class Overtime < ActiveRecord::Base
   # Callbacks
   # -------------------------------------------------------
   before_create :set_created_on
+  before_create :set_email_action_sent
   before_save :reset_status
   after_create :set_action
-  #after_create :send_email_notification
+  after_save :send_email_notification
 
   # -------------------------------------------------------
   # Namescope
@@ -45,14 +46,6 @@ class Overtime < ActiveRecord::Base
     self.create_action
   end
   
-  def set_default_responders
-    #self.responders << [@employee.project_manager,@employee.immediate_supervisor].compact.uniq
-  end
-
-  def get_responders
-    #responders.map { |responder| responder.full_name }
-  end
-  
   def reset_status
     self.status = 'Pending' unless self.status.eql?('Pending')
   end
@@ -61,6 +54,7 @@ class Overtime < ActiveRecord::Base
     employee.timesheets.by_date(date_of_overtime.localtime).sum(:minutes_excess)
   end
 
+private
   def invalid_input
     if duration.minutes < 1.hour
       errors[:duration] << "must not be less than 1 hour."
@@ -69,8 +63,28 @@ class Overtime < ActiveRecord::Base
     end
   end
 
+  def set_email_action_sent
+    @email_action = 'sent'
+  end
+
   def send_email_notification
-    #email the respondents for overtime approval
+    responders = action.responders
+    recipients = Array.new(responders.uniq)
+    recipients << employee unless responders.include?(employee)
+
+    recipients.uniq.compact.each do |recipient|
+      begin
+        case @email_action
+        when 'sent', 'edited', 'canceled'
+          OvertimeMailer.overtime_for_approval(employee, self, recipient, @email_action).deliver
+        # when 'approved', 'rejected'
+        #   OvertimeMailer.overtime_action(employee, self, recipient, @email_action, @action_owner).deliver
+        end
+      rescue Net::SMTPAuthenticationError, Net::SMTPServerBusy, Net::SMTPSyntaxError, Net::SMTPFatalError, Net::SMTPUnknownError => e
+        errors[:base] << "There was a problem on sending the email notification to #{recipient.email}: #{e.message}"
+        next
+      end
+    end
   end
 
 end

@@ -1,0 +1,18 @@
+<p>Hi <%= @recipient.full_name %>,</p>
+<br/>
+<p><%= @receiver_sv %> an overtime request dated
+  { <%= @date %> }<%= " for approval" if @approvers.include?(@recipient) %>.</p>
+<p>The request has been sent to the following for appropriate action:</p>
+<ul style='list-style-type: none'>
+  <% @approvers.map(&:full_name).each do |approver| %>
+    <li><%= approver %></li>
+  <% end %>
+</ul>
+<br/>
+<p><%= @receiver_action %></p>
+<a href="<%= url_for(@url) %>"><%= url_for(@url) %></a>
+<br/>
+<p>This is a system generated email. Please do not reply.</p>
+<br/>
+<p>Regards,</p>
+<p>eGEMs</p>
