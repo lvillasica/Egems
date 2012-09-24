@@ -193,8 +193,22 @@ class LeaveDetail < ActiveRecord::Base
   end
 
   def update_attributes_and_reset_status(attrs)
+    attrs = attrs.symbolize_keys
     attrs.merge!(:status => 'Pending') unless status.eql?('Pending')
-    update_attributes(attrs)
+    # select only attributes to be changed to avoid malicious attacks.
+    self.attributes = attrs.select do |a|
+      tmp = [:leave_date, :end_date, :leave_unit, :details]
+      tmp << :period if [1, 2].include?(attrs[:period].to_i)
+      tmp.include?(a)
+    end
+    
+    if changed?
+      self.period = attrs[:period]
+      self.save
+    else
+      errors[:base] << 'Nothing changed.'
+      return false
+    end
   end
 
   def approve!(supervisor)

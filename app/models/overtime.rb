@@ -26,6 +26,7 @@ class Overtime < ActiveRecord::Base
   # -------------------------------------------------------
   before_create :set_created_on
   before_create :set_email_action_sent
+  before_update :set_email_action_edited
   before_save :reset_status
   after_create :set_action
   after_save :send_email_notification
@@ -33,7 +34,7 @@ class Overtime < ActiveRecord::Base
   # -------------------------------------------------------
   # Namescope
   # -------------------------------------------------------
-  scope :pending, where(:status => 'Pending')
+  scope :editable, where(:status => ['Pending', 'Rejected'])
 
   # -------------------------------------------------------
   # Instance Methods
@@ -50,21 +51,43 @@ class Overtime < ActiveRecord::Base
     self.status = 'Pending' unless self.status.eql?('Pending')
   end
   
-  def maxDuration
+  def max_duration
     employee.timesheets.by_date(date_of_overtime.localtime).sum(:minutes_excess)
+  end
+  
+  def update_if_changed(attrs)
+    # select only attributes to be changed to avoid malicious attacks.
+    self.attributes = attrs.symbolize_keys.select do |a|
+      [:duration, :work_details].include?(a)
+    end
+    
+    if changed?
+      self.save
+    else
+      errors[:base] << 'Nothing changed.'
+      return false
+    end
   end
 
 private
   def invalid_input
     if duration.minutes < 1.hour
       errors[:duration] << "must not be less than 1 hour."
-    elsif duration.minutes > maxDuration.minutes
+    elsif duration.minutes > max_duration.minutes
       errors[:duration] << "must not exceed #{ format_in_hours maxDuration }"
+    end
+    
+    unless ['Pending', 'Rejected'].include?(status)
+      errors[:base] << "You can no longer edit this entry."
     end
   end
 
   def set_email_action_sent
     @email_action = 'sent'
+  end
+  
+  def set_email_action_edited
+    @email_action = "edited" if @email_action == 'sent' or @email_action.nil?
   end
 
   def send_email_notification

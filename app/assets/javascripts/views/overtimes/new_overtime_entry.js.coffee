@@ -17,13 +17,13 @@ class Egems.Views.NewOvertimeEntry extends Backbone.View
     event.preventDefault()
     @$("#overtime-form").attr("action", "/overtimes").submit()
 
-  showOvertimeForm: (data) ->
-    $('#apply-overtime-modal').append(this.render().el)
+  showOvertimeForm: ->
+    $('#overtime-form-modal').append(this.render().el)
     $('#overtime-application-header').wrap('<div class="modal-header" />')
     $('.modal-header').next('hr').remove()
     $('#overtime-application-container').addClass('modal-body')
     $('#overtime-application-actions').addClass('modal-footer')
     $('#overtime-application-actions .cancel').attr('data-dismiss', 'modal')
-    $('#apply-overtime-modal').modal(backdrop: 'static', 'show')
-    $('#apply-overtime-modal').on 'hidden', ->
+    $('#overtime-form-modal').modal(backdrop: 'static', 'show')
+    $('#overtime-form-modal').on 'hidden', ->
       $(this).remove()

@@ -1,0 +1,7 @@
+<h3 id="edit-overtime-header">Edit Overtime</h3>
+<hr/>
+<div id="edit-overtime-container"></div>
+<div id="edit-overtime-actions" class="form-actions">
+  <button class="btn btn-primary submit">Save</button>
+  <button class="btn cancel">Cancel</button>
+</div>

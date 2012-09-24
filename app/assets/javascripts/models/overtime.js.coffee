@@ -26,3 +26,6 @@ class Egems.Models.Overtime extends Backbone.Model
 
   responders: ->
     @get 'responders'
+  
+  maxDuration: ->
+    @get 'max_duration'

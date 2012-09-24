@@ -71,9 +71,9 @@ class Egems.Views.OvertimeForm extends Backbone.View
     if @validateMins()
       fld = @$(".time.mins")
       duration = parseInt @duration or 0
-      durationOrig = parseInt @model.duration() or 0
-      if duration > durationOrig
-        msg = "Duration must not exceed #{ @format_in_hours durationOrig }."
+      maxDuration = @model.maxDuration()
+      if duration > maxDuration
+        msg = "Duration must not exceed #{ @format_in_hours maxDuration }."
         @showErrorAt(fld, msg)
         return false
       else if duration < 60
@@ -94,11 +94,13 @@ class Egems.Views.OvertimeForm extends Backbone.View
     @$('.help-inline').remove()
   
   getParams: ->
-    attributes =
-      'date_filed': new Date(@dateFiled)
-      'date_of_overtime': new Date(@dateOfOT)
-      'work_details': @detailsFld.val()
-      'duration': @duration
+    params = {}
+    params['work_details'] = @detailsFld.val()
+    params['duration'] = @duration
+    unless @options.edit
+      params['date_filed'] = new Date(@dateFiled)
+      params['date_of_overtime'] = new Date(@dateOfOT)
+    return params
 
   submitForm: (event) ->
     event.preventDefault()
@@ -109,14 +111,32 @@ class Egems.Views.OvertimeForm extends Backbone.View
         data: { 'overtime': @getParams() }
         dataType: 'json'
         type: if @options.edit then 'PUT' else 'POST'
+        beforeSend: (jqXHR, settings) => @disableFormActions()
         success: @onSuccess
+        error: @handleFailure
 
   onSuccess: (data) =>
+    @enableFormActions()
     flash_messages = data.flash_messages
     if flash_messages.error is undefined
-      $('#apply-overtime-modal').modal('hide')
+      $('#overtime-form-modal').modal('hide')
       $('#date-nav-tab li.day.active').trigger('click')
       @showFlash(data.flash_messages)
     else
       $('#flash_messages').html(@flash_messages(flash_messages))
+  
+  handleError: (entry, response) ->
+    if response.status == 500
+      $('#overtime-form-modal').modal('hide')
+      errors = $.parseJSON(response.responseText).errors
+      for attribute, messages of errors
+        alert "#{attribute} #{message}" for message in messages
+
+  enableFormActions: ->
+    $('.submit').removeAttr('disabled')
+    $('.cancel').removeAttr('disabled')
+  
+  disableFormActions: ->
+    $('.submit').attr('disabled', true)
+    $('.cancel').attr('disabled', true)
   
