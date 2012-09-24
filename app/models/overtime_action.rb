@@ -10,20 +10,25 @@ class OvertimeAction < ActiveRecord::Base
                           :join_table => "overtime_action_responders",
                           :foreign_key => :overtime_action_id,
                           :association_foreign_key => :responder_id
-  
+
+  # -------------------------------------------------------
+  # Scopes
+  # -------------------------------------------------------
+  scope :pending, where(["response = 'Pending'"])
+
   # -------------------------------------------------------
   # Callbacks
   # -------------------------------------------------------
   before_create :set_default_responders
   before_create :set_created_at
-  
+
   # -------------------------------------------------------
   # Instance Methods
   # -------------------------------------------------------
   def set_created_at
     self.created_at = Time.now.utc
   end
-  
+
   def set_default_responders
     self.responders = [self.overtime.employee.project_manager,
                        self.overtime.employee.immediate_supervisor].compact.uniq

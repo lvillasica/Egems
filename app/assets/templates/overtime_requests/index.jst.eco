@@ -1,0 +1,25 @@
+<h3>Overtime Requests</h3>
+<br>
+<% if @overtime_requests.length > 0 :%>
+  <div id="flash_messages"></div>
+  <form method="post" id="overtimes-approval-form" accept-charset="UTF-8">
+    <table id="supervisor_pending_overtimes" class="table timesheets leave_details" style="margin-top: 10px">
+      <thead>
+        <tr>
+          <th>
+            <a id="toggle-boxes" class="icon-ok""> All</a>
+          </th>
+          <th>Employee</th>
+          <th>Date Filed</th>
+          <th>Date of Overtime</th>
+          <th>Duration Applied</th>
+          <th>Duration Approved</th>
+          <th>Details</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </form>
+<% else :%>
+  <p class="well">No data found.</p>
+<% end %>

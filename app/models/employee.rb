@@ -107,7 +107,7 @@ class Employee < ActiveRecord::Base
     current_department_id == 4 && current_job_position_id == 61
   end
 
-  def can_approve_leaves?
+  def can_action_leaves?
     is_supervisor? or is_supervisor_hr?
   end
 

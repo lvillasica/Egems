@@ -15,6 +15,12 @@ class Egems.Models.Overtime extends Backbone.Model
   durationApproved: ->
     @get 'duration_approved'
 
+  employeeName: ->
+    @get 'employee_name'
+
+  getId: ->
+    @get 'id'
+
   status: ->
     @get 'status'
 

@@ -63,7 +63,7 @@ class LeaveDetailsController < ApplicationController
   end
 
   def leave_requests
-    if @employee.can_approve_leaves?
+    if @employee.can_action_leaves?
       leaves = LeaveDetail.response_by(@employee)
 
       if @employee.is_hr?

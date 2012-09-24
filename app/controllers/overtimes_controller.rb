@@ -42,6 +42,15 @@ class OvertimesController < ApplicationController
     #
   end
 
+  def requests
+    js_params[:pending] = attrs(@employee.for_response_overtimes.pending)
+    if @employee.is_supervisor?
+      respond_with_json
+    else
+      render_404
+    end
+  end
+
 private
   def get_employee
     @employee = current_user.employee
@@ -66,5 +75,17 @@ private
         })
     end
   end
-end
 
+  def attrs(overtime_requests)
+    overtime_requests.map do |action|
+      overtime = action.overtime
+      action.attributes.merge({
+        :employee_name => overtime.employee.full_name,
+        :date_filed => overtime.date_filed.to_date,
+        :date_of_overtime => overtime.date_of_overtime,
+        :duration => overtime.duration,
+        :work_details => overtime.work_details
+      })
+    end
+  end
+end

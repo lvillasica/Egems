@@ -38,14 +38,12 @@
               <% current_uri = request.env['PATH_INFO'] %>
               <ul class="nav">
                 <%= timesheet_top_nav(current_user, current_uri) %>
-                <li class="<%= set_active(current_uri =~ /overtime/ || current_uri.eql?('/overtimes')) %>">
-                  <a href="<%= overtimes_path %>">Overtime</a>
-                </li>
+                <%= overtime_top_nav(current_user, current_uri) %>
                 <li class="dropdown <%= set_active(current_uri =~ /leave/) %>">
                   <a class="leaves-lnk" href="#" data-toggle="dropdown">Leaves <i class="caret"></i></a>
                   <ul class="dropdown-menu">
                     <li><%= link_to "My Leaves", leaves_path %></li>
-                    <% if current_user.employee.can_approve_leaves? %>
+                    <% if current_user.employee.can_action_leaves? %>
                     <li><%= link_to "Leave Requests", leave_requests_path %></li>
                     <% end %>
                     <li class="divider"></li>
