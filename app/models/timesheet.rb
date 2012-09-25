@@ -557,6 +557,10 @@ class Timesheet < ActiveRecord::Base
   def is_changed?(type, time)
     read_attribute(type.to_sym).localtime != time
   end
+  
+  def is_approved?
+    actions.select { |action| !action.response.eql?('Approved') }.blank?
+  end
 
   def set_minutes_late
     if is_first_entry? && is_work_day? && is_within_shift?

@@ -238,7 +238,8 @@ private
       timesheets = @employee_timesheets_active.map do |t|
         t.attributes.merge({
           :time_in => t.time_in_without_adjustment,
-          :is_editable => t.is_editable?
+          :is_editable => t.is_editable?,
+          :is_approved => t.is_approved?
         })
       end
     end

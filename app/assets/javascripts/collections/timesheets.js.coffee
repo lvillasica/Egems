@@ -17,3 +17,6 @@ class Egems.Collections.Timesheets extends Backbone.Collection
   
   editableEntries: ->
     @where(is_editable: true)
+  
+  disapprovedEntries: ->
+    @where(is_approved: false)

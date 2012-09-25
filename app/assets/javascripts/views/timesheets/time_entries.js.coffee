@@ -8,12 +8,13 @@ class Egems.Views.TimeEntries extends Backbone.View
 
   initialize: ->
     _.extend(this, Egems.Mixins.Timesheets, Egems.Mixins.Defaults)
-    @editableEntries = @collection.editableEntries()
     @collection.on('reset', @render, this)
 
   render: ->
     $(@el).html(@template())
     @collection.each(@appendTimeEntry)
+    @editableEntries = @collection.editableEntries()
+    @disapprovedEntries = @collection.disapprovedEntries()
     $('#actions-container').remove()
     if @collection.length > 0
       actions = @getActions()
@@ -40,7 +41,7 @@ class Egems.Views.TimeEntries extends Backbone.View
   
   overtimeFilable: ->
     minsExcess = parseInt(@collection.sum_minutes('minutes_excess')) or 0
-    minsExcess > 60 and @collection.overtime is null and not @editableEntries.length > 0
+    minsExcess >= 60 and @collection.overtime is null and not @disapprovedEntries.length > 0
   
   overtimeEditable: ->
     if @withOvertime()
