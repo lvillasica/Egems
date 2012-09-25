@@ -20,13 +20,14 @@ class OvertimeAction < ActiveRecord::Base
   # Callbacks
   # -------------------------------------------------------
   before_create :set_default_responders
-  before_create :set_created_at
+  before_create :set_timestamps
 
   # -------------------------------------------------------
   # Instance Methods
   # -------------------------------------------------------
-  def set_created_at
+  def set_timestamps
     self.created_at = Time.now.utc
+    self.updated_at = Time.parse('1970-01-01 08:00:00').utc
   end
 
   def set_default_responders

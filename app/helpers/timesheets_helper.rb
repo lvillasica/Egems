@@ -6,7 +6,7 @@ module TimesheetsHelper
               <li class="dropdown #{set_active(current_uri =~ /overtime/ || current_uri.eql?('/overtimes'))}">
                 <a class="overtimes-lnk" href="#" data-toggle="dropdown">Overtimes <i class="caret"></i></a>
                 <ul class="dropdown-menu">
-                  <li>#{link_to "Overtime", overtimes_path}</li>
+                  <li>#{link_to "My Overtimes", overtimes_path}</li>
                   <li>#{link_to "Overtime Requests", overtime_requests_path}</li>
                 </ul>
               </li>
@@ -14,7 +14,7 @@ module TimesheetsHelper
     else
       nav = %Q{
               <li class="#{set_active(current_uri =~ /overtime/ || current_uri.eql?('/overtimes'))}">
-                <a href="#{overtimes_path}">Overtime</a>
+                <a href="#{overtimes_path}">Overtimes</a>
               </li>
               }
     end

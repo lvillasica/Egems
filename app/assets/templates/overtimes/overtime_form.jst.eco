@@ -1,8 +1,9 @@
+<% l = @mixins.attrTranslations('overtime') %>
 <form method="post" id="overtime-form" class="form-horizontal" accept-charset="UTF-8" >
   <div id="flash_messages"></div>
   <fieldset>
     <div class="control-group">
-      <label class="control-label"> Duration </label>
+      <label class="control-label"><%= l 'duration' %></label>
       <div class="controls">
         <input type="text" name="overtime[duration]"
                size="30" class="span1" />
@@ -10,7 +11,7 @@
     </div>
 
     <div class="control-group">
-      <label class="control-label"> Work Details </label>
+      <label class="control-label"><%= l 'work_details' %></label>
       <div class="controls">
         <textarea class="input-xlarge span3" name="overtime[work_details]"
                   row="3" cols="30" placeholder="This field is required."></textarea>

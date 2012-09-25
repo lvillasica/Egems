@@ -49,7 +49,12 @@ Egems::Application.routes.draw do
       end
     end
 
-    resources :overtimes
+    resources :overtimes, { :except => [:show, :destroy] } do
+      member do
+        post :cancel
+      end
+    end
+    
     resources :leaves
 
     root :to => 'timesheets#index', :as => 'timesheets', :via => :get

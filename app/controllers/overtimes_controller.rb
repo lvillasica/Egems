@@ -6,7 +6,7 @@ class OvertimesController < ApplicationController
   before_filter :get_overtime, :only => [:edit, :update, :cancel]
 
   def index
-    @overtimes = @employee.overtimes
+    @overtimes = @employee.overtimes.asc_by_overtime_date
     js_params[:overtimes] = overtimes_with_more_attrs
     respond_with_json
   end
@@ -46,7 +46,6 @@ class OvertimesController < ApplicationController
   
   def update
     if @overtime.update_if_changed(params[:overtime])
-      js_params[:overtime] = @overtime
       flash_message(:notice, "Overtime dated on #{ view_context.format_date @overtime.date_of_overtime }
                               with a duration of #{ view_context.format_in_hours @overtime.duration } was
                               successfully updated.")
@@ -54,13 +53,23 @@ class OvertimesController < ApplicationController
     else
       flash_message(:error, @overtime.errors.full_messages) if @overtime.errors.any?
     end
-    
+    js_params[:overtime] = @overtime
     set_flash
     respond_with_json
   end
 
   def cancel
-    #
+    if @overtime.cancel!
+      flash_message(:notice, "Overtime dated on #{ view_context.format_date @overtime.date_of_overtime }
+                              with a duration of #{ view_context.format_in_hours @overtime.duration } was
+                              successfully canceled.")
+      flash_message(:warning, @overtime.errors.full_messages) if @overtime.errors.any?
+    else
+      flash_message(:error, @overtime.errors.full_messages) if @overtime.errors.any?
+    end
+    js_params[:overtime] = @overtime
+    set_flash
+    respond_with_json
   end
 
   def requests
@@ -105,7 +114,8 @@ private
     # add more attrs for each overtime here...
     @overtimes.map do |overtime|
       overtime.attributes.merge({
-        :responders => overtime.get_responders.map(&:full_name)
+        :responders => overtime.get_responders.map(&:full_name),
+        :response_date => overtime.response_date
       })
     end
   end

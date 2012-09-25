@@ -26,7 +26,9 @@ class Egems.Views.OvertimeForm extends Backbone.View
     this
 
   render: ->
-    $(@el).html(@template())
+    $(@el).html(@template(
+      mixins: $.extend(Egems.Mixins.Defaults)
+    ))
     @initFieldVals()
     @initEvents()
     this

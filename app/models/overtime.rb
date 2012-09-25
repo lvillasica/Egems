@@ -35,6 +35,7 @@ class Overtime < ActiveRecord::Base
   # Namescope
   # -------------------------------------------------------
   scope :editable, where(:status => ['Pending', 'Rejected'])
+  scope :asc_by_overtime_date, order(:date_of_overtime)
 
   # -------------------------------------------------------
   # Instance Methods
@@ -76,6 +77,28 @@ class Overtime < ActiveRecord::Base
       return false
     end
   end
+  
+  def cancel!
+    if is_cancelable?
+      update_column(:status, 'Canceled')
+      @email_action = 'canceled'
+      send_email_notification
+      return true
+    else
+      errors[:base] = "Overtime dated on #{ format_date date_of_overtime }
+                       with a duration of #{ format_in_hours duration }
+                       is not cancelable."
+      return false
+    end
+  end
+  
+  def is_cancelable?
+    ['Pending', 'Rejected'].include?(status)
+  end
+  
+  def response_date
+    action.updated_at
+  end
 
 private
   def invalid_input
@@ -111,7 +134,9 @@ private
         # when 'approved', 'rejected'
         #   OvertimeMailer.overtime_action(employee, self, recipient, @email_action, @action_owner).deliver
         end
-      rescue Net::SMTPAuthenticationError, Net::SMTPServerBusy, Net::SMTPSyntaxError, Net::SMTPFatalError, Net::SMTPUnknownError => e
+      rescue Net::SMTPAuthenticationError, Net::SMTPServerBusy,
+             Net::SMTPSyntaxError, Net::SMTPFatalError, Net::SMTPUnknownError,
+             OpenSSL::SSL::SSLError => e
         errors[:base] << "There was a problem on sending the email notification to #{recipient.email}: #{e.message}"
         next
       end

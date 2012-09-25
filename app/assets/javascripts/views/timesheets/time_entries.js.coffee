@@ -31,7 +31,9 @@ class Egems.Views.TimeEntries extends Backbone.View
     # push to actions ['actionName', 'actionSelectorID']
     actions.push([fileLeave, 'fileLeave']) unless fileLeave is ""
     actions.push(['File Overtime', 'fileOvertime']) if @overtimeFilable()
-    actions.push(['Edit Overtime', 'editOvertime']) if @overtimeEditable()
+    if @overtimeEditable()
+      actions.push(['Edit Overtime', 'editOvertime'])
+      actions.push(['Cancel Overtime', 'cancelOvertime'])
     actions.push(['Manual Time Entry', 'manualTimeEntry']) if @isAwol(remarks)
     actions.push(['Edit Manual Entries', 'editManual']) if @editableEntries.length > 0
     return actions
@@ -70,6 +72,7 @@ class Egems.Views.TimeEntries extends Backbone.View
     $('#fileLeave').click @linkToLeaveFile
     $('#fileOvertime').click @overtimeApplication
     $('#editOvertime').click @editOvertime
+    $('#cancelOvertime').click @cancelOvertime
     $('#manualTimeEntry').click @manualTimeEntryModal
     $('#editManual').click @triggerEditEntries
 
@@ -123,6 +126,19 @@ class Egems.Views.TimeEntries extends Backbone.View
           model = new Egems.Models.Overtime(data.overtime)
           view = new Egems.Views.EditOvertimeEntry(model: model)
           view.showOvertimeForm()
+  
+  cancelOvertime: (event) =>
+    if confirm "Are you sure?"
+      $.ajax
+        url: "overtimes/#{ @collection.overtime.id }/cancel"
+        dataType: 'json'
+        type: 'POST'
+        success: (data) =>
+          if data.error_response
+            alert data.error_response
+          else
+            $('#date-nav-tab li.day.active').trigger('click')
+            @showFlash(data.flash_messages)
 
   manualTimeEntryModal: (event) =>
     event.preventDefault()

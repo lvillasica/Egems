@@ -5,7 +5,7 @@
 <td><div class="wrap"><%= @overtime.details() %></div></td>
 <td><%= @overtime.status() %></td>
 <td><%- @overtime.responders().join("<br />") %></td>
-<td></td>
+<td><%= @mixins.format_date @overtime.responseDate() %></td>
 <td>
   <%- @mixins.overtime_actions @overtime %>
 </td>

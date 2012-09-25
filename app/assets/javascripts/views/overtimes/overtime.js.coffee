@@ -8,6 +8,7 @@ class Egems.Views.Overtime extends Backbone.View
     'click a.cancel': 'cancelOvertime'
 
   initialize: ->
+    _.extend(this, Egems.Mixins.Defaults)
     @model.on('change', @render, this)
     @model.on('highlight', @highlightRow, this)
 
@@ -36,15 +37,30 @@ class Egems.Views.Overtime extends Backbone.View
     $.ajax
       url: event.currentTarget.pathname
       dataType: 'json'
-      success: (data) =>
-        if data.error_response
-          alert data.error_response
-        else
-          model = new Egems.Models.Overtime(data.overtime)
-          view = new Egems.Views.EditOvertimeEntry(model: model, oldData: @model)
-          view.showOvertimeForm()
+      success: @onEditSuccess
+  
+  onEditSuccess: (data) =>
+    if data.error_response
+      alert data.error_response
+    else
+      model = new Egems.Models.Overtime(data.overtime)
+      view = new Egems.Views.EditOvertimeEntry(model: model, oldData: @model)
+      view.showOvertimeForm()
   
   cancelOvertime: (event) ->
     event.preventDefault()
     if confirm "Are you sure?"
-      alert event.currentTarget.pathname
+      $.ajax
+        url: event.currentTarget.pathname
+        dataType: 'json'
+        type: 'POST'
+        success: @onCancelSuccess
+
+  onCancelSuccess: (data) =>
+    if data.error_response
+      alert data.error_response
+    else
+      @model.set status: data.overtime.status unless data.flash_messages.error
+      @showFlash(data.flash_messages)
+      @model.trigger 'highlight'
+    
