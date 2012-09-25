@@ -32,7 +32,6 @@ Egems::Application.routes.draw do
     end
 
     scope '/timesheets/overtimes' do
-      match '/new', to: 'timesheets#new_overtime', as: 'timesheets_new_overtime', via: 'get'
       match '/requests', to: 'overtimes#requests', as: 'overtime_requests', via: 'get'
     end
 

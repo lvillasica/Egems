@@ -11,6 +11,7 @@ class Egems.Views.OvertimeForm extends Backbone.View
     @dateOfOT = @model.dateOfOvertime()
     @setDuration @model.duration()
     @details = @model.details()
+    @oldData = @options.oldData
 
   initFieldVals: ->
     @durationFld = @$('input[name="overtime[duration]"]')
@@ -119,8 +120,7 @@ class Egems.Views.OvertimeForm extends Backbone.View
     @enableFormActions()
     flash_messages = data.flash_messages
     if flash_messages.error is undefined
-      $('#overtime-form-modal').modal('hide')
-      $('#date-nav-tab li.day.active').trigger('click')
+      @exitForm(data)
       @showFlash(data.flash_messages)
     else
       $('#flash_messages').html(@flash_messages(flash_messages))
@@ -131,6 +131,16 @@ class Egems.Views.OvertimeForm extends Backbone.View
       errors = $.parseJSON(response.responseText).errors
       for attribute, messages of errors
         alert "#{attribute} #{message}" for message in messages
+  
+  exitForm: (data) ->
+    $('#overtime-form-modal').modal('hide')
+    if $('#date-nav-tab li.day.active').length > 0
+      $('#date-nav-tab li.day.active').trigger('click')
+    else
+      attributes = @getParams()
+      $.extend(attributes, {status: data.overtime.status})
+      @oldData.set attributes if @oldData
+      @oldData.trigger 'highlight'
 
   enableFormActions: ->
     $('.submit').removeAttr('disabled')

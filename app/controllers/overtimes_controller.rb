@@ -7,7 +7,7 @@ class OvertimesController < ApplicationController
 
   def index
     @overtimes = @employee.overtimes
-    js_params[:overtimes] = @overtimes
+    js_params[:overtimes] = overtimes_with_more_attrs
     respond_with_json
   end
 
@@ -46,6 +46,7 @@ class OvertimesController < ApplicationController
   
   def update
     if @overtime.update_if_changed(params[:overtime])
+      js_params[:overtime] = @overtime
       flash_message(:notice, "Overtime dated on #{ view_context.format_date @overtime.date_of_overtime }
                               with a duration of #{ view_context.format_in_hours @overtime.duration } was
                               successfully updated.")
@@ -53,6 +54,7 @@ class OvertimesController < ApplicationController
     else
       flash_message(:error, @overtime.errors.full_messages) if @overtime.errors.any?
     end
+    
     set_flash
     respond_with_json
   end
@@ -98,12 +100,13 @@ private
   def overtime_with_max_duration
     @overtime.attributes.merge({ :max_duration => @overtime.max_duration })
   end
-
-  def overtime_attributes
-    @overtimes.each do |ovr|
-      js_params[:overtime] = ovr.attributes.merge({
-        :responders => ovr.get_responders
-        })
+  
+  def overtimes_with_more_attrs
+    # add more attrs for each overtime here...
+    @overtimes.map do |overtime|
+      overtime.attributes.merge({
+        :responders => overtime.get_responders.map(&:full_name)
+      })
     end
   end
 

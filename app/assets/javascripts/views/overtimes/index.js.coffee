@@ -12,6 +12,6 @@ class Egems.Views.OvertimesIndex extends Backbone.View
     this
 
   appendOvertime: (overtime) =>
-    view = new Egems.Views.OvertimesEntry(model: overtime)
-    @$("#overtimes_tbl tbody").append(view.render().el)
+    view = new Egems.Views.Overtime(model: overtime)
+    @$("#overtimes-tbl tbody").append(view.render().el)
 

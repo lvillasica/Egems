@@ -6,7 +6,10 @@ class Egems.Views.EditOvertimeEntry extends Backbone.View
     "click #edit-overtime-actions .submit" : "triggerSubmit"
 
   initialize: ->
-    @form = new Egems.Views.OvertimeForm(model: @model, edit: true)
+    @form = new Egems.Views.OvertimeForm
+      model: @model
+      edit: true
+      oldData: @options.oldData
 
   render: ->
     $(@el).html(@template())

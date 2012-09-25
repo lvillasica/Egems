@@ -47,6 +47,14 @@ class Overtime < ActiveRecord::Base
     self.create_action
   end
   
+  def get_responders
+    if action.responder
+      return [action.responder]
+    else
+      return action.responders
+    end
+  end
+  
   def reset_status
     self.status = 'Pending' unless self.status.eql?('Pending')
   end
@@ -77,7 +85,7 @@ private
       errors[:duration] << "must not exceed #{ format_in_hours maxDuration }"
     end
     
-    unless ['Pending', 'Rejected'].include?(status)
+    unless ['Pending', 'Rejected', 'Un-Filed'].include?(status)
       errors[:base] << "You can no longer edit this entry."
     end
   end

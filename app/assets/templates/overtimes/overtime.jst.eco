@@ -1,0 +1,11 @@
+<td><%= @mixins.format_date @overtime.dateFiled() %></td>
+<td><%= @mixins.format_date @overtime.dateOfOvertime() %></td>
+<td class="mins"><%= @mixins.format_in_hours @overtime.duration() %></td>
+<td class="mins"><%= @mixins.format_in_hours @overtime.durationApproved() %></td>
+<td><div class="wrap"><%= @overtime.details() %></div></td>
+<td><%= @overtime.status() %></td>
+<td><%- @overtime.responders().join("<br />") %></td>
+<td></td>
+<td>
+  <%- @mixins.overtime_actions @overtime %>
+</td>
