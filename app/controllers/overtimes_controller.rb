@@ -89,11 +89,26 @@ class OvertimesController < ApplicationController
       action.approved_duration = approved_ots["#{action.id}"].to_i
       overtime = action.overtime
       unless action.approve!(@employee)
-        msg = "Can't approve requested dated <#{overtime.date_of_overtime}> of #{overtime.employee.full_name}"
+        msg = "Can't approve request dated <#{overtime.date_of_overtime}> of #{overtime.employee.full_name}"
         errors[msg] = action.errors.full_messages
       end
     end
     js_params[:success] = { success: "Overtime/s successfully approved." } if errors.empty?
+    js_params[:errors] = errors unless errors.empty?
+    requests
+  end
+
+  def bulk_reject
+    errors = Hash.new
+    actions = OvertimeAction.find_all_by_id(params[:rejected_ids])
+    actions.each do |action|
+      overtime = action.overtime
+      unless action.reject!(@employee)
+        msg = "Can't reject request dated <#{overtime.date_of_overtime}> of #{overtime.employee.full_name}"
+        errors[msg] = action.errors.full_messages
+      end
+    end
+    js_params[:success] = { success: "Overtime/s successfully rejected." } if errors.empty?
     js_params[:errors] = errors unless errors.empty?
     requests
   end

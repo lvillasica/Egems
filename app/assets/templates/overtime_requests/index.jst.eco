@@ -4,6 +4,7 @@
 <% if @overtime_requests.length > 0 :%>
   <form method="post" id="overtimes-approval-form" accept-charset="UTF-8">
     <button class="btn btn-primary approve">Approve</button>
+    <button class="btn btn-primary reject">Reject</button>
     <table id="supervisor_pending_overtimes" class="table timesheets leave_details" style="margin-top: 10px">
       <thead>
         <tr>

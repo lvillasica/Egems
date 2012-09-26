@@ -5,6 +5,7 @@ class Egems.Views.OvertimeRequestsIndex extends Backbone.View
   events: ->
     "click #toggle-boxes" : "toggleCheckBoxes"
     "click #overtimes-approval-form .approve" : "approveChecked"
+    "click #overtimes-approval-form .reject" : "rejectChecked"
 
   initialize: ->
     @collection.on('reset', @render, this)
@@ -33,6 +34,25 @@ class Egems.Views.OvertimeRequestsIndex extends Backbone.View
         dataType: 'JSON'
         type: 'POST'
         data: { approved_ots: params }
+        success: (data) =>
+          @collection.reset(data.pending)
+          if data.errors != undefined
+            @showErrors(data.errors)
+          else
+            @showSuccessMsg(data.success)
+    else
+      @noCheckedBox()
+
+  rejectChecked: (event) ->
+    event.preventDefault()
+    ids = @getCheckedIds()
+
+    if ids.length > 0
+      $.ajax
+        url: '/timesheets/overtimes/reject'
+        dataType: 'JSON'
+        type: 'POST'
+        data: { rejected_ids: ids }
         success: (data) =>
           @collection.reset(data.pending)
           if data.errors != undefined
