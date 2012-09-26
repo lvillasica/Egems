@@ -1,8 +1,9 @@
 <h3>Overtime Requests</h3>
 <br>
+<div id="flash_messages"></div>
 <% if @overtime_requests.length > 0 :%>
-  <div id="flash_messages"></div>
   <form method="post" id="overtimes-approval-form" accept-charset="UTF-8">
+    <button class="btn btn-primary approve">Approve</button>
     <table id="supervisor_pending_overtimes" class="table timesheets leave_details" style="margin-top: 10px">
       <thead>
         <tr>

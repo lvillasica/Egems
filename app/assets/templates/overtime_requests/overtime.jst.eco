@@ -4,7 +4,7 @@
 <td><%= @mixins.format_date @overtime.dateOfOvertime() %></td>
 <td><%= @mixins.format_in_hours @overtime.duration() %></td>
 <td>
-  <input type="text" name="duration-approved" value="<%= @mixins.format_in_hours @overtime.duration() %>"/>
+  <input type="text" name="duration-approved"/>
 </td>
 <td>
  <a href="" role="button" class="overtime-details" data-toggle="modal"><i class="icon-comment"></i></a>

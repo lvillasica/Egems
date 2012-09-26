@@ -34,7 +34,7 @@ class OvertimesController < ApplicationController
     set_flash
     respond_with_json
   end
-  
+
   def edit
     if request.xhr?
       js_params[:overtime] = overtime_with_max_duration
@@ -43,7 +43,7 @@ class OvertimesController < ApplicationController
       redirect_to :timesheets
     end
   end
-  
+
   def update
     if @overtime.update_if_changed(params[:overtime])
       flash_message(:notice, "Overtime dated on #{ view_context.format_date @overtime.date_of_overtime }
@@ -73,7 +73,7 @@ class OvertimesController < ApplicationController
   end
 
   def requests
-    js_params[:pending] = attrs(@employee.for_response_overtimes.pending)
+    js_params[:pending] = attrs(@employee.for_response_overtimes.pending.asc)
     if @employee.is_supervisor?
       respond_with_json
     else
@@ -81,11 +81,28 @@ class OvertimesController < ApplicationController
     end
   end
 
+  def bulk_approve
+    errors = Hash.new
+    approved_ots = params[:approved_ots]
+    actions = OvertimeAction.find_all_by_id(approved_ots.keys)
+    actions.each do |action|
+      action.approved_duration = approved_ots["#{action.id}"].to_i
+      overtime = action.overtime
+      unless action.approve!(@employee)
+        msg = "Can't approve requested dated <#{overtime.date_of_overtime}> of #{overtime.employee.full_name}"
+        errors[msg] = action.errors.full_messages
+      end
+    end
+    js_params[:success] = { success: "Overtime/s successfully approved." } if errors.empty?
+    js_params[:errors] = errors unless errors.empty?
+    requests
+  end
+
 private
   def get_employee
     @employee = current_user.employee
   end
-  
+
   def get_overtime
     @overtime = @employee.overtimes.find_by_id(params[:id])
     if @overtime.nil?
@@ -105,11 +122,11 @@ private
       format.json { render :json => js_params.to_json }
     end
   end
-  
+
   def overtime_with_max_duration
     @overtime.attributes.merge({ :max_duration => @overtime.max_duration })
   end
-  
+
   def overtimes_with_more_attrs
     # add more attrs for each overtime here...
     @overtimes.map do |overtime|

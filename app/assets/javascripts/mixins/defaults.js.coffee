@@ -11,13 +11,13 @@ Egems.Mixins.Defaults =
 
   format_day_only: (date) ->
     res = I18n.strftime(new Date(date), '%a')
-  
+
   getHour: (time) ->
     I18n.strftime(new Date(time), '%I')
-  
+
   getMin: (time) ->
     I18n.strftime(new Date(time), '%M')
-  
+
   getMeridian: (time) ->
     I18n.strftime(new Date(time), '%p')
 
@@ -93,19 +93,22 @@ Egems.Mixins.Defaults =
     end = new Date(end)
     totalDiff = start.getTime() - end.getTime()
     Math.abs(Math.ceil(totalDiff/1000/60))
-  
+
   simplePluralize: (num, commonStr) ->
     res = "#{ parseFloat(num).toFixed(1) } #{ commonStr }"
     return if num is 1 then res else res + 's'
-  
+
   getHoursFromMins: (minutes) ->
     return parseInt(minutes / 60)
-  
+
   getMinsFromMins: (minutes) ->
     return parseInt(minutes % 60)
-  
+
   hrsToMins: (hrs, mins) ->
     h = parseInt(hrs) or 0
     m = parseInt(mins) or 0
     return (h * 60) + m
-    
+
+  isNumeric: (string) ->
+    intRegex = /^\d+$/
+    intRegex.test(string)

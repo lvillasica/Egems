@@ -33,6 +33,8 @@ Egems::Application.routes.draw do
 
     scope '/timesheets/overtimes' do
       match '/requests', to: 'overtimes#requests', as: 'overtime_requests', via: 'get'
+      match '/approve', to: 'overtimes#bulk_approve', as: 'overtimes_approve', via: 'post'
+      match '/reject', to: 'overtimes#bulk_reject', as: 'overtimes_reject', via: 'post'
     end
 
     match '/delete/autotimein', :to => 'application#delete_session', :via => :post

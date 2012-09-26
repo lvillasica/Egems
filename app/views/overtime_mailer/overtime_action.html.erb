@@ -1,0 +1,10 @@
+<p>Hi <%= @recipient.full_name %>,</p>
+<br/>
+<p><%= @receiver_sv %> overtime request dated { <%= @date %> }.</p>
+<p><%= @receiver_action %></p>
+<a href="<%= url_for(@url) %>"><%= url_for(@url) %></a>
+<br/>
+<p>This is a system generated email. Please do not reply.</p>
+<br/>
+<p>Regards,</p>
+<p>eGEMs</p>
