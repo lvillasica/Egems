@@ -89,7 +89,7 @@ class OvertimesController < ApplicationController
       action.approved_duration = approved_ots["#{action.id}"].to_i
       overtime = action.overtime
       unless action.approve!(@employee)
-        msg = "Can't approve request dated <#{overtime.date_of_overtime}> of #{overtime.employee.full_name}"
+        msg = "Can't approve request dated #{ view_context.format_date overtime.date_of_overtime } of #{overtime.employee.full_name}"
         errors[msg] = action.errors.full_messages
       end
     end

@@ -109,6 +109,16 @@ Egems.Mixins.Defaults =
     m = parseInt(mins) or 0
     return (h * 60) + m
 
-  isNumeric: (string) ->
-    intRegex = /^\d+$/
-    intRegex.test(string)
+  isNumeric: (event) ->
+    key = event.which || event.keyCode;
+    if (!event.shiftKey && !event.altKey && !event.ctrlKey &&
+       key >= 48 && key <= 57 ||
+       key >= 96 && key <= 105 ||
+       key == 190 || key == 188 || key == 109 || key == 110 ||
+       key == 8 || key == 9 || key == 13 ||
+       key == 35 || key == 36 ||
+       key == 37 || key == 39 ||
+       key == 46 || key == 45)
+      return true
+    else
+      return false

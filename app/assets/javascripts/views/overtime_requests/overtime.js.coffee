@@ -31,7 +31,6 @@ class Egems.Views.OvertimeRequest extends Backbone.View
     $('#view-details-modal').on 'hidden', ->
       $(this).remove()
 
-
   initDuration: ->
     @durationFld = @$('input[name="duration-approved"]')
     @durationFld.val(@format_in_hours @duration)
@@ -53,11 +52,14 @@ class Egems.Views.OvertimeRequest extends Backbone.View
             .append(resetBtn)
 
     @hrsFld.val(@getHoursFromMins @model.duration())
+           .change(@updateDuration)
+           .keydown(@validateInput)
+
     @minsFld.val(@getMinsFromMins @model.duration())
+            .change(@updateDuration)
+            .keydown(@validateInput)
 
     resetBtn.click @resetDuration
-    @minsFld.change @updateDuration
-    @hrsFld.change @updateDuration
 
   updateDuration: (event) =>
     event.preventDefault()
@@ -73,3 +75,7 @@ class Egems.Views.OvertimeRequest extends Backbone.View
     @updateDuration
     @durationFld.val(@format_in_hours @model.duration())
     container.find("input[name='duration-approved']").css('display', 'inline-block')
+
+  validateInput: (event) =>
+    if !@isNumeric(event)
+      event.preventDefault()
