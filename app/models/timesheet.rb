@@ -496,7 +496,7 @@ class Timesheet < ActiveRecord::Base
 
   def remarks_manual_update
     r = Array.new
-    if is_valid == 2 or is_valid == 3
+    if [2, 3, 4].include?(is_valid)
       @timesheets_today ||= employee.timesheets.by_date(date.localtime).asc
       if @timesheets_today.pending_manual.present?
         r << 'For Verification'
