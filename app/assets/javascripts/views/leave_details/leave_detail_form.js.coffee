@@ -108,7 +108,7 @@ class Egems.Views.LeaveDetailForm extends Backbone.View
     @$("#leave_detail_period_#{@model.period()}").attr('checked', 'checked')
 
   setDateFldVal: (dateFld, newDateVal) ->
-    fldDateVal = Date.parse(dateFld.val()) or new Date()
+    fldDateVal = if @options.edit then Date.parse(dateFld.val()) else new Date()
     if fldDateVal >= @minDate and fldDateVal <= @maxDate
       dateFld.val(@format_date fldDateVal)
     else
@@ -174,13 +174,11 @@ class Egems.Views.LeaveDetailForm extends Backbone.View
       @$('#leave_detail_end_date').next('.ui-datepicker-trigger').attr('disabled', true)
       @$("#radio-reset-btn.btn.btn-mini").attr('disabled', true)
       @$('#leave_detail_end_date').attr('disabled', true)
-      @$('#leave_detail_leave_unit').attr('disabled', true)
     else
       @$("#leave_detail_form input[name='leave_detail[period]']").removeAttr('disabled')
       @$('#leave_detail_end_date').next('.ui-datepicker-trigger').removeAttr('disabled')
       @$("#radio-reset-btn.btn.btn-mini").removeAttr('disabled')
       @$('#leave_detail_end_date').removeAttr('disabled')
-      @$('#leave_detail_leave_unit').removeAttr('disabled')
 
   resetDates: ->
     if @validDates()

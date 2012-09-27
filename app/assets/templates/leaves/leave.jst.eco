@@ -1,4 +1,4 @@
-<td><%= @leave.leaveType() %></td>
+<td><span class="focusable"><%= @leave.leaveType() %></span></td>
 <td class="mins"><%= @mixins.format_float @leave.leavesAllocated() %></td>
 <td class="mins"><%= @mixins.format_float @leave.leavesConsumed() %></td>
 <td class="mins"><%= @mixins.format_float @leave.totalPending() %></td>
