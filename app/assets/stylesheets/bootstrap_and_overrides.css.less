@@ -33,10 +33,15 @@ body { padding-top: 120px; }
 /* Landscape phones and down */
 @media (max-width: 480px) {
   body { padding-top: 0; }
+  .container { width: 724px !important; }
+  .session.container {
+    display: table !important;
+    width: auto !important;
+    margin: 0 auto !important;
+  }
   input.span1 { width: 60px !important; }
   input.span2 { width: 160px !important; }
-  .offset2 { margin-left: 3px; }
-  .modal.fade.in { top: 0; }
+  .modal.fade.in { top: 0px !important; left: 3px !important; }
 }
 
 /* Landscape phone to portrait tablet */
@@ -48,14 +53,31 @@ body { padding-top: 120px; }
 
   #digiclock { float: none; }
   body { padding-top: 0; }
+  body.session {
+    min-width: 1px !important;
+    padding: 0px !important;
+  }
   input.span1 { width: 60px !important; }
   input.span2 { width: 160px !important; }
-  .row, .footer { margin-left: 0; width: 650px; }
+  .row { margin-left: 0; width: 724px; }
   .offset2 { margin-left: 5px; }
+  .modal.fade.in {
+    top: 260px;
+    position: absolute;
+  }
 
   #leaves-page-header {
     span button { float: none; margin-top: 15px; }
     h3 { width: 100% !important; }
+  }
+  .container {
+    width: 724px !important;
+    margin-left: 0;
+  }
+  .session.container {
+    display: table !important;
+    width: auto !important;
+    margin: 0 auto !important;
   }
 }
 
@@ -67,12 +89,29 @@ body { padding-top: 120px; }
   input.span2 { width: 160px !important; }
   .row, .span9 { margin-left: 0; width: 767px; }
   .offset2 { margin-left: 30px; }
+  .modal.fade.in {
+    top: 260px;
+    position: absolute;
+  }
 }
 
 /* Large desktop */
 @media (min-width: 1200px) {
   .span5 { width: 445px; }
   .offset2 { margin-left: 208px; }
+  .container { width: 1020px; }
+}
+
+@media (max-height: 500px) {
+  .modal.fade.in {
+    top: 260px;
+    position: absolute;
+  }
+}
+
+#sessions-form-container {
+  display: table;
+  margin: 0 auto;
 }
 
 .popover {
@@ -101,13 +140,12 @@ body { padding-top: 120px; }
   margin: 0;
 }
 
-
 /* Loading Indicator
 -------------------------------------------------- */
 .modal-backdrop {
   background-color: #babdb6 !important;
   opacity: 0.3;
-  filter: alpha(opacity=30)
+  filter: alpha(opacity=30);
 }
 
 .modal { top: 65%; }

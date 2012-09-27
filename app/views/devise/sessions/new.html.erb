@@ -1,29 +1,28 @@
-<div class="row">
-  <div  id="sessions-form-container" class="span5 offset4">
-  <%= form_for(resource, :as => resource_name, :url => session_path(resource_name), :html => { :class => 'pull-left well form-horizontal' }) do |f| %>
-    <h2>Sign in</h2>
-    <fieldset>
-      <%= flash_message %>
-      <div class="control-group">
-        <%= f.label :login, :class => 'control-label' %>
-        <div class="controls">
-          <%= f.text_field :login %>
-        </div>
-      </div>
 
-      <div class="control-group">
-        <%= f.label :password, :class => 'control-label' %>
-        <div class="controls">
-          <%= f.password_field :password %>
-        </div>
+<div id="sessions-form-container">
+<%= form_for(resource, :as => resource_name, :url => session_path(resource_name), :html => { :class => 'pull-left well form-horizontal' }) do |f| %>
+  <h2>Sign in</h2>
+  <fieldset>
+    <%= flash_message %>
+    <div class="control-group">
+      <%= f.label :login, :class => 'control-label' %>
+      <div class="controls">
+        <%= f.text_field :login %>
       </div>
+    </div>
 
-      <div class="form-actions no-padding-bottom no-margin-bottom">
-        <%= f.submit "Sign in", :class => 'btn btn-primary btn-large' %>
-        <%= f.submit "Time in", :class => 'btn btn-primary btn-large' %>
+    <div class="control-group">
+      <%= f.label :password, :class => 'control-label' %>
+      <div class="controls">
+        <%= f.password_field :password %>
       </div>
+    </div>
 
-    </fieldset>
-  <% end %>
-  </div>
-</div>‌
+    <div class="form-actions no-padding-bottom no-margin-bottom">
+      <%= f.submit "Sign in", :class => 'btn btn-primary btn-large' %>
+      <%= f.submit "Time in", :class => 'btn btn-primary btn-large' %>
+    </div>
+
+  </fieldset>
+<% end %>
+</div>
