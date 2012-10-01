@@ -39,9 +39,12 @@ Egems.Mixins.Defaults =
       return l
     return method
 
-  flash_messages: (flash) ->
+  flash_messages: (flash, type = null) ->
     flashes = ""
-    $('div.alert').remove()
+    if type is 'email'
+      $('div.alert.email').remove()
+    else
+      $('div.alert').remove()
     alert_classes =
       alert: "error"
       error: "error"
@@ -51,7 +54,7 @@ Egems.Mixins.Defaults =
       info: "info"
     for name, msg of flash
       str = """
-            <div class='alert alert-#{alert_classes[name]}'>
+            <div class='alert alert-#{ alert_classes[name] } #{ if type then type else '' }'>
                <button class='close' data-dismiss='alert'>&times;</button>
                #{msg}
             </div>
@@ -59,8 +62,12 @@ Egems.Mixins.Defaults =
       flashes += str
     flashes
 
-  showFlash: (flash_messages) ->
-    $("#main-container").prepend(@flash_messages(flash_messages))
+  showFlash: (flash_messages, type = null) ->
+    if type is 'email' and $('div.alert').length > 0
+      $(@flash_messages(flash_messages, type)).insertAfter('div.alert:last')
+      console.log $('div.alert:last')
+    else
+      $("#main-container").prepend(@flash_messages(flash_messages, type))
     $('html, body').animate({scrollTop: 0}, 'slow')
 
   addClassError: (field) ->
@@ -122,3 +129,23 @@ Egems.Mixins.Defaults =
       return true
     else
       return false
+  
+  check_mailing_job_status: (job_id) ->
+    if !!window.EventSource
+      source = new EventSource("/mailing_job_status?job_id=#{ job_id }")
+      source.addEventListener 'message', (e) =>
+        msg = null
+        switch e.data
+          when 'success'
+            msg = { success: 'Email notifications were successfully sent.' }
+            source.close()
+          when 'enqueued'
+            msg = { info: 'Sending email notifications...' }
+          when 'error'
+            msg = { error: 'Sending email notifications failed.' }
+            source.close()
+        @showFlash(msg, 'email') if msg
+      , false
+    else
+      alert "HTML 5 is not supported in your browser."
+

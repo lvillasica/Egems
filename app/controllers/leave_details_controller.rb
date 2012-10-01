@@ -183,7 +183,8 @@ private
       :day_offs => @employee.day_offs_within(leave_range),
       :holidays => @employee.holidays_within(leave_range),
       :leave_total_pending => @leave.total_pending,
-      :leave_remaining_balance => @leave.remaining_balance
+      :leave_remaining_balance => @leave.remaining_balance,
+      :mailing_job_id => @leave_detail.mailing_job_id
     })
     js_params[:total_pending] = @employee.total_pending_leaves
     js_params[:flash_messages] = flash.to_hash

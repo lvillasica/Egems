@@ -2,6 +2,7 @@ class LeaveDetail < ActiveRecord::Base
 
   self.table_name = 'employee_truancy_details'
   attr_accessible :leave_type, :leave_date, :end_date, :leave_unit, :details, :period, :status
+  attr_accessor :mailing_job_id
 
   # -------------------------------------------------------
   # Modules
@@ -664,7 +665,8 @@ private
 
   def send_email_notification
     action_owner_id = @action_owner ? @action_owner.id : nil
-    Delayed::Job.enqueue(LeaveDetailsMailingJob.new(self.id, @email_action, action_owner_id))
+    mailing_job = LeaveDetailsMailingJob.new(self.id, @email_action, action_owner_id)
+    self.mailing_job_id = Delayed::Job.enqueue(mailing_job).id
   end
 
   def set_email_action_sent

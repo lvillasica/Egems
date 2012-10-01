@@ -38,6 +38,7 @@ Egems::Application.routes.draw do
     end
 
     match '/delete/autotimein', :to => 'application#delete_session', :via => :post
+    match '/mailing_job_status', :to => 'application#mailing_job_status'
 
     scope '/leave_details' do
       match '/requests', to: 'leave_details#leave_requests', as: 'leave_requests', via: 'get'
