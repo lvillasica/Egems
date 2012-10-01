@@ -663,26 +663,8 @@ private
   end
 
   def send_email_notification
-    recipients = Array.new(responders.uniq)
-    recipients << employee unless responders.include?(employee)
-
-    if needs_hr_action? && is_approved?
-      recipients = recipients - employee.hr_personnel
-    end
-
-    recipients.uniq.compact.each do |recipient|
-      begin
-        case @email_action
-        when 'sent', 'edited', 'canceled'
-          LeaveDetailMailer.leave_for_approval(employee, self, recipient, @email_action).deliver
-        when 'approved', 'rejected'
-          LeaveDetailMailer.leave_action(employee, self, recipient, @email_action, @action_owner).deliver
-        end
-      rescue Net::SMTPAuthenticationError, Net::SMTPServerBusy, Net::SMTPSyntaxError, Net::SMTPFatalError, Net::SMTPUnknownError => e
-        errors[:base] << "There was a problem on sending the email notification to #{recipient.email}: #{e.message}"
-        next
-      end
-    end
+    action_owner_id = @action_owner ? @action_owner.id : nil
+    Delayed::Job.enqueue(LeaveDetailsMailingJob.new(self.id, @email_action, action_owner_id))
   end
 
   def set_email_action_sent

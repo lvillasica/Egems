@@ -31,6 +31,8 @@ gem 'devise'
 gem "devise_ldap_authenticatable", :git => "git://github.com/cschiewek/devise_ldap_authenticatable.git"
 gem 'backbone-on-rails'
 gem 'i18n-js'
+gem 'delayed_job_active_record'
+gem 'daemons'
 
 # To use ActiveModel has_secure_password
 # gem 'bcrypt-ruby', '~> 3.0.0'
