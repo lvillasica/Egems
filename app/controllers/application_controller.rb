@@ -23,17 +23,17 @@ class ApplicationController < ActionController::Base
     session.delete(params[:session].to_sym)
     render :nothing => true
   end
-  
+
   def mailing_job_status
     response.headers['Content-Type'] = 'text/event-stream'
     response.headers['Cache-Control'] = 'no-cache'
-    
+
     @job = Delayed::Job.find_by_id(params[:job_id])
-    
+
     if @job.nil?
       # The job has completed and is no longer in the database.
-    else
       @status = "data: success\n\n"
+    else
       if @job.last_error.nil?
         # The job is still in the queue and has not been run.
         @status = "data: enqueued\n\n"

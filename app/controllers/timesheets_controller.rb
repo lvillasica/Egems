@@ -55,6 +55,7 @@ class TimesheetsController < ApplicationController
     begin
       if @timesheet.manual_entry(params)
         get_active_timesheets(@timesheet.date.localtime)
+        js_params[:mailing_job_id] = @timesheet.mailing_job_id
       else
         set_flash
       end
@@ -67,7 +68,7 @@ class TimesheetsController < ApplicationController
     end
     respond_with_json
   end
-  
+
   def edit_manual_entry
     @timesheet = @employee.timesheets.find_by_id(params[:id])
     if @timesheet.update_manual_entry(params)
@@ -199,7 +200,9 @@ private
   # TODO: Refactor
   def save_manual_timeentry(type, attrs)
     @employee ||= get_employee
-    unless @timesheet.manual_update(attrs)
+    if @timesheet.manual_update(attrs)
+      js_params[:mailing_job_id] = @timesheet.mailing_job_id
+    else
       if (errors = @timesheet.errors).any?
         js_params[:error] = ['error', flash_message(:alert, errors.full_messages)]
       end
@@ -253,7 +256,7 @@ private
         :time_in => timesheet.time_in_without_adjustment })
     end
   end
-  
+
   def set_flash(type = :error)
     flash_message(type, @timesheet.errors.full_messages) if @timesheet.errors.any?
     js_params[:flash_messages] = flash.to_hash

@@ -39,6 +39,7 @@ class Egems.Views.ManualTimeout extends Backbone.View
         if data.invalid_timesheet != null
           @render(model: data.invalid_timesheet, error: data.error)
         else
+          @check_mailing_job_status(data.mailing_job_id)
           @renderEntries(event)
 
   renderEntries: (event) ->

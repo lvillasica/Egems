@@ -8,6 +8,7 @@ class Timesheet < ActiveRecord::Base
 
   self.table_name = 'employee_timesheets'
   attr_accessible :date, :time_in, :time_out, :is_valid, :remarks
+  attr_accessor :mailing_job_id
 
   # -------------------------------------------------------
   # Modules
@@ -310,31 +311,13 @@ class Timesheet < ActiveRecord::Base
   end
 
   def send_action_notification(type, action_owner, action)
-    recipients = Array.new(responders)
-    recipients << employee
-
-    recipients.uniq.compact.each do |recipient|
-      begin
-        TimesheetMailer.timesheet_action(employee, self, recipient, type, action, action_owner).deliver
-      rescue Net::SMTPAuthenticationError, Net::SMTPServerBusy, Net::SMTPSyntaxError, Net::SMTPFatalError, Net::SMTPUnknownError => e
-        errors[:base] << "Time entry was updated however there was problem with email notification to #{recipient.email}: #{e.message}"
-        next
-      end
-    end
+    mailing_job = TimesheetActionedMailingJob.new(self.id, type, action_owner.id, action)
+    self.mailing_job_id = Delayed::Job.enqueue(mailing_job).id
   end
 
   def send_invalid_timesheet_notification(type)
-    recipients = Array.new(responders)
-    recipients << employee
-
-    recipients.uniq.compact.each do |recipient|
-      begin
-      TimesheetMailer.invalid_timesheet(employee, self, type, recipient).deliver
-      rescue Net::SMTPAuthenticationError, Net::SMTPServerBusy, Net::SMTPSyntaxError, Net::SMTPFatalError, Net::SMTPUnknownError => e
-        errors[:base] << "Time entry was updated however there was problem with email notification to #{recipient.email}: #{e.message}"
-        next
-      end
-    end
+    mailing_job = TimesheetRequestsMailingJob.new(self.id, type)
+    self.mailing_job_id = Delayed::Job.enqueue(mailing_job).id
   end
 
   def approve!(supervisor)
@@ -557,7 +540,7 @@ class Timesheet < ActiveRecord::Base
   def is_changed?(type, time)
     read_attribute(type.to_sym).localtime != time
   end
-  
+
   def is_approved?
     actions.select { |action| !action.response.eql?('Approved') }.blank?
   end
