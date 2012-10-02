@@ -667,6 +667,9 @@ private
     action_owner_id = @action_owner ? @action_owner.id : nil
     mailing_job = LeaveDetailsMailingJob.new(self.id, @email_action, action_owner_id)
     self.mailing_job_id = Delayed::Job.enqueue(mailing_job).id
+    job_for = ['approved', 'rejected'].include?(@email_action) ? "leave_request" : "leave_detail"
+    msg = "Sending email notifications..."
+    Rails.cache.write("#{ employee.id }_#{ job_for }_mailing_stat", ["enqueued", msg])
   end
 
   def set_email_action_sent

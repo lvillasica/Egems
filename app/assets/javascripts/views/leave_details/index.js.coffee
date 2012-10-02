@@ -3,6 +3,7 @@ class Egems.Views.LeaveDetailsIndex extends Backbone.View
   template: JST['leave_details/index']
   
   initialize: ->
+    _.extend(this, Egems.Mixins.Defaults)
     @collection.on('reset', @render, this)
     @collection.on('add', @render, this)
     @leaves = @options.leaves
@@ -10,6 +11,7 @@ class Egems.Views.LeaveDetailsIndex extends Backbone.View
   render: ->
     $(@el).html(@template(leave_details: @collection))
     @collection.each(@appendLeaveDetail)
+    @check_mailing_job_status("leave_detail")
     this
   
   appendLeaveDetail: (leave_detail) =>

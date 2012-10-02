@@ -63,11 +63,11 @@ Egems.Mixins.Defaults =
     flashes
 
   showFlash: (flash_messages, type = null) ->
+    flash_content = @flash_messages(flash_messages, type)
     if type is 'email' and $('div.alert').length > 0
-      $(@flash_messages(flash_messages, type)).insertAfter('div.alert:last')
-      console.log $('div.alert:last')
+      $(flash_content).insertAfter('div.alert:last')
     else
-      $("#main-container").prepend(@flash_messages(flash_messages, type))
+      $("#main-container").prepend(flash_content)
     $('html, body').animate({scrollTop: 0}, 'slow')
 
   addClassError: (field) ->
@@ -130,21 +130,21 @@ Egems.Mixins.Defaults =
     else
       return false
   
-  check_mailing_job_status: (job_id) ->
+  check_mailing_job_status: (job_for) ->
     if !!window.EventSource
-      source = new EventSource("/mailing_job_status?job_id=#{ job_id }")
+      source = new EventSource("/mailing_job_status?job_for=#{ job_for }")
       source.addEventListener 'message', (e) =>
         msg = null
-        switch e.data
-          when 'success'
-            msg = { success: 'Email notifications were successfully sent.' }
-            source.close()
-          when 'enqueued'
-            msg = { info: 'Sending email notifications...' }
-          when 'error'
-            msg = { error: 'Sending email notifications failed.' }
-            source.close()
-        @showFlash(msg, 'email') if msg
+        data = JSON.parse(e.data)
+        if data instanceof Array and data.length is 2
+          switch data[0]
+            when 'success'
+              msg = { success: data[1] }
+            when 'enqueued'
+              msg = { info: data[1] }
+            when 'error'
+              msg = { error: data[1] }
+          @showFlash(msg, 'email')
       , false
     else
       alert "HTML 5 is not supported in your browser."

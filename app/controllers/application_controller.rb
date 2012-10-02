@@ -27,22 +27,18 @@ class ApplicationController < ActionController::Base
   def mailing_job_status
     response.headers['Content-Type'] = 'text/event-stream'
     response.headers['Cache-Control'] = 'no-cache'
-
-    @job = Delayed::Job.find_by_id(params[:job_id])
-
-    if @job.nil?
-      # The job has completed and is no longer in the database.
-      @status = "data: success\n\n"
+    
+    job_for = params[:job_for]
+    employee = current_user.employee
+    cached_status = Rails.cache.fetch("#{ employee.id }_#{ job_for }_mailing_stat")
+    if cached_status.is_a?(Array)
+      @msg = "data: #{ cached_status.to_json }\n\n"
     else
-      if @job.last_error.nil?
-        # The job is still in the queue and has not been run.
-        @status = "data: enqueued\n\n"
-      else
-        # The job has encountered an error.
-        @status = "data: error\n\n"
-      end
+      @msg = "data: null\n\n"
     end
-    render :text => @status
+    Rails.cache.delete("#{ employee.id }_#{ job_for }_mailing_stat")
+    
+    render :text => @msg
   end
 
 protected

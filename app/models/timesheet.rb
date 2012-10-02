@@ -313,11 +313,15 @@ class Timesheet < ActiveRecord::Base
   def send_action_notification(type, action_owner, action)
     mailing_job = TimesheetActionedMailingJob.new(self.id, type, action_owner.id, action)
     self.mailing_job_id = Delayed::Job.enqueue(mailing_job).id
+    msg = "Sending email notifications..."
+    Rails.cache.write("#{ employee.id }_timesheet_action_mailing_stat", ["enqueued", msg])
   end
 
   def send_invalid_timesheet_notification(type)
     mailing_job = TimesheetRequestsMailingJob.new(self.id, type)
     self.mailing_job_id = Delayed::Job.enqueue(mailing_job).id
+    msg = "Sending email notifications..."
+    Rails.cache.write("#{ employee.id }_timesheet_request_mailing_stat", ["enqueued", msg])
   end
 
   def approve!(supervisor)

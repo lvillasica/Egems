@@ -41,7 +41,7 @@ class Egems.Views.ManualTimein extends Backbone.View
         if data.invalid_timesheet != null
           @render(model: data.invalid_timesheet, error: data.error)
         else
-          @check_mailing_job_status(data.mailing_job_id)
+          @check_mailing_job_status("timesheet_request")
           @renderEntries(event)
 
   renderEntries: (event) ->

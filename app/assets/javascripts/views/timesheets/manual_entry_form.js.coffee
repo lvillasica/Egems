@@ -59,7 +59,7 @@ class Egems.Views.ManualEntryForm extends Backbone.View
             if flash_messages is undefined or flash_messages.error is undefined
               $('#manual-entry-modal').modal('hide')
               $('#date-nav-tab li.day.active').trigger('click')
-              @check_mailing_job_status(data.mailing_job_id)
+              @check_mailing_job_status("timesheet_request")
             else
               $('#flash_messages').html(@flash_messages(flash_messages))
     else

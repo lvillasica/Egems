@@ -88,6 +88,7 @@ class Egems.Views.EditEntryForm extends Backbone.View
           if flash_messages.info
             $(@flash_messages(flash_messages)).insertBefore('#time-entries')
           @model.trigger('highlight')
+          @check_mailing_job_status("timesheet_action")
         else
           $(@flash_messages(flash_messages)).insertBefore('#time-entries')
           $(event.target).parent().addClass('error')
