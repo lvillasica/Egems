@@ -2,7 +2,6 @@ class LeaveDetail < ActiveRecord::Base
 
   self.table_name = 'employee_truancy_details'
   attr_accessible :leave_type, :leave_date, :end_date, :leave_unit, :details, :period, :status
-  attr_accessor :mailing_job_id
 
   # -------------------------------------------------------
   # Modules
@@ -202,7 +201,7 @@ class LeaveDetail < ActiveRecord::Base
       tmp << :period if [1, 2].include?(attrs[:period].to_i)
       tmp.include?(a)
     end
-    
+
     if changed?
       self.period = attrs[:period]
       self.save
@@ -665,8 +664,7 @@ private
 
   def send_email_notification
     action_owner_id = @action_owner ? @action_owner.id : nil
-    mailing_job = LeaveDetailsMailingJob.new(self.id, @email_action, action_owner_id)
-    self.mailing_job_id = Delayed::Job.enqueue(mailing_job).id
+    Delayed::Job.enqueue(LeaveDetailsMailingJob.new(self.id, @email_action, action_owner_id))
     job_for = ['approved', 'rejected'].include?(@email_action) ? "leave_request" : "leave_detail"
     msg = "Sending email notifications..."
     Rails.cache.write("#{ action_owner_id || employee.id }_#{ job_for }_mailing_stat", ["enqueued", msg])

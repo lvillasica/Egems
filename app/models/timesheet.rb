@@ -8,7 +8,6 @@ class Timesheet < ActiveRecord::Base
 
   self.table_name = 'employee_timesheets'
   attr_accessible :date, :time_in, :time_out, :is_valid, :remarks
-  attr_accessor :mailing_job_id
 
   # -------------------------------------------------------
   # Modules
@@ -311,15 +310,13 @@ class Timesheet < ActiveRecord::Base
   end
 
   def send_action_notification(type, action_owner, action)
-    mailing_job = TimesheetActionedMailingJob.new(self.id, type, action_owner.id, action)
-    self.mailing_job_id = Delayed::Job.enqueue(mailing_job).id
+    Delayed::Job.enqueue(TimesheetActionedMailingJob.new(self.id, type, action_owner.id, action))
     msg = "Sending email notifications..."
     Rails.cache.write("#{ action_owner.id }_timesheet_action_mailing_stat", ["enqueued", msg])
   end
 
   def send_invalid_timesheet_notification(type)
-    mailing_job = TimesheetRequestsMailingJob.new(self.id, type)
-    self.mailing_job_id = Delayed::Job.enqueue(mailing_job).id
+    Delayed::Job.enqueue(TimesheetRequestsMailingJob.new(self.id, type))
     msg = "Sending email notifications..."
     Rails.cache.write("#{ employee.id }_timesheet_request_mailing_stat", ["enqueued", msg])
   end

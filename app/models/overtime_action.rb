@@ -83,16 +83,8 @@ class OvertimeAction < ActiveRecord::Base
   end
 
   def send_email_notification(action, action_owner)
-    recipients = Array.new(responders.uniq)
-    recipients << overtime.employee unless responders.include?(overtime.employee)
-
-    recipients.uniq.compact.each do |recipient|
-      begin
-        OvertimeMailer.overtime_action(overtime.employee, overtime, recipient, action, action_owner).deliver
-      rescue Net::SMTPAuthenticationError, Net::SMTPServerBusy, Net::SMTPSyntaxError, Net::SMTPFatalError, Net::SMTPUnknownError => e
-        errors[:base] << "There was a problem on sending the email notification to #{recipient.email}: #{e.message}"
-        next
-      end
-    end
+    Delayed::Job.enqueue(OvertimeActionedMailingJob.new(self.id, action, action_owner.id))
+    msg = "Sending email notifications..."
+    Rails.cache.write("#{action_owner.id}_overtime_action_mailing_stat", ["enqueued", msg])
   end
 end

@@ -55,7 +55,6 @@ class TimesheetsController < ApplicationController
     begin
       if @timesheet.manual_entry(params)
         get_active_timesheets(@timesheet.date.localtime)
-        js_params[:mailing_job_id] = @timesheet.mailing_job_id
       else
         set_flash
       end
@@ -201,7 +200,6 @@ private
   def save_manual_timeentry(type, attrs)
     @employee ||= get_employee
     if @timesheet.manual_update(attrs)
-      js_params[:mailing_job_id] = @timesheet.mailing_job_id
     else
       if (errors = @timesheet.errors).any?
         js_params[:error] = ['error', flash_message(:alert, errors.full_messages)]

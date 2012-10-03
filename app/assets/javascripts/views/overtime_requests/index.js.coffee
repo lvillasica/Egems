@@ -39,6 +39,7 @@ class Egems.Views.OvertimeRequestsIndex extends Backbone.View
           if data.errors != undefined
             @showErrors(data.errors)
           else
+            @mixins.check_mailing_job_status("overtime_action")
             @showSuccessMsg(data.success)
     else
       @noCheckedBox()
@@ -58,6 +59,7 @@ class Egems.Views.OvertimeRequestsIndex extends Backbone.View
           if data.errors != undefined
             @showErrors(data.errors)
           else
+            @mixins.check_mailing_job_status("overtime_action")
             @showSuccessMsg(data.success)
     else
       @noCheckedBox()
