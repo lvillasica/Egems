@@ -6,6 +6,7 @@ class Egems.Views.ManualTimein extends Backbone.View
     "submit form" : "sendTimesheet"
 
   initialize: ->
+    @mixins = _.extend(this, Egems.Mixins.Defaults, Egems.Mixins.Timesheets)
     if this.options.lastTimesheet == null
       @lastTimeout = null
     else
@@ -16,7 +17,7 @@ class Egems.Views.ManualTimein extends Backbone.View
       invalidTimesheet: @model
       shift: this.options.shift
       lastTimeout: @lastTimeout
-      mixins: $.extend(Egems.Mixins.Defaults, Egems.Mixins.Timesheets)
+      mixins: @mixins
     ))
     @flashError(options.error)
     this

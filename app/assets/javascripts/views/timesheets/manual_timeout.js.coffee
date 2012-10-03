@@ -6,6 +6,7 @@ class Egems.Views.ManualTimeout extends Backbone.View
     "submit form" : "sendTimesheet"
 
   initialize: ->
+    @mixins = _.extend(this, Egems.Mixins.Defaults, Egems.Mixins.Timesheets)
     $.ajax
       url: '/delete/autotimein'
       data: 'session=invalid_timein_after_signin'
@@ -14,7 +15,7 @@ class Egems.Views.ManualTimeout extends Backbone.View
   render: (options = {}) ->
     $(@el).html(@template(
       invalidTimesheet: @model
-      mixins: $.extend(Egems.Mixins.Defaults, Egems.Mixins.Timesheets)
+      mixins: @mixins
     ))
     @flashError(options.error)
     this
