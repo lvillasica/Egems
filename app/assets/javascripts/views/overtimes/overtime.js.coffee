@@ -62,5 +62,6 @@ class Egems.Views.Overtime extends Backbone.View
     else
       @model.set status: data.overtime.status unless data.flash_messages.error
       @showFlash(data.flash_messages)
+      @check_mailing_job_status("overtime_request")
       @model.trigger 'highlight'
     

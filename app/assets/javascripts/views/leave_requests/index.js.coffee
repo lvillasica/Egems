@@ -56,6 +56,7 @@ class Egems.Views.LeaveRequestsIndex extends Backbone.View
             @showErrors(data.errors)
           else
             @showSuccessMsg(data.success)
+            @check_mailing_job_status("leave_request")
     else
       @noCheckedBox()
 
@@ -71,6 +72,7 @@ class Egems.Views.LeaveRequestsIndex extends Backbone.View
         data: { rejected_ids: ids }
         success: (data) =>
           @listLeaves(data)
+          @check_mailing_job_status("leave_request")
     else
       @noCheckedBox()
 

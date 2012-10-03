@@ -124,10 +124,11 @@ class Egems.Views.OvertimeForm extends Backbone.View
     if flash_messages.error is undefined
       @exitForm(data)
       @showFlash(data.flash_messages)
+      @check_mailing_job_status("overtime_request")
     else
       $('#flash_messages').html(@flash_messages(flash_messages))
   
-  handleError: (entry, response) ->
+  handleFailure: (entry, response) ->
     if response.status == 500
       $('#overtime-form-modal').modal('hide')
       errors = $.parseJSON(response.responseText).errors

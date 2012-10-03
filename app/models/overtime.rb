@@ -122,25 +122,10 @@ private
   end
 
   def send_email_notification
-    responders = action.responders
-    recipients = Array.new(responders.uniq)
-    recipients << employee unless responders.include?(employee)
-
-    recipients.uniq.compact.each do |recipient|
-      begin
-        case @email_action
-        when 'sent', 'edited', 'canceled'
-          OvertimeMailer.overtime_for_approval(employee, self, recipient, @email_action).deliver
-        # when 'approved', 'rejected'
-        #   OvertimeMailer.overtime_action(employee, self, recipient, @email_action, @action_owner).deliver
-        end
-      rescue Net::SMTPAuthenticationError, Net::SMTPServerBusy,
-             Net::SMTPSyntaxError, Net::SMTPFatalError, Net::SMTPUnknownError,
-             OpenSSL::SSL::SSLError => e
-        errors[:base] << "There was a problem on sending the email notification to #{recipient.email}: #{e.message}"
-        next
-      end
-    end
+    mailing_job = OvertimeRequestsMailingJob.new(self.id, @email_action)
+    Delayed::Job.enqueue(mailing_job)
+    msg = "Sending email notifications..."
+    Rails.cache.write("#{ employee.id }_overtime_request_mailing_stat", ["enqueued", msg])
   end
 
 end

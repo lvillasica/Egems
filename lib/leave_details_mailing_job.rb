@@ -5,6 +5,7 @@ class LeaveDetailsMailingJob < Struct.new(:id, :email_action, :owner_id)
     responders = leave_detail.responders
     employee = leave_detail.employee
     action_owner = Employee.find_by_id(owner_id)
+    sender_id = owner_id || employee.id
     job_for = "leave_detail"
     success_recipients = []
     failed_recipients = []
@@ -27,11 +28,11 @@ class LeaveDetailsMailingJob < Struct.new(:id, :email_action, :owner_id)
         end
         success_recipients << recipient.full_name
         msg = "Email notification successfully sent to #{ success_recipients.to_sentence }."
-        Rails.cache.write("#{ employee.id }_#{ job_for }_mailing_stat", ['success', msg])
+        Rails.cache.write("#{ sender_id }_#{ job_for }_mailing_stat", ['success', msg])
       rescue
         failed_recipients << recipient.full_name
         msg = "Failure on sending email notification to #{ failed_recipients.to_sentence }."
-        Rails.cache.write("#{ employee.id }_#{ job_for }_mailing_stat", ['error', msg])
+        Rails.cache.write("#{ sender_id }_#{ job_for }_mailing_stat", ['error', msg])
         next
       end
     end

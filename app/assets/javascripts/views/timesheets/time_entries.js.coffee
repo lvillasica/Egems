@@ -140,6 +140,7 @@ class Egems.Views.TimeEntries extends Backbone.View
           else
             $('#date-nav-tab li.day.active').trigger('click')
             @showFlash(data.flash_messages)
+            @check_mailing_job_status("overtime_request")
 
   manualTimeEntryModal: (event) =>
     event.preventDefault()
