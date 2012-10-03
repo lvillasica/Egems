@@ -27,7 +27,7 @@ module TimesheetsHelper
               <li class="dropdown #{set_active(current_uri =~ /timesheet/)}">
                 <a class="timesheets-lnk" href="#" data-toggle="dropdown">Timesheets <i class="caret"></i></a>
                 <ul class="dropdown-menu">
-                  <li>#{link_to "My Timecard", timesheets_path}</li>
+                  <li>#{link_to "My Timesheets", timesheets_path}</li>
                   <li>#{link_to "Timesheet Requests", timesheet_requests_path}</li>
                 </ul>
               </li>

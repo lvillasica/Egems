@@ -47,6 +47,7 @@ class Egems.Views.TimesheetRequestsIndex extends Backbone.View
           if data.errors != undefined
             @showErrors(data.errors)
           else
+            @check_mailing_job_status("timesheet_action")
             @showSuccessMsg(data.success)
     else
       @noCheckedBox()
@@ -66,6 +67,7 @@ class Egems.Views.TimesheetRequestsIndex extends Backbone.View
           if data.errors != undefined
             @showErrors(data.errors)
           else
+            @check_mailing_job_status("timesheet_action")
             @showSuccessMsg(data.success)
     else
       @noCheckedBox()
