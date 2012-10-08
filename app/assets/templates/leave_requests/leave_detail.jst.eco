@@ -1,10 +1,10 @@
-<td><input value="<%= @leave.getId() %>" type="checkbox" <%= __safe("disabled") if @leave.isRespondable() == false %> ></td>
+<td class="day"><input value="<%= @leave.getId() %>" type="checkbox" <%= __safe("disabled") if @leave.isRespondable() == false %> ></td>
 <td><%= @leave.filedBy() %></td>
 <td><%= @leave.leaveType() %></td>
-<td><%= @mixins.format_date @leave.dateFiled() %></td>
-<td><%= @mixins.format_date @leave.leaveDate() %></td>
-<td><%= @mixins.format_date @leave.endDate() %></td>
-<td><%= @leave.leaveUnit() %></td>
-<td>
+<td class="date"><%= @mixins.format_date @leave.dateFiled() %></td>
+<td class="date"><%= @mixins.format_date @leave.leaveDate() %></td>
+<td class="date"><%= @mixins.format_date @leave.endDate() %></td>
+<td class="mins"><%= @leave.leaveUnit() %></td>
+<td class="day">
  <a href="" role="button" class="details-view" data-toggle="modal"><i class="icon-comment"></i></a>
 </td>

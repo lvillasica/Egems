@@ -4,7 +4,7 @@ class Egems.Views.LeaveRequest extends Backbone.View
   tagName: 'tr'
 
   events: ->
-    "click .details-view" : "viewDetails"
+    "click .icon-comment" : "viewDetails"
 
   render: ->
     $(@el).html(@template(

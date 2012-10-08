@@ -9,6 +9,7 @@ class Egems.Views.LeaveRequestsIndex extends Backbone.View
     "click .accordion-toggle" : "toggleAccordion"
     "click #leaves-approval-form .approve" : "approveChecked"
     "click #leaves-approval-form .reject" : "rejectChecked"
+    "click #leaves-for-approval tr" : "checkRow"
 
   initialize: ->
     @collection.on('reset', @render, this)
@@ -95,3 +96,10 @@ class Egems.Views.LeaveRequestsIndex extends Backbone.View
   getCheckedIds: ->
     _.map $("#leaves-approval-form input[type='checkbox']:checked"), (box) ->
       $(box).val()
+
+  checkRow: (event) ->
+    target = event.target
+    if target.type != 'checkbox' and target.className != 'icon-comment'
+      tr = $(target).parents("tr")[0]
+      c = $(':checkbox', tr)
+      c.attr('checked', !c.attr("checked"))
