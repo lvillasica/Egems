@@ -5,10 +5,10 @@
   <form method="post" id="leaves-approval-form" accept-charset="UTF-8">
     <button class="btn btn-primary approve">Approve</button>
     <button class="btn btn-primary reject">Reject</button>
-    <table id="supervisor_pending_leaves" class="table timesheets leave_details" style="margin-top: 10px">
+    <table id="supervisor_pending_leaves" class="table table-condensed timesheets sortable" style="margin-top: 10px">
       <thead>
         <tr>
-          <th>
+          <th class="sorttable_nosort">
             <a id="toggle-boxes" class="icon-ok""> All</a>
           </th>
           <th>Name</th>
@@ -17,7 +17,7 @@
           <th>Start Date</th>
           <th>End Date</th>
           <th>Duration</th>
-          <th>Actions</th>
+          <th class="sorttable_nosort">Actions</th>
         </tr>
       </thead>
       <tbody></tbody>

@@ -32,9 +32,11 @@ class Egems.Views.LeaveRequestsIndex extends Backbone.View
     switch className
       when "icon-ok"
         $(event.target).removeClass('icon-ok').addClass('icon-remove')
+        $("#leaves-approval-form tbody tr").addClass('selected')
         $("#leaves-approval-form input[type='checkbox']:not(:disabled)").attr('checked', true)
       when "icon-remove"
         $(event.target).removeClass('icon-remove').addClass('icon-ok')
+        $("#leaves-approval-form tbody tr").removeClass('selected')
         $("#leaves-approval-form input[type='checkbox']:not(:disabled)").attr('checked', false)
 
   toggleAccordion: (event) ->
@@ -99,7 +101,11 @@ class Egems.Views.LeaveRequestsIndex extends Backbone.View
 
   checkRow: (event) ->
     target = event.target
+    tr = $(target).parents("tr")
+
+    if target.className != 'icon-comment'
+      tr.toggleClass('selected')
+
     if target.type != 'checkbox' and target.className != 'icon-comment'
-      tr = $(target).parents("tr")[0]
-      c = $(':checkbox', tr)
-      c.attr('checked', !c.attr("checked"))
+      c = $(':checkbox', tr[0])
+      c.prop('checked', !c.attr("checked"))

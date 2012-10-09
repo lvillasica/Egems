@@ -11,6 +11,9 @@ class Egems.Views.LeaveRequest extends Backbone.View
       leave: @model
       mixins: $.extend(Egems.Mixins.Defaults)
     ))
+    @$("tr").filter(':has(:checkbox:checked)')
+            .addClass('selected')
+            .end()
     this
 
   viewDetails: (event) ->
