@@ -8,7 +8,7 @@ Egems.Mixins.Holidays =
 
     if holiday.isCancelable()
       actions.push """
-        <a class="cancel" href="#">
+        <a class="remove" href="#">
           <i class="icon-remove"></i>
         </a> """
 

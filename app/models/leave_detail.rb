@@ -268,8 +268,9 @@ class LeaveDetail < ActiveRecord::Base
 
   def cancel!
     if is_cancelable?
-      update_column(:status, 'Canceled')
       update_consumed_count(0-leave_unit) if is_approved?
+      update_column(:status, 'Canceled')
+      remove_response_attrs
       @leave_dates = (leave_date.localtime.to_date .. end_date.localtime.to_date)
       dates_without_leaves = @leave_dates.to_a
       recompute_timesheets_without_leaves(dates_without_leaves)
@@ -280,6 +281,11 @@ class LeaveDetail < ActiveRecord::Base
       errors[:base] = "#{leave_type} dated on #{dated_on} is not cancelable."
       return false
     end
+  end
+
+  def remove_response_attrs
+    update_column(:responder_id, nil)
+    update_column(:responded_on, nil)
   end
 
   def needs_hr_action?
@@ -340,6 +346,10 @@ class LeaveDetail < ActiveRecord::Base
 
   def is_pending?
     status == 'Pending'
+  end
+
+  def is_canceled?
+    status == 'Canceled'
   end
 
   def recompute_timesheets

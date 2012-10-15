@@ -50,10 +50,10 @@ Egems::Application.routes.draw do
     scope '/hr/holidays' do
       match '', to: 'holidays#index', as: 'holidays', via: 'get'
       match '/new', to: 'holidays#create', as: 'new_holiday', via: 'post'
+      match '/delete/:id', to: 'holidays#destroy', as: 'delete_holiday', via: 'delete'
     end
 
     scope '/hr' do
-      match '/holidays', to: 'holidays#index', as: 'holidays', via: 'get'
       match '/branches', to: 'branches#index', as: 'branches', via: 'get'
     end
 

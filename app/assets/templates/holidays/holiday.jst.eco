@@ -2,4 +2,4 @@
 <td><%= @holiday.description() %></td>
 <td><%= @holiday.branches() %></td>
 <td><%= @holiday.type() %></td>
-<td class="day"><%#= __safe @mixins.holiday_actions(@holiday) %></td>
+<td class="day"><%= __safe @mixins.holiday_actions(@holiday) %></td>

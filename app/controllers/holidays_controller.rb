@@ -20,14 +20,27 @@ class HolidaysController < ApplicationController
   def create
     holiday = Holiday.new(params[:holiday])
     holiday.branches = Branch.find_all_by_id(params[:branch_ids])
-    holiday.save
+    errors = holiday.errors unless holiday.save
 
-    js_params[:errors]   = { error: holiday.errors.full_messages.join('<br>') } if holiday.errors.present?
-    js_params[:success]  = { success: "Successfully added holiday." } if holiday.errors.empty?
+    js_params[:errors]   = { error: holiday.errors.full_messages.join('<br>') } if errors
+    js_params[:success]  = { success: "Successfully added holiday." } unless errors
     js_params[:holidays] = attrs Holiday.asc.within(default_date_range)
 
     respond_to do |format|
-      format.html { render :template => "layouts/applications" }
+      format.html { render :template => "layouts/application" }
+      format.json { render :json => js_params.to_json }
+    end
+  end
+
+  def destroy
+    holiday = Holiday.find_by_id(params[:id])
+    errors = holiday.errors unless holiday.destroy
+
+    js_params[:success] = { success: "Successfully deleted holiday." } unless errors
+    js_params[:errors] = { error: holiday.errors.full_messages.join('<br>') } if errors
+
+    respond_to do |format|
+      format.html { render :template => "layouts/application" }
       format.json { render :json => js_params.to_json }
     end
   end

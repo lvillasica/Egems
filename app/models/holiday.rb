@@ -11,6 +11,7 @@ class Holiday < ActiveRecord::Base
   validate :check_date
 
   after_save :recompute_leaves
+  before_destroy :restore_leaves
 
   # -------------------------------------------------------
   # Namescopes
@@ -40,15 +41,32 @@ class Holiday < ActiveRecord::Base
 
   def recompute_leaves
     day = date.to_date.to_time
-    leaves = LeaveDetail.filed_for(day)
-    leaves.each do |detail|
-      if branches.include?(detail.employee.branch)
-        days = detail.leave_unit
-        if days <= 1
-          detail.update_consumed_count(0-days) if detail.destroy && detail.is_approved?
-        else
-          detail.leave_unit -= 1
-          detail.update_consumed_count(0-detail.leave_unit) if detail.save && detail.is_approved?
+    if day > Date.today.to_time
+      leaves = LeaveDetail.filed_for(day)
+      leaves.each do |detail|
+        if branches.include?(detail.employee.branch) && !detail.is_canceled?
+          days = detail.leave_unit
+          status = days <= 1 ? 'Canceled' : 'Pending'
+          detail.update_consumed_count(0-days) if detail.is_approved?
+          detail.remove_response_attrs
+          detail.update_column(:status, status)
+          detail.update_column(:leave_unit, days-1) if days > 1
+        end
+      end
+    end
+  end
+
+  def restore_leaves
+    day = date.to_date.to_time
+    if day > Date.today.to_time
+      leaves = LeaveDetail.filed_for(day)
+      leaves.each do |detail|
+        if branches.include?(detail.employee.branch)
+          days = detail.leave_unit
+          detail.update_consumed_count(0-days) if detail.is_approved?
+          detail.remove_response_attrs
+          detail.update_column(:status, 'Pending')
+          detail.update_column(:leave_unit, days+1) if days > 1
         end
       end
     end
