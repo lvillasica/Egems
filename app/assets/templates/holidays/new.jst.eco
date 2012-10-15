@@ -1,0 +1,7 @@
+<h3 id="new-holiday-header">New Holiday</h3>
+
+<div id="holiday-form-container"></div>
+<div id="holiday-form-actions" class="form-actions">
+  <button class="btn btn-primary submit">Create</button>
+  <a class="btn cancel close" data-dismiss='modal' href="#">Cancel</a>
+</div>

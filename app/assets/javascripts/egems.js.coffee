@@ -12,6 +12,7 @@ window.Egems =
     new Egems.Routers.LeaveRequests()
     new Egems.Routers.Overtimes()
     new Egems.Routers.OvertimeRequests()
+    new Egems.Routers.Holidays()
     Backbone.history.start(pushState: true)
 
 $(document).ready ->

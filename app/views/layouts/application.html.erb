@@ -39,18 +39,8 @@
               <ul class="nav">
                 <%= timesheet_top_nav(current_user, current_uri) %>
                 <%= overtime_top_nav(current_user, current_uri) %>
-                <li class="dropdown <%= set_active(current_uri =~ /leave/) %>">
-                  <a class="leaves-lnk" href="#" data-toggle="dropdown">Leaves <i class="caret"></i></a>
-                  <ul class="dropdown-menu">
-                    <li><%= link_to "My Leaves", leaves_path %></li>
-                    <% if current_user.employee.can_action_leaves? %>
-                    <li><%= link_to "Leave Requests", leave_requests_path %></li>
-                    <% end %>
-                    <li class="divider"></li>
-                    <li><%= link_to "Apply for Leave", new_leave_detail_path %></li>
-                  </ul>
-                </li>
-                <li><a href="#">Link</a></li>
+                <%= leave_details_top_nav(current_user, current_uri) %>
+                <%= hr_module_top_nav(current_user) %>
               </ul>
               <ul id="user-control-nav" class="nav pull-right">
                 <li>
@@ -80,7 +70,7 @@
           </div>
         </div>
       </div>
-      
+
       <div class="container">
         <%= content_tag "div", "", :id => "data-container", :data => @data %>
         <div id="main-container" style="min-height:100px; min-width:724px;">

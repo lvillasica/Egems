@@ -46,6 +46,17 @@ Egems::Application.routes.draw do
       match '/reject', to: 'leave_details#bulk_reject', as: 'leave_details_reject', via: 'post'
     end
 
+
+    scope '/hr/holidays' do
+      match '', to: 'holidays#index', as: 'holidays', via: 'get'
+      match '/new', to: 'holidays#create', as: 'new_holiday', via: 'post'
+    end
+
+    scope '/hr' do
+      match '/holidays', to: 'holidays#index', as: 'holidays', via: 'get'
+      match '/branches', to: 'branches#index', as: 'branches', via: 'get'
+    end
+
     resources :leave_details, { :except => [:show, :destroy] } do
       member do
         post :cancel
@@ -57,7 +68,7 @@ Egems::Application.routes.draw do
         post :cancel
       end
     end
-    
+
     resources :leaves
 
     root :to => 'timesheets#index', :as => 'timesheets', :via => :get

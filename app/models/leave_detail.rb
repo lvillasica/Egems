@@ -25,7 +25,7 @@ class LeaveDetail < ActiveRecord::Base
   # -------------------------------------------------------
   validates_presence_of :leave_type, :leave_unit, :details
   validates_numericality_of :leave_unit
-  validates_inclusion_of :period, :in => 0 .. 2, :message => "period is invalid."
+  validates_inclusion_of :period, :in => 0 .. 3, :message => "period is invalid."
   validate :invalid_leave
 
   # -------------------------------------------------------
@@ -234,7 +234,7 @@ class LeaveDetail < ActiveRecord::Base
         @action_owner = supervisor
         if self.save(:validate => false)
           if is_approved?
-            leave.update_column(:leaves_consumed, leave.leaves_consumed.to_f + leave_unit.to_f)
+            update_consumed_count(leave_unit.to_f)
           end
           return true
         end
@@ -269,6 +269,7 @@ class LeaveDetail < ActiveRecord::Base
   def cancel!
     if is_cancelable?
       update_column(:status, 'Canceled')
+      update_consumed_count(0-leave_unit) if is_approved?
       @leave_dates = (leave_date.localtime.to_date .. end_date.localtime.to_date)
       dates_without_leaves = @leave_dates.to_a
       recompute_timesheets_without_leaves(dates_without_leaves)
@@ -445,6 +446,10 @@ class LeaveDetail < ActiveRecord::Base
       entry.update_column(:minutes_undertime, entry.minutes_undertime)
       entry.put_remarks
     end
+  end
+
+  def update_consumed_count(num=1)
+    leave.update_column(:leaves_consumed, leave.leaves_consumed.to_f + num.to_f)
   end
 
   def invalid_leave
@@ -685,5 +690,4 @@ private
     @day_offs ||= get_day_offs
     @holidays ||= get_holidays
   end
-
 end

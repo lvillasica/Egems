@@ -1,5 +1,24 @@
 module LeaveDetailsHelper
 
+  def leave_details_top_nav(current_user, current_uri)
+    if current_user.employee.can_action_leaves?
+      li_requests = "<li>#{link_to "Leave Requests", leave_requests_path}</li>"
+    end
+
+    nav = %Q{
+            <li class="dropdown #{set_active(current_uri =~ /leave/)}">
+              <a id="leaves-lnk" href="#" data-toggle="dropdown">Leaves <i class="caret"></i></a>
+              <ul class="dropdown-menu">
+                <li>#{link_to "My Leaves", leaves_path}</li>
+                #{li_requests}
+                <li class="divider"></li>
+                <li>#{link_to "Apply for Leave", new_leave_detail_path}</li>
+              </ul>
+            </li>
+            }
+    nav.html_safe
+  end
+
   def show_responders(leave_detail)
     if leave_detail.responder
       leave_detail.responder.full_name
