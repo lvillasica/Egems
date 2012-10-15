@@ -70,6 +70,8 @@ Egems::Application.routes.draw do
     end
 
     resources :leaves
+    
+    resources :employee_mappings, :except => [:new, :edit]
 
     root :to => 'timesheets#index', :as => 'timesheets', :via => :get
   end

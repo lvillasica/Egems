@@ -1,0 +1,45 @@
+<% l = @mixins.attrTranslations('employee_mapping') %>
+<form method="post" id="employee-mapping-form" class="form-horizontal" accept-charset="UTF-8" >
+  <div id="flash_messages"></div>
+  <fieldset>
+    <div class="control-group">
+      <label class="control-label"><%= l 'name' %></label>
+      <div class="controls">
+        <select name="employee[id]">
+        </select>
+      </div>
+    </div>
+    
+    <% if @type is 'Member' :%>
+    <div class="control-group">
+      <label class="control-label"><%= l 'approver\'s_type' %></label>
+      <div class="controls">
+        <select name="employee_mapping[approver_type]">
+          <option value="Supervisor/TL">Suppervisor/TL</option>
+          <option value="Project Manager">Project Manager</option>
+        </select>
+      </div>
+    </div>
+    <% end %>
+    
+    <div class="control-group">
+      <label class="control-label"><%= l 'from' %></label>
+      <div class="controls">
+        <div class="input-append">
+          <input type="text" name="employee_mapping[from]"
+                 size="30" class="span2" />
+        </div>
+      </div>
+    </div>
+    
+    <div class="control-group">
+      <label class="control-label"><%= l 'to' %></label>
+      <div class="controls">
+        <div class="input-append">
+          <input type="text" name="employee_mapping[to]"
+                 size="30" class="span2" />
+        </div>
+      </div>
+    </div>
+  </fieldset>
+</form>

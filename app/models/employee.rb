@@ -15,6 +15,10 @@ class Employee < ActiveRecord::Base
   has_many :overtimes
   has_many :responded_leave_details, :class_name => 'LeaveDetail', :foreign_key => :responder_id
   has_many :responded_overtimes, :class_name => 'OvertimeAction', :foreign_key => :responder_id
+  has_many :employee_mappings_as_approver, :foreign_key => :approver_id, :class_name => 'EmployeeMapping'
+  has_many :employee_mappings_as_member, :foreign_key => :employee_id, :class_name => 'EmployeeMapping'
+  has_many :approvers, :through => :employee_mappings_as_member
+  has_many :members, :through => :employee_mappings_as_approver
   has_and_belongs_to_many :for_response_leave_details, :class_name => 'LeaveDetail',
                           :join_table => 'employee_truancy_detail_responders',
                           :foreign_key => :responder_id,
@@ -29,10 +33,23 @@ class Employee < ActiveRecord::Base
                           :association_foreign_key => :employee_timesheet_id
 
   belongs_to :job_position, :foreign_key => :current_job_position_id
+  
+  # -------------------------------------------------------
+  # Namescopes
+  # -------------------------------------------------------
+  scope :with_supervisory, includes(:job_position).where('job_positions.is_supervisory' => 1)
 
   # -------------------------------------------------------
   # Instance Methods
   # -------------------------------------------------------
+  def mapped_supervisors
+    employee_mappings_as_member.where('employee_mappings.approver_type' => 'Supervisor/TL')
+  end
+  
+  def mapped_project_managers
+    employee_mappings_as_member.where('employee_mappings.approver_type' => 'Project Manager')
+  end
+  
   def immediate_supervisor
     Employee.find_by_id(employee_supervisor_id)
   end

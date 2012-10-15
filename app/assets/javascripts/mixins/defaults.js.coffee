@@ -62,12 +62,12 @@ Egems.Mixins.Defaults =
       flashes += str
     flashes
 
-  showFlash: (flash_messages, type = null) ->
+  showFlash: (flash_messages, type = null, prependAt = "#main-container") ->
     flash_content = @flash_messages(flash_messages, type)
     if type is 'email' and $('div.alert').length > 0
       $(flash_content).insertAfter('div.alert:last')
     else
-      $("#main-container").prepend(flash_content)
+      $(prependAt).prepend(flash_content)
     $('html, body').animate({scrollTop: 0}, 'slow')
 
   addClassError: (field) ->
@@ -148,4 +148,16 @@ Egems.Mixins.Defaults =
       , false
     else
       alert "HTML 5 is not supported in your browser."
+  
+  showTinyLoadingAt: (fld) ->
+    loadingIndicator = """
+                       <img class="tiny-loading" src="/assets/ajax-loader.gif"
+                            alt="Loading..."
+                            height="10" width="20"
+                            style="padding-left:10px" />
+                       """
+    $(loadingIndicator).insertAfter(fld)
+  
+  removeTinyLoadingAt: (fld) ->
+    $(fld).next('img.tiny-loading').remove()
 

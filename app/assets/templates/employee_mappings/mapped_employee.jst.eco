@@ -1,0 +1,7 @@
+<td><%= @employee.fullName() %></td>
+<td><%= @mixins.format_date @employee.approverFrom() %></td>
+<td><%= @mixins.format_date @employee.approverTo() %></td>
+<td class="actions">
+  <a href="#" class="edit no_decor"><i class="icon-edit"></i> Edit</a> |
+  <a href="#" class="delete no_decor"><i class="icon-trash"></i> Delete</a>
+</td>

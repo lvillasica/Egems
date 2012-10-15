@@ -1,0 +1,7 @@
+<h3 id="employee-mapping-form-header">Edit <%= @type %></h3>
+<hr/>
+<div id="employee-mapping-form-container"></div>
+<div id="employee-mapping-form-actions" class="form-actions">
+  <button class="btn btn-primary submit">Save</button>
+  <button class="btn cancel">Cancel</button>
+</div>

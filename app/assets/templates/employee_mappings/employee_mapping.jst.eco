@@ -1,0 +1,20 @@
+
+<div id="employees-lst-container">
+  <div>
+    <input type="text" placeholder="Search Employee" />
+  </div>
+  <div>
+    <select id="employees-lst" size="15">
+    </select>
+  </div>
+</div>
+
+<div id="mapping-container">
+  <div class="well default">
+    <span>Please select from list.</span>
+  </div>
+  
+  <div id="supervisors-lst" class="mapped-employees hidden"></div>
+  <div id="project-managers-lst" class="mapped-employees hidden"></div>
+  <div id="members-lst" class="mapped-employees hidden"></div>
+</div>
