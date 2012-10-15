@@ -19,6 +19,12 @@ class Egems.Views.Holiday extends Backbone.View
 
   editHoliday: (event) ->
     event.preventDefault()
+    view = new Egems.Views.EditHoliday(model: @model, modal: true)
+    $('#main-container').append('<div id="apply-holiday-modal" class="modal hide fade" />')
+    $('#apply-holiday-modal').append(view.render().el)
+                           .modal(backdrop: 'static', 'show')
+                           .on 'hidden', ->
+                             $(this).remove()
 
   deleteHoliday: (event) ->
     event.preventDefault()

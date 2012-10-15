@@ -29,14 +29,14 @@ class Holiday < ActiveRecord::Base
   # -------------------------------------------------------
   # Instance Methods
   # -------------------------------------------------------
-  def is_cancelable?
-    date.to_date > Date.today
-  end
-
   def check_date
     if date.to_date <= Time.now.to_date
       errors[:date] << "of holiday must not be today or a past date."
     end
+  end
+
+  def is_cancelable?
+    date.to_date > Date.today
   end
 
   def recompute_leaves

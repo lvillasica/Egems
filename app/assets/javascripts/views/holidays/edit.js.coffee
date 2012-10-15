@@ -1,10 +1,9 @@
-class Egems.Views.NewHoliday extends Backbone.View
+class Egems.Views.EditHoliday extends Backbone.View
 
-  template: JST['holidays/new']
+  template: JST['holidays/edit']
 
   initialize: ->
-    @model  = new Egems.Models.Holiday()
-    @form   = new Egems.Views.HolidayForm(model: @model, action: "create")
+    @form   = new Egems.Views.HolidayForm(model: @model, action: "update")
 
   events: ->
     "click #holiday-form-actions button.submit" : "submitForm"
@@ -16,11 +15,12 @@ class Egems.Views.NewHoliday extends Backbone.View
     this
 
   newHolidayModal: ->
-    @$('#new-holiday-header').wrap('<div class="modal-header" />')
+    @$('#edit-holiday-header').wrap('<div class="modal-header" />')
     @$('#holiday-form-container').addClass('modal-body')
                                  .append(@form.render().el)
     @$('#holiday-form-actions').addClass('modal-footer')
 
   submitForm: (event) ->
     event.preventDefault()
-    @$("#holiday-form").attr('action', '/hr/holidays/new').submit()
+    edit_path = "/hr/holidays/edit/" + @model.getId().toString()
+    @$("#holiday-form").attr('action', edit_path).submit()

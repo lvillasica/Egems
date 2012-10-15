@@ -3,6 +3,7 @@ class Egems.Views.HolidayForm extends Backbone.View
   template: JST['holidays/form']
 
   initialize: ->
+    @action   = this.options.action
     @mixins   = _.extend(Egems.Mixins.Defaults, Egems.Mixins.Holidays)
     @branches = new Egems.Collections.Branches()
     @branches.fetch
@@ -22,6 +23,7 @@ class Egems.Views.HolidayForm extends Backbone.View
 
   initFields: ->
     @dateFld = @$('#holiday_date')
+    @typeFld = @$("#holiday_type")
     @descFld = @$('#holiday_description')
     @nameFld = @$('#holiday_name')
     @allBranchRadio  = @$("#holiday_branch_all")
@@ -34,9 +36,23 @@ class Egems.Views.HolidayForm extends Backbone.View
 
   setFormValues: ->
     nextDay = new Date().addDays(1)
-    @dateFld.val(@mixins.format_date nextDay)
     @dateSelector(@dateFld, {minDate: nextDay})
-    @selectAllBranches()
+    if @model.date() == undefined
+      @dateFld.val(@mixins.format_date nextDay)
+    else
+      @dateFld.val(@mixins.format_date @model.date())
+    @typeFld.val(@model.type())
+    @descFld.val(@model.description())
+    @nameFld.val(@model.name())
+    if @model.branches() == undefined
+      @selectAllBranches()
+    else
+      if @branches.length == @model.branches().split(', ').length
+        @selectAllBranches()
+      else
+        branch = _.find @branches.models, (b) => b.code() == @model.branches()
+        @branchSelect.val(branch.getId())
+        @selectSpecBranch()
 
   selectAllBranches: ->
     @allBranchRadio.attr('checked', true)
@@ -73,7 +89,7 @@ class Egems.Views.HolidayForm extends Backbone.View
       url: form.attr('action')
       data: data
       dataType: 'JSON'
-      type: 'POST'
+      type: if @action == 'create' then 'POST' else 'PUT'
       beforeSend: (jqXHR, settings) =>
         @disableFormActions()
       success: (data) =>

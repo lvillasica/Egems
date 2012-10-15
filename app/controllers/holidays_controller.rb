@@ -22,27 +22,30 @@ class HolidaysController < ApplicationController
     holiday.branches = Branch.find_all_by_id(params[:branch_ids])
     errors = holiday.errors unless holiday.save
 
-    js_params[:errors]   = { error: holiday.errors.full_messages.join('<br>') } if errors
-    js_params[:success]  = { success: "Successfully added holiday." } unless errors
+    js_params[:errors]   = { error: errors.full_messages.join('<br>') } if errors
+    js_params[:success]  = { success: "Holiday was created successfully." } unless errors
     js_params[:holidays] = attrs Holiday.asc.within(default_date_range)
+    respond_js_params
+  end
 
-    respond_to do |format|
-      format.html { render :template => "layouts/application" }
-      format.json { render :json => js_params.to_json }
+  def update
+    holiday = Holiday.find_by_id(params[:id])
+    if holiday.update_attributes(params[:holiday])
+      holiday.branches = Branch.find_all_by_id(params[:branch_ids])
+      js_params[:success]  = { success: "Holiday was updated successfully." }
+    else
+      js_params[:errors] = { error: holiday.errors.full_messages.join('<br>') }
     end
+    respond_js_params
   end
 
   def destroy
     holiday = Holiday.find_by_id(params[:id])
     errors = holiday.errors unless holiday.destroy
 
-    js_params[:success] = { success: "Successfully deleted holiday." } unless errors
+    js_params[:success]  = { success: "Holiday was deleted successfully." } unless errors
     js_params[:errors] = { error: holiday.errors.full_messages.join('<br>') } if errors
-
-    respond_to do |format|
-      format.html { render :template => "layouts/application" }
-      format.json { render :json => js_params.to_json }
-    end
+    respond_js_params
   end
 
   private
@@ -62,5 +65,12 @@ class HolidaysController < ApplicationController
 
   def get_employee
     @employee = current_user.employee
+  end
+
+  def respond_js_params
+    respond_to do |format|
+      format.html { render :template => "layouts/application" }
+      format.json { render :json => js_params.to_json }
+    end
   end
 end
