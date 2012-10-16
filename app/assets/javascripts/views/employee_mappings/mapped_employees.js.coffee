@@ -7,11 +7,14 @@ class Egems.Views.MappedEmployees extends Backbone.View
   
   initialize: ->
     _.extend(this, Egems.Mixins.Defaults)
-    @all_mapped = @options.all_mapped
+    @mappableEmployeeView = @options.mappableEmployeeView
   
   setSelectedEmployee: (employeeModel) ->
     @selectedEmployee = employeeModel
     this
+  
+  setAllMapped: (allMapped) ->
+    @all_mapped = allMapped
   
   render: ->
     $(@el).html(@template(employees: @collection, type: @options.type))
@@ -23,7 +26,7 @@ class Egems.Views.MappedEmployees extends Backbone.View
       model: employee
       selectedEmployee: @selectedEmployee
       type: @getType()
-      mapped_employees_view: this
+      mappableEmployeeView: @mappableEmployeeView
     @$('#mapped-employees-tbl tbody').append(view.render().el)
   
   addEmployee: (event) =>

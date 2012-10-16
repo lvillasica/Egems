@@ -25,27 +25,36 @@ class Egems.Views.MappableEmployee extends Backbone.View
       success: @onShowMappingSuccess
   
   onShowMappingSuccess: (data) =>
-    supervisors = new Egems.Collections.EmployeeMappings(data.supervisors)
-    proj_managers = new Egems.Collections.EmployeeMappings(data.project_managers)
-    members = new Egems.Collections.EmployeeMappings(data.members)
-    all_mapped = $.merge($.merge(data.supervisors, data.project_managers), data.members)
-    supsView = new Egems.Views.MappedEmployees
-      collection: supervisors
-      all_mapped: all_mapped
-      type: "Supervisors / TL's"
-    pmsView = new Egems.Views.MappedEmployees
-      collection: proj_managers
-      all_mapped: all_mapped
-      type: "Project Managers"
-    membersView = new Egems.Views.MappedEmployees
-      collection: members
-      all_mapped: all_mapped
-      type: "Members"
+    @supervisors = new Egems.Collections.EmployeeMappings(data.supervisors)
+    @proj_managers = new Egems.Collections.EmployeeMappings(data.project_managers)
+    @members = new Egems.Collections.EmployeeMappings(data.members)
+    @all_mapped = $.merge($.merge(data.supervisors, data.project_managers), data.members)
+    @setMappedEmployeesViews()
     $('#selected-employee-name').text(@model.fullName()).css('padding-bottom':'30px')
-    $('#supervisors-lst').html(supsView.setSelectedEmployee(@model).render().el)
-    $('#project-managers-lst').html(pmsView.setSelectedEmployee(@model).render().el)
-    $('#members-lst').html(membersView.setSelectedEmployee(@model).render().el)
+    $('#supervisors-lst').html(@supsView.setSelectedEmployee(@model).render().el)
+    $('#project-managers-lst').html(@pmsView.setSelectedEmployee(@model).render().el)
+    $('#members-lst').html(@membersView.setSelectedEmployee(@model).render().el)
     @animateMappingContainer()
+  
+  setMappedEmployeesViews: ->
+    @supsView = new Egems.Views.MappedEmployees
+      collection: @supervisors
+      type: "Supervisors / TL's"
+      mappableEmployeeView: this
+    @pmsView = new Egems.Views.MappedEmployees
+      collection: @proj_managers
+      type: "Project Managers"
+      mappableEmployeeView: this
+    @membersView = new Egems.Views.MappedEmployees
+      collection: @members
+      type: "Members"
+      mappableEmployeeView: this
+    @setAllMappedToMappedViews()
+  
+  setAllMappedToMappedViews: ->
+    @supsView.setAllMapped(@all_mapped)
+    @pmsView.setAllMapped(@all_mapped)
+    @membersView.setAllMapped(@all_mapped)
   
   animateMappingContainer: ->
     if $('.well.default').length >= 1

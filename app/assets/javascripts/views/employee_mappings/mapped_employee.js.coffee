@@ -11,7 +11,7 @@ class Egems.Views.MappedEmployee extends Backbone.View
     _.extend(this, Egems.Mixins.Defaults)
     @selectedEmployee = @options.selectedEmployee
     @type = @options.type
-    @mapped_employees_view = @options.mapped_employees_view
+    @mappableEmployeeView = @options.mappableEmployeeView
     @model.on('change', @render, this)
     @model.on('highlight', @highlightRow, this)
   
@@ -50,8 +50,8 @@ class Egems.Views.MappedEmployee extends Backbone.View
   
   onSuccessDelete: (data) =>
     $(@el).effect("highlight").fadeOut(1000, -> $(this).remove())
-    id = if @type is 'Member' then @model.employeeId() else @model.approverId()
-    @mapped_employees_view.all_mapped = _.filter @mapped_employees_view.all_mapped, (mapped) =>
+    @mappableEmployeeView.all_mapped = _.filter @mappableEmployeeView.all_mapped, (mapped) =>
       return mapped unless mapped.full_name is @model.fullName()
+    @mappableEmployeeView.setAllMappedToMappedViews()
     @showFlash(data.flash_messages, null, '#mapping-container')
 
