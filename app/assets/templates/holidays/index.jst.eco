@@ -3,24 +3,25 @@
 
 <div id="flash_messages"></div>
 
-<div style="display: inline-block; width: 100%; margin-bottom: 9px;">
+<div style="display: inline-block; width: 100%; margin-bottom: 9px;" id="holiday-actions-container">
   <button id="add-holiday-btn" class="btn btn-primary pull-right">Add Holiday</button>
 </div>
 
-<% if @holidays.length > 0 :%>
-  <table id="holidays-tbl" class="table table-condensed timesheets sortable" style="margin-top: 10px">
-    <thead>
-      <tr>
-        <th>Date</th>
-        <th class="sorttable_nosort">Description</th>
-        <th>Type</th>
-        <th>Branch</th>
-        <th class="sorttable_nosort">Action</th>
-      </tr>
-    </thead>
-    <tbody>
-    </tbody>
-  </table>
-<% else :%>
-  <p class="well">No data found.</p>
-<% end %>
+<table id="holidays-tbl" class="table table-condensed timesheets sortable" style="margin-top: 10px">
+  <thead>
+    <tr>
+      <th>Date</th>
+      <th class="sorttable_nosort">Description</th>
+      <th>Type</th>
+      <th>Branch</th>
+      <th class="sorttable_nosort">Action</th>
+    </tr>
+  </thead>
+  <tbody>
+  <% if @holidays.length <= 0 :%>
+    <tr>
+      <td colspan="5" class="well"><em>No holidays for this month.</em></td>
+    </tr>
+  <% end %>
+  </tbody>
+</table>

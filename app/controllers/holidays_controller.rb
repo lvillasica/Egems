@@ -7,11 +7,10 @@ class HolidaysController < ApplicationController
 
   def index
     if @employee.is_hr?
-      holidays = attrs Holiday.asc.within(default_date_range)
-      respond_to do |format|
-        format.html { render :template => "layouts/application" }
-        format.json { render :json => holidays.to_json }
-      end
+      default_month_range(params[:searchRange])
+      js_params[:range] = [@range.first, @range.last]
+      js_params[:holidays] = attrs Holiday.asc.within(@range)
+      respond_js_params
     else
       render_404
     end
@@ -24,7 +23,6 @@ class HolidaysController < ApplicationController
 
     js_params[:errors]   = { error: errors.full_messages.join('<br>') } if errors
     js_params[:success]  = { success: "Holiday was created successfully." } unless errors
-    js_params[:holidays] = attrs Holiday.asc.within(default_date_range)
     respond_js_params
   end
 
@@ -58,9 +56,10 @@ class HolidaysController < ApplicationController
     end
   end
 
-  def default_date_range
-    today = Time.now
-    range = Range.new(today.beginning_of_year.utc, today.end_of_year.utc)
+  def default_month_range(date=nil)
+    date = Time.parse(date) if date
+    date ||= Time.now
+    @range = Range.new(date.beginning_of_month.utc, date.end_of_month.utc)
   end
 
   def get_employee
