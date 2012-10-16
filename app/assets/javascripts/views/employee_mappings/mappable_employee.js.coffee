@@ -41,6 +41,7 @@ class Egems.Views.MappableEmployee extends Backbone.View
       collection: members
       all_mapped: all_mapped
       type: "Members"
+    $('#selected-employee-name').text(@model.fullName()).css('padding-bottom':'30px')
     $('#supervisors-lst').html(supsView.setSelectedEmployee(@model).render().el)
     $('#project-managers-lst').html(pmsView.setSelectedEmployee(@model).render().el)
     $('#members-lst').html(membersView.setSelectedEmployee(@model).render().el)

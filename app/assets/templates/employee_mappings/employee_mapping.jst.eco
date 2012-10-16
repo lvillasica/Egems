@@ -1,7 +1,7 @@
 
 <div id="employees-lst-container">
   <div>
-    <input type="text" placeholder="Search Employee" />
+    <input id="employee-search" type="text" placeholder="Search Employee" />
   </div>
   <div>
     <select id="employees-lst" size="15">
@@ -10,6 +10,7 @@
 </div>
 
 <div id="mapping-container">
+  <h2 id="selected-employee-name"></h2>
   <div class="well default">
     <span>Please select from list.</span>
   </div>
