@@ -11,6 +11,8 @@ class Egems.Views.EmployeeMappingForm extends Backbone.View
     @all_mapped = @options.all_mapped
     @type = @options.type
     @employees = new Egems.Collections.Employees()
+    @mappedEmployees = @options.mappedEmployees
+    @mappableEmployeeView = @options.mappableEmployeeView
 
   render: ->
     $(@el).html(@template(
@@ -126,7 +128,8 @@ class Egems.Views.EmployeeMappingForm extends Backbone.View
     flash_messages = data.flash_messages
     if flash_messages.error is undefined
       @exitForm(data)
-      @showFlash(data.flash_messages, null, '#mapping-container')
+      tblCont = $("##{ @dasherize @type.replace(/\//, ' ') }-tbl").parent()
+      @showFlash(data.flash_messages, null, tblCont)
     else
       $('#flash_messages').html(@flash_messages(flash_messages))
   
@@ -136,7 +139,10 @@ class Egems.Views.EmployeeMappingForm extends Backbone.View
       @model.set(data.employee_mapping)
       @model.trigger('highlight')
     else
-      $('#employees-lst :selected').trigger('click')
+      mapping = $.extend(data.employee_mapping, {full_name: @nameFld.find(':selected').text()})
+      @mappedEmployees.add mapping
+      @mappableEmployeeView.all_mapped.push(mapping)
+      @mappableEmployeeView.setAllMappedToMappedViews()
   
   enableFormActions: ->
     $('.submit').removeAttr('disabled')

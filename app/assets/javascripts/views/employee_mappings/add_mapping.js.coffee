@@ -10,10 +10,14 @@ class Egems.Views.AddMapping extends Backbone.View
     @selectedEmployee = @options.selectedEmployee
     @all_mapped = @options.all_mapped
     @type = @options.type
+    @mappedEmployees = @options.mappedEmployees
+    @mappableEmployeeView = @options.mappableEmployeeView
     @form = new Egems.Views.EmployeeMappingForm
       selectedEmployee: @selectedEmployee
       all_mapped: @all_mapped
       type: @type
+      mappedEmployees: @mappedEmployees
+      mappableEmployeeView: @mappableEmployeeView
 
   render: ->
     $(@el).html(@template(type: @type))

@@ -11,6 +11,7 @@ class Egems.Views.MappedEmployee extends Backbone.View
     _.extend(this, Egems.Mixins.Defaults)
     @selectedEmployee = @options.selectedEmployee
     @type = @options.type
+    @mappedEmployees = @options.mappedEmployees
     @mappableEmployeeView = @options.mappableEmployeeView
     @model.on('change', @render, this)
     @model.on('highlight', @highlightRow, this)
@@ -53,5 +54,14 @@ class Egems.Views.MappedEmployee extends Backbone.View
     @mappableEmployeeView.all_mapped = _.filter @mappableEmployeeView.all_mapped, (mapped) =>
       return mapped unless mapped.full_name is @model.fullName()
     @mappableEmployeeView.setAllMappedToMappedViews()
-    @showFlash(data.flash_messages, null, '#mapping-container')
+    @mappedEmployees.remove(@model)
+    @tbl = $("##{ @dasherize @type.replace(/\//, ' ') }-tbl")
+    @tblCont = @tbl.parent()
+    @showFlash(data.flash_messages, null, @tblCont)
+    @removeTable() if @mappedEmployees.length is 0
+  
+  removeTable: ->
+    @tbl.fadeOut 1000, =>
+      @tbl.remove()
+      @tblCont.append('<p class="well">No data found.</p>').hide().fadeIn('fast')
 

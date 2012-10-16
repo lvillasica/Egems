@@ -7,6 +7,8 @@ class Egems.Views.MappedEmployees extends Backbone.View
   
   initialize: ->
     _.extend(this, Egems.Mixins.Defaults)
+    @collection.on('add', @render, this)
+    @type = @options.type
     @mappableEmployeeView = @options.mappableEmployeeView
   
   setSelectedEmployee: (employeeModel) ->
@@ -17,7 +19,11 @@ class Egems.Views.MappedEmployees extends Backbone.View
     @all_mapped = allMapped
   
   render: ->
-    $(@el).html(@template(employees: @collection, type: @options.type))
+    $(@el).html @template
+      employees: @collection
+      type: @type
+      getType: @getType
+      mixins: $.extend(Egems.Mixins.Defaults)
     @collection.sort().each(@appendEmployee)
     this
   
@@ -26,8 +32,9 @@ class Egems.Views.MappedEmployees extends Backbone.View
       model: employee
       selectedEmployee: @selectedEmployee
       type: @getType()
+      mappedEmployees: @collection
       mappableEmployeeView: @mappableEmployeeView
-    @$('#mapped-employees-tbl tbody').append(view.render().el)
+    @$("##{ @dasherize @getType().replace(/\//, ' ') }-tbl tbody").append(view.render().el)
   
   addEmployee: (event) =>
     event.preventDefault()
@@ -37,11 +44,13 @@ class Egems.Views.MappedEmployees extends Backbone.View
       selectedEmployee: @selectedEmployee
       all_mapped: @all_mapped
       type: type
+      mappedEmployees: @collection
+      mappableEmployeeView: @mappableEmployeeView
     view.showEmployeeMappingForm()
   
   getType: ->
     type = ""
-    switch @options.type
+    switch @type
       when "Supervisors / TL's" then type = "Supervisor/TL"
       when "Project Managers" then type = "Project Manager"
       when "Members" then type = "Member"

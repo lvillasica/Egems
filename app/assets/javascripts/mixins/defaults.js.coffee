@@ -68,7 +68,8 @@ Egems.Mixins.Defaults =
       $(flash_content).insertAfter('div.alert:last')
     else
       $(prependAt).prepend(flash_content)
-    $('html, body').animate({scrollTop: 0}, 'slow')
+    flashPos = $('.alert :first').position().top - ($(window).height() / 2)
+    $('html, body').animate({scrollTop: flashPos}, 'slow')
 
   addClassError: (field) ->
     field.closest('.control-group').addClass('error')
@@ -104,6 +105,9 @@ Egems.Mixins.Defaults =
   simplePluralize: (num, commonStr) ->
     res = "#{ parseFloat(num).toFixed(1) } #{ commonStr }"
     return if num is 1 then res else res + 's'
+  
+  dasherize: (str) ->
+    str.replace(/\s+/g, '-').toLowerCase()
 
   getHoursFromMins: (minutes) ->
     return parseInt(minutes / 60)

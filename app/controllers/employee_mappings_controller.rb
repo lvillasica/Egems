@@ -28,6 +28,7 @@ class EmployeeMappingsController < ApplicationController
     else
       flash_message(:error, @employee_mapping.errors.full_messages) if @employee_mapping.errors.any?
     end
+    js_params[:employee_mapping] = @employee_mapping
     set_flash
     respond_with_json
   end
