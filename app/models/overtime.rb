@@ -36,6 +36,11 @@ class Overtime < ActiveRecord::Base
   # -------------------------------------------------------
   scope :editable, where(:status => ['Pending', 'Rejected'])
   scope :asc_by_overtime_date, order(:date_of_overtime)
+  scope :within, lambda { |range|
+    start_date, end_date = range
+    where(["date_of_overtime between ? and ?",
+             start_date.utc, end_date.utc])
+  }
 
   # -------------------------------------------------------
   # Instance Methods

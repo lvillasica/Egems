@@ -50,8 +50,13 @@ class OvertimeAction < ActiveRecord::Base
   end
 
   def set_default_responders
-    self.responders = [self.overtime.employee.project_manager,
-                       self.overtime.employee.immediate_supervisor].compact.uniq
+    ot_date = overtime.date_of_overtime.localtime
+    self.responders = self.overtime.employee.responders_on(ot_date).compact.uniq
+  end
+  
+  def reset_responders(responders=[])
+    self.responders = responders.compact.uniq
+    self.responders.reset
   end
 
   def approve!(supervisor)

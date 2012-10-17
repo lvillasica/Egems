@@ -37,17 +37,27 @@ class Employee < ActiveRecord::Base
   # -------------------------------------------------------
   # Namescopes
   # -------------------------------------------------------
-  scope :with_supervisory, includes(:job_position).where('job_positions.is_supervisory' => 1)
+  scope :with_supervisory, includes(:job_position)
+    .where('job_positions.is_supervisory' => 1)
+  scope :sups, includes(:employee_mappings_as_member)
+    .where('employee_mappings.approver_type' => 'Supervisor/TL')
+  scope :pms, includes(:employee_mappings_as_member)
+    .where('employee_mappings.approver_type' => 'Project Manager')
+  scope :mapped_on, lambda { | datetime |
+    includes(:employee_mappings_as_member)
+    .where('Date(?) between Date(employee_mappings.from) and Date(employee_mappings.to)',
+    datetime.beginning_of_day.utc)
+  }
 
   # -------------------------------------------------------
   # Instance Methods
   # -------------------------------------------------------
   def mapped_supervisors
-    employee_mappings_as_member.where('employee_mappings.approver_type' => 'Supervisor/TL')
+    employee_mappings_as_member.sups
   end
   
   def mapped_project_managers
-    employee_mappings_as_member.where('employee_mappings.approver_type' => 'Project Manager')
+    employee_mappings_as_member.pms
   end
   
   def immediate_supervisor
@@ -56,6 +66,12 @@ class Employee < ActiveRecord::Base
 
   def project_manager
     Employee.find_by_id(employee_project_manager_id)
+  end
+  
+  def responders_on(datetime)
+    res = approvers.mapped_on(datetime)
+    res = [immediate_supervisor, project_manager] if res.blank?
+    res
   end
 
   def hr_personnel

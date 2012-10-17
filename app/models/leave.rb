@@ -55,4 +55,13 @@ class Leave < ActiveRecord::Base
     leave_details.pending.sum(:leave_unit)
   end
 
+  def destroy
+    if !leave_details.blank?
+      errors[:base] << 'Cannot delete this leave.'
+      return false
+    else
+      super
+    end
+  end
+  
 end

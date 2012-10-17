@@ -220,7 +220,7 @@ class Timesheet < ActiveRecord::Base
     end
 
     self.attributes = { "#{type}" => time, "date" => t_date.beginning_of_day }
-    self.responders << [employee.project_manager, employee.immediate_supervisor].compact.uniq
+    self.responders << employee.responders_on(t_date).compact.uniq
 
     begin
       if self.save!
@@ -242,13 +242,14 @@ class Timesheet < ActiveRecord::Base
       invalid_timesheets = employee.timesheets.latest(timein).no_timeout +
                            employee.timesheets.previous(timein).no_timeout
       raise NoTimeoutError if invalid_timesheets.present?
+      t_date = Time.parse(attrs[:timein][:date])
       self.attributes = {
-        :date => Time.parse(attrs[:timein][:date]),
+        :date => t_date,
         :time_in => timein,
         :time_out => timeout,
         :is_valid => 4     # manual time in & out
       }
-      self.responders << [employee.project_manager, employee.immediate_supervisor].compact.uniq
+      self.responders << employee.responders_on(t_date).compact.uniq
       if self.save
         send_invalid_timesheet_notification("time in & out")
         return true
@@ -292,6 +293,11 @@ class Timesheet < ActiveRecord::Base
       errors[:base] << 'Not a manual entry.'
       return false
     end
+  end
+  
+  def reset_responders(responders=[])
+    self.responders = responders.compact.uniq
+    self.responders.reset
   end
 
   def reset_actions_response

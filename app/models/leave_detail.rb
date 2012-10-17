@@ -41,6 +41,7 @@ class LeaveDetail < ActiveRecord::Base
   after_save :recompute_timesheets
   after_update :recompute_timesheets_without_leaves
   after_save :send_email_notification
+  before_destroy :recompute_timesheets
 
   # -------------------------------------------------------
   # Namescopes
@@ -76,6 +77,13 @@ class LeaveDetail < ActiveRecord::Base
     includes(:responders).asc
     .joins("LEFT OUTER JOIN #{Employee.table_name} employees2 ON employees2.id = #{LeaveDetail.table_name}.employee_id")
     .where([condition, supervisor_id, special_leaves, supervisor_id, supervisor_id])
+  }
+  
+  scope :within, lambda { |range|
+    start_date, end_date = range
+    asc
+    .where(["leave_date between ? and ?",
+             start_date.utc, end_date.utc])
   }
 
   # -------------------------------------------------------
@@ -172,7 +180,7 @@ class LeaveDetail < ActiveRecord::Base
     if needs_hr_action?
       self.responders = employee.hr_personnel.compact.uniq unless employee.is_hr?
     else
-      self.responders = [employee.project_manager, employee.immediate_supervisor].compact.uniq
+      self.responders = employee.responders_on(leave_date.localtime).compact.uniq
     end
   end
 
@@ -180,6 +188,13 @@ class LeaveDetail < ActiveRecord::Base
   def update_responders(responders=[])
     responders.compact.uniq.each do |responder|
       self.responders << responder unless self.responders.include?(responder)
+    end
+  end
+  
+  def reset_responders(responders=[])
+    unless needs_hr_action?
+      self.responders = responders.compact.uniq
+      self.responders.reset
     end
   end
 
@@ -217,7 +232,7 @@ class LeaveDetail < ActiveRecord::Base
         if (status == 'Pending' && supervisor.is_hr?) or is_hr_approved?
           if supervisor.is_hr?
             self.status = 'HR Approved'
-            update_responders([employee.immediate_supervisor, employee.project_manager])
+            update_responders(employee.responders_on(leave_date.localtime))
           else
             self.status = 'Approved'
           end
@@ -251,7 +266,7 @@ class LeaveDetail < ActiveRecord::Base
       self.responder = supervisor
       self.responded_on = Time.now
       if supervisor.is_hr?
-        update_responders([employee.immediate_supervisor, employee.project_manager])
+        update_responders(employee.responders_on(leave_date.localtime))
       end
       @email_action = 'rejected'
       @action_owner = supervisor
