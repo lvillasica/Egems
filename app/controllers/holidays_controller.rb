@@ -51,7 +51,8 @@ class HolidaysController < ApplicationController
     holidays.map do |holiday|
       holiday.attributes.merge({
         :branches => holiday.branches.map(&:code).join(', '),
-        :cancelable => holiday.is_cancelable?
+        :cancelable => holiday.is_cancelable?,
+        :editable => holiday.is_editable?
       })
     end
   end

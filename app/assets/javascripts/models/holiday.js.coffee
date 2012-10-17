@@ -15,6 +15,9 @@ class Egems.Models.Holiday extends Backbone.Model
   isCancelable: ->
     @get 'cancelable'
 
+  isEditable: ->
+    @get 'editable'
+
   name: ->
     @get 'name'
 

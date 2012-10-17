@@ -1,10 +1,11 @@
 Egems.Mixins.Holidays =
   holiday_actions: (holiday) ->
     actions = new Array
-    actions.push """
-      <a class="edit" href="#">
-        <i class="icon-edit"></i>
-      </a>"""
+    if holiday.isEditable()
+      actions.push """
+        <a class="edit" href="#">
+          <i class="icon-edit"></i>
+        </a>"""
 
     if holiday.isCancelable()
       actions.push """

@@ -39,6 +39,10 @@ class Holiday < ActiveRecord::Base
     date.to_date > Date.today
   end
 
+  def is_editable?
+    date.to_date > Date.today
+  end
+
   def recompute_leaves
     day = date.to_date.to_time
     if day > Date.today.to_time

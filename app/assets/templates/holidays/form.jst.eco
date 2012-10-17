@@ -43,12 +43,12 @@
         </label>
         <label class="radio inline">
           <input type="radio" value="2" id="holiday_branch_specific">Specific to &nbsp;
-          <select id="holiday_branch_select">
-          <% for branch in @branches.models :%>
-            <option value="<%= branch.getId() %>"><%= branch.name() %></option>
-          <% end %>
-          </select>
         </label>
+        <select id="holiday_branch_select">
+        <% for branch in @branches.models :%>
+          <option value="<%= branch.getId() %>"><%= branch.name() %></option>
+        <% end %>
+        </select>
       </div>
     </div>
     <% end %>
