@@ -9,6 +9,10 @@ Egems.Mixins.Defaults =
     res = '--:--' if res == '08:00:00 AM 1970-01-01'
     res.toUpperCase()
 
+  format_time_only: (date) ->
+    res = if date == null then '--:--' else I18n.strftime(new Date(date), '%I:%M %p')
+    res.toUpperCase()
+
   format_day_only: (date) ->
     res = I18n.strftime(new Date(date), '%a')
 
@@ -105,7 +109,7 @@ Egems.Mixins.Defaults =
   simplePluralize: (num, commonStr) ->
     res = "#{ parseFloat(num).toFixed(1) } #{ commonStr }"
     return if num is 1 then res else res + 's'
-  
+
   dasherize: (str) ->
     str.replace(/\s+/g, '-').toLowerCase()
 
@@ -133,7 +137,7 @@ Egems.Mixins.Defaults =
       return true
     else
       return false
-  
+
   check_mailing_job_status: (job_for) ->
     if !!window.EventSource
       source = new EventSource("/mailing_job_status?job_for=#{ job_for }")
@@ -152,7 +156,7 @@ Egems.Mixins.Defaults =
       , false
     else
       alert "HTML 5 is not supported in your browser."
-  
+
   showTinyLoadingAt: (fld) ->
     loadingIndicator = """
                        <img class="tiny-loading" src="/assets/ajax-loader.gif"
@@ -161,7 +165,6 @@ Egems.Mixins.Defaults =
                             style="padding-left:10px" />
                        """
     $(loadingIndicator).insertAfter(fld)
-  
+
   removeTinyLoadingAt: (fld) ->
     $(fld).next('img.tiny-loading').remove()
-

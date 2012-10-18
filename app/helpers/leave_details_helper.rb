@@ -28,7 +28,7 @@ module LeaveDetailsHelper
   end
 
   def get_pending_leaves
-  	leaves = @employee.leave_details.select(:leave_unit).pending
+  	leaves = (@employee || current_user.employee).leave_details.select(:leave_unit).pending
   end
 
   def leave_unit_sum

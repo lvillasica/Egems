@@ -1,0 +1,7 @@
+<td><%= @detail.day() %></td>
+<td><%= @mixins.format_time_only @detail.amStart() %></td>
+<td><%= @detail.amDuration() %></td>
+<td><%= @detail.amAllowance() %></td>
+<td><%= @mixins.format_time_only @detail.pmStart() %></td>
+<td><%= @detail.pmDuration() %></td>
+<td><%= @detail.pmAllowance() %></td>

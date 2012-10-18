@@ -7,5 +7,20 @@
     display: none
 
 #shifts-tbl
-  tbody tr th
-    border: 1px
+  table-layout: fixed
+
+  tr
+    th, td
+      padding: 2px
+
+    th.thin, td.thin
+      width: 35px
+
+  tbody tr
+    th
+      border: 1px solid #ccc
+      background-color: #edecec
+
+      &:hover
+        background-color: #d4e6f1
+        cursor: pointer

@@ -9,6 +9,8 @@ class ShiftSchedule < ActiveRecord::Base
   has_many :timesheets
   has_and_belongs_to_many :employees, :join_table => 'employee_shift_schedules'
 
+  scope :asc, order('created_on asc')
+
   # -------------------------------------------------------
   # Instance Methods
   # -------------------------------------------------------

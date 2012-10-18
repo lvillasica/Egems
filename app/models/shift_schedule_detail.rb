@@ -7,6 +7,9 @@ class ShiftScheduleDetail < ActiveRecord::Base
   # -------------------------------------------------------
   belongs_to :shift_schedule
 
+  scope :asc, order('day_of_week asc')
+  scope :desc, order('day_of_week desc')
+
   # -------------------------------------------------------
   # Instance Methods
   # -------------------------------------------------------

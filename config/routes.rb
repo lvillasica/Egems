@@ -46,12 +46,16 @@ Egems::Application.routes.draw do
       match '/reject', to: 'leave_details#bulk_reject', as: 'leave_details_reject', via: 'post'
     end
 
-
     scope '/hr/holidays' do
       match '', to: 'holidays#index', as: 'holidays', via: 'get'
       match '/new', to: 'holidays#create', as: 'new_holiday', via: 'post'
       match '/edit/:id', to: 'holidays#update', as: 'edit_holiday', via: 'put'
       match '/delete/:id', to: 'holidays#destroy', as: 'delete_holiday', via: 'delete'
+    end
+
+    scope '/hr/shifts' do
+      match '', to: 'shift_schedules#index', as: 'shifts', via: 'get'
+      match '/:id/details/', to: 'shift_schedules#details', as: 'shift_details', via: 'get'
     end
 
     scope '/hr' do
@@ -71,7 +75,7 @@ Egems::Application.routes.draw do
     end
 
     resources :leaves
-    
+
     resources :employee_mappings, :except => [:new, :edit]
 
     root :to => 'timesheets#index', :as => 'timesheets', :via => :get

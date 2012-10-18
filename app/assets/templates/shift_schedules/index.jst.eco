@@ -1,0 +1,23 @@
+<h4>Shift Schedules</h4>
+<br>
+
+<table id="shifts-tbl" class="table table-condensed timesheets">
+  <thead>
+    <tr>
+      <th class="thin">Day</th>
+      <th>AM Time In</th>
+      <th>Duration</th>
+      <th>Allowance</th>
+      <th>PM Time In</th>
+      <th>Duration</th>
+      <th>Allowance</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% if @shifts.length == 0 :%>
+      <tr class="nodata">
+        <td colspan="7"><em>No data found.</em></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
