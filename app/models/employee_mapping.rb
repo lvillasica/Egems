@@ -31,6 +31,9 @@ class EmployeeMapping < ActiveRecord::Base
     where("employee_mappings.from between ? and ? or
            employee_mappings.to between ? and ?", from, to, from, to)
   }
+  scope :exclude_ids, lambda { |ids|
+    where(["employee_mappings.id NOT IN (?)", ids]) if ids.any?
+  }
   
   # -------------------------------------------------------
   # Class Methods
@@ -118,10 +121,10 @@ private
   end
   
   def validate_conflict
-    if (approver.employee_mappings_as_approver.conflicts_on_dates(from, to).any? or
-       approver.employee_mappings_as_member.conflicts_on_dates(from, to).any?) and
-       (member.employee_mappings_as_approver.conflicts_on_dates(from, to).any? or
-       member.employee_mappings_as_member.conflicts_on_dates(from, to).any?)
+    if (approver.employee_mappings_as_approver.exclude_ids([self.id]).conflicts_on_dates(from, to).any? or
+       approver.employee_mappings_as_member.exclude_ids([self.id]).conflicts_on_dates(from, to).any?) and
+       (member.employee_mappings_as_approver.exclude_ids([self.id]).conflicts_on_dates(from, to).any? or
+       member.employee_mappings_as_member.exclude_ids([self.id]).conflicts_on_dates(from, to).any?)
       errors[:base] << "Conflicting dates."
     end
   end
