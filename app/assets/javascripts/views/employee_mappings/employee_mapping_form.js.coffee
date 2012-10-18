@@ -71,8 +71,7 @@ class Egems.Views.EmployeeMappingForm extends Backbone.View
   
   resetEmployees: (collection, response) =>
     employees = _.filter response.employees, (employee) =>
-      mapped_names = _.pluck @all_mapped, 'full_name'
-      unless _.contains(mapped_names, employee.full_name) or employee.full_name is @selectedEmployee.fullName()
+      unless employee.full_name is @selectedEmployee.fullName()
         return employee
     @employees.reset(employees)
     @setEmployeeNameFld()
@@ -141,8 +140,6 @@ class Egems.Views.EmployeeMappingForm extends Backbone.View
     else
       mapping = $.extend(data.employee_mapping, {full_name: @nameFld.find(':selected').text()})
       @mappedEmployees.add mapping
-      @mappableEmployeeView.all_mapped.push(mapping)
-      @mappableEmployeeView.setAllMappedToMappedViews()
   
   enableFormActions: ->
     $('.submit').removeAttr('disabled')

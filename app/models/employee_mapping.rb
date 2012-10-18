@@ -25,6 +25,12 @@ class EmployeeMapping < ActiveRecord::Base
   # -------------------------------------------------------
   scope :sups, where(:approver_type => 'Supervisor/TL')
   scope :pms, where(:approver_type => 'Project Manager')
+  scope :conflicts_on_dates, lambda { | from, to |
+    where("? between employee_mappings.from and employee_mappings.to or
+           ? between employee_mappings.from and employee_mappings.to", from, to)
+    where("employee_mappings.from between ? and ? or
+           employee_mappings.to between ? and ?", from, to, from, to)
+  }
   
   # -------------------------------------------------------
   # Class Methods
@@ -108,15 +114,15 @@ private
       errors[:base] << "You can't be your own Supervisor / PM / Member."
     end
     
-    validate_all_mapped if new_record?
+    validate_conflict
   end
   
-  def validate_all_mapped
-    all_mapped = []
-    all_mapped << member.approvers
-    all_mapped << member.members
-    if all_mapped.flatten.include?(approver)
-      errors[:base] << "#{ member.full_name } has already been mapped with #{ approver.full_name }."
+  def validate_conflict
+    if (approver.employee_mappings_as_approver.conflicts_on_dates(from, to).any? or
+       approver.employee_mappings_as_member.conflicts_on_dates(from, to).any?) and
+       (member.employee_mappings_as_approver.conflicts_on_dates(from, to).any? or
+       member.employee_mappings_as_member.conflicts_on_dates(from, to).any?)
+      errors[:base] << "Conflicting dates."
     end
   end
   

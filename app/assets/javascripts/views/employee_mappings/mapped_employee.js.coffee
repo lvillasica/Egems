@@ -51,9 +51,6 @@ class Egems.Views.MappedEmployee extends Backbone.View
   
   onSuccessDelete: (data) =>
     $(@el).effect("highlight").fadeOut(1000, -> $(this).remove())
-    @mappableEmployeeView.all_mapped = _.filter @mappableEmployeeView.all_mapped, (mapped) =>
-      return mapped unless mapped.full_name is @model.fullName()
-    @mappableEmployeeView.setAllMappedToMappedViews()
     @mappedEmployees.remove(@model)
     @tbl = $("##{ @dasherize @type.replace(/\//, ' ') }-tbl")
     @tblCont = @tbl.parent()
