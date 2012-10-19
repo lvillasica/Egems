@@ -45,8 +45,7 @@ class Egems.Views.Holiday extends Backbone.View
   checkEmptyTable: ->
     table = $('#holidays-tbl')
     if table.find('tbody tr').length == 0
-      table.remove()
-      $('#main-container').append('<div class="well">No data found.</div>')
+      table.append '<tr><td colspan="5" class="well"><em>No holidays for this month.</em></td></tr>'
 
   flashMsg: (msg) ->
     $('#flash_messages').html @mixins.flash_messages(msg)
