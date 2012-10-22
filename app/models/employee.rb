@@ -69,9 +69,7 @@ class Employee < ActiveRecord::Base
   end
   
   def responders_on(datetime)
-    res = approvers.mapped_on(datetime)
-    res = [immediate_supervisor, project_manager] if res.blank?
-    res
+    approvers.mapped_on(datetime)
   end
 
   def hr_personnel

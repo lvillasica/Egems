@@ -121,10 +121,10 @@ private
   end
   
   def validate_conflict
-    if (approver.employee_mappings_as_approver.exclude_ids([self.id]).conflicts_on_dates(from, to).any? or
-       approver.employee_mappings_as_member.exclude_ids([self.id]).conflicts_on_dates(from, to).any?) and
-       (member.employee_mappings_as_approver.exclude_ids([self.id]).conflicts_on_dates(from, to).any? or
-       member.employee_mappings_as_member.exclude_ids([self.id]).conflicts_on_dates(from, to).any?)
+    if EmployeeMapping.where(:approver_id => approver.id, :employee_id => member.id)
+                      .exclude_ids([self.id]).conflicts_on_dates(from, to).any? or
+       EmployeeMapping.where(:approver_id => member.id, :employee_id => approver.id)
+                      .exclude_ids([self.id]).conflicts_on_dates(from, to).any?
       errors[:base] << "Conflicting dates."
     end
   end
