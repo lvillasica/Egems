@@ -79,7 +79,7 @@ class EmployeeMapping < ActiveRecord::Base
     @old_range = [from_was.localtime, to_was.localtime] rescue []
     timesheets = objs_to_reset_responders(:timesheets)
     overtimes = objs_to_reset_responders(:overtimes)
-    leave_details = objs_to_reset_responders(:overtimes)
+    leave_details = objs_to_reset_responders(:leave_details)
     
     timesheets.each do |timesheet|
       t_date = timesheet.date.localtime
