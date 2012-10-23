@@ -28,11 +28,11 @@ class LeaveDetailsMailingJob < Struct.new(:id, :email_action, :owner_id)
         end
         success_recipients << recipient.full_name
         msg = "Email notification successfully sent to #{ success_recipients.to_sentence }."
-        Rails.cache.write("#{ sender_id }_#{ job_for }_mailing_stat", ['success', msg])
+        Rails.cache.write("#{ sender_id }_#{ job_for }_mailing_stat", ['success', msg]) rescue p 'Failed to cache mailing status.'
       rescue
         failed_recipients << recipient.full_name
         msg = "Failure on sending email notification to #{ failed_recipients.to_sentence }."
-        Rails.cache.write("#{ sender_id }_#{ job_for }_mailing_stat", ['error', msg])
+        Rails.cache.write("#{ sender_id }_#{ job_for }_mailing_stat", ['error', msg]) rescue p 'Failed to cache mailing status.'
         next
       end
     end

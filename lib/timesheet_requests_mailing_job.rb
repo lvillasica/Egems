@@ -14,11 +14,11 @@ class TimesheetRequestsMailingJob < Struct.new(:id, :type)
         TimesheetMailer.invalid_timesheet(employee, timesheet, type, recipient).deliver
         success_recipients << recipient.full_name
         msg = "Email notification successfully sent to #{ success_recipients.to_sentence }."
-        Rails.cache.write("#{ employee.id }_timesheet_request_mailing_stat", ['success', msg])
+        Rails.cache.write("#{ employee.id }_timesheet_request_mailing_stat", ['success', msg]) rescue p 'Failed to cache mailing status.'
       rescue Net::SMTPAuthenticationError, Net::SMTPServerBusy, Net::SMTPSyntaxError, Net::SMTPFatalError, Net::SMTPUnknownError => e
         failed_recipients << recipient.full_name
         msg = "Failure on sending email notification to #{ failed_recipients.to_sentence }."
-        Rails.cache.write("#{ employee.id }_timesheet_request_mailing_stat", ['error', msg])
+        Rails.cache.write("#{ employee.id }_timesheet_request_mailing_stat", ['error', msg]) rescue p 'Failed to cache mailing status.'
         next
       end
     end

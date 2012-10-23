@@ -15,11 +15,11 @@ class OvertimeRequestsMailingJob < Struct.new(:overtime_id, :email_action)
         OvertimeMailer.overtime_for_approval(employee, overtime, recipient, email_action).deliver
         success_recipients << recipient.full_name
         msg = "Email notification successfully sent to #{ success_recipients.to_sentence }."
-        Rails.cache.write("#{ employee.id }_overtime_request_mailing_stat", ['success', msg])
+        Rails.cache.write("#{ employee.id }_overtime_request_mailing_stat", ['success', msg]) rescue p 'Failed to cache mailing status.'
       rescue
         failed_recipients << recipient.full_name
         msg = "Failure on sending email notification to #{ failed_recipients.to_sentence }."
-        Rails.cache.write("#{ employee.id }_overtime_request_mailing_stat", ['error', msg])
+        Rails.cache.write("#{ employee.id }_overtime_request_mailing_stat", ['error', msg]) rescue p 'Failed to cache mailing status.'
         next
       end
     end
