@@ -23,19 +23,18 @@ class HolidaysController < ApplicationController
     holiday.branches = Branch.find_all_by_id(params[:branch_ids])
     errors = holiday.errors unless holiday.save
 
-    js_params[:errors]   = { error: errors.full_messages.join('<br>') } if errors
-    js_params[:success]  = { success: "Holiday was created successfully." } unless errors
+    js_params[:errors]  = { error: errors.full_messages.join('<br>') } if errors
+    js_params[:success] = { success: "Holiday was created successfully." } unless errors
     respond_js_params
   end
 
   def update
     holiday = Holiday.find_by_id(params[:id])
-    if holiday.update_attributes(params[:holiday])
-      holiday.branches = Branch.find_all_by_id(params[:branch_ids])
-      js_params[:success]  = { success: "Holiday was updated successfully." }
-    else
-      js_params[:errors] = { error: holiday.errors.full_messages.join('<br>') }
-    end
+    branches = Branch.find_all_by_id(params[:branch_ids])
+    errors = holiday.errors unless holiday.update_attrs_with_branches(params[:holiday], branches)
+
+    js_params[:errors]  = { error: holiday.errors.full_messages.join('<br>') } if errors
+    js_params[:success] = { success: "Holiday was updated successfully." } unless errors
     respond_js_params
   end
 

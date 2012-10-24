@@ -5,13 +5,13 @@ class Holiday < ActiveRecord::Base
   # -------------------------------------------------------
   has_and_belongs_to_many :branches, :join_table => 'holiday_branches'
 
-  attr_accessible :date, :name, :description, :holiday_type
+  attr_accessible :date, :name, :description, :holiday_type, :ot_rate
   validates_presence_of :date, :name, :description, :holiday_type
   validates_uniqueness_of :date, :message => "has already been set as holiday."
   validate :check_date
 
   after_save :recompute_leaves
-  before_destroy :restore_leaves
+  after_destroy :restore_leaves
 
   # -------------------------------------------------------
   # Namescopes
@@ -43,45 +43,81 @@ class Holiday < ActiveRecord::Base
     date.to_date > Date.today
   end
 
+  def recompute_leave(leave)
+    unit_was = leave.leave_unit
+    unit = leave.compute_unit
+    leave.update_column(:leave_unit, unit)
+
+    if leave.is_approved?
+      unit_change = unit_was - unit
+      leave.update_consumed_count(unit_change)
+    end
+
+    if !leave.is_rejected? && !leave.is_canceled?
+      status = unit < 1 ? 'Holiday' : 'Pending'
+      leave.update_column(:status, status)
+      leave.remove_response_attrs
+    end
+  end
+
   def recompute_leaves
     day = date.to_date.to_time
-    if day > Date.today.to_time
+    if day > Time.now.beginning_of_day
+      if date_changed?
+        #restore previously recomputed leaves
+        changed_date = date_was.to_date.to_time
+        changed_leaves = LeaveDetail.filed_for(changed_date.localtime)
+        changed_leaves.each do |detail|
+          branch = detail.employee.branch
+          if @branches_was.include?(branch)
+            range = Range.new(detail.leave_date, detail.end_date)
+            restore_leave(detail) if range.cover?(changed_date)
+          end
+        end
+      end
+
       leaves = LeaveDetail.filed_for(day)
       leaves.each do |detail|
-        if detail.is_holidayed?
-          restore_leave(detail) unless branches.include?(detail.employee.branch)
+        branch = detail.employee.branch
+        if branches.include?(branch)
+          recompute_leave(detail)
         else
-          if branches.include?(detail.employee.branch) && !detail.is_canceled?
-            days = detail.leave_unit
-            status = days <= 1 ? 'Holiday' : 'Pending'
-            detail.update_consumed_count(0-days) if detail.is_approved?
-            detail.remove_response_attrs
-            detail.update_column(:status, status)
-            detail.update_column(:leave_unit, days-1) if days > 1
-          end
+          restore_leave(detail) if detail.is_holidayed?
         end
       end
     end
   end
 
   def restore_leave(leave)
-    binding.pry
-    days = leave.leave_unit
-    leave.update_consumed_count(0-days) if leave.is_approved?
-    leave.remove_response_attrs
-    leave.update_column(:status, 'Pending')
-    leave.update_column(:leave_unit, days+1) if days > 1
+    unit_was = leave.leave_unit
+    unit = leave.compute_unit
+    leave.update_column(:leave_unit, unit)
+    if leave.is_approved?
+      unit_change = unit_was - unit
+      leave.update_consumed_count(unit_change)
+    end
+
+    if !leave.is_rejected? && !leave.is_canceled?
+      leave.update_column(:status, 'Pending')
+      leave.remove_response_attrs
+    end
   end
 
   def restore_leaves
     day = date.to_date.to_time
-    if day > Date.today.to_time
+    if day > Time.now.beginning_of_day
       leaves = LeaveDetail.filed_for(day)
       leaves.each do |detail|
-        if branches.include?(detail.employee.branch)
-          restore_leave(detail) if !detail.is_canceled? && !detail.is_rejected?
-        end
+        branch = detail.employee.branch
+        restore_leave(detail) if branches.include?(branch)
       end
     end
+  end
+
+  def update_attrs_with_branches(attrs, branches)
+    @branches_was = self.branches.clone()
+    self.attributes = attrs
+    self.branches = branches
+    self.save
   end
 end

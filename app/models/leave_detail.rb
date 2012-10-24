@@ -510,6 +510,14 @@ class LeaveDetail < ActiveRecord::Base
     end
   end
 
+  def compute_unit
+    @employee ||= employee
+    @leave ||= leave
+    @leave_dates ||= (leave_date.localtime.to_date .. end_date.localtime.to_date)
+    non_working_days = (get_day_offs | get_holidays)
+    @leave_dates.count - non_working_days.count
+  end
+
 private
   def validate_leave_type
     if @employee.leaves.type(leave_type).first.nil?
