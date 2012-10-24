@@ -1,0 +1,21 @@
+<% if @employees.length >= 1 : %>
+<form method="post" id="for-leave-crediting-form" accept-charset="UTF-8">
+  <button class="btn btn-success grant"><strong>GRANT NOW</strong></button>
+  <table id="employees-tbl" class="table timesheets" style="margin-top:10px">
+    <thead>
+      <tr class="align-middle">
+        <th>
+          <a id="toggle-boxes" class="icon-ok""> All</a>
+        </th>
+        <th>Employee</th>
+        <th>Date Hired</th>
+        <th>Date Regularized</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</form>
+<% else : %>
+  <div class="well"> No data found. </div>
+<% end %>

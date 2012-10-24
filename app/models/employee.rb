@@ -48,6 +48,20 @@ class Employee < ActiveRecord::Base
     .where('Date(?) between Date(employee_mappings.from) and Date(employee_mappings.to)',
     datetime.beginning_of_day.utc)
   }
+  scope :regularized_on_year, lambda { | year |
+    where('extract(year from date_regularized) = ?', year.to_i)
+  }
+  scope :not_resigned, where("employment_status <> 'Resigned'")
+  scope :asc_name, order(:full_name)
+  
+  # -------------------------------------------------------
+  # Class Methods
+  # -------------------------------------------------------
+  class << self
+    def all_qualified_for_leaves(year = Time.now.year)
+      not_resigned.all.select { |e| e.is_qualified_for_leaves?(year) }
+    end
+  end
 
   # -------------------------------------------------------
   # Instance Methods
@@ -144,6 +158,65 @@ class Employee < ActiveRecord::Base
 
   def can_action_leaves?
     is_supervisor? or is_supervisor_hr?
+  end
+  
+  def is_qualified_for_leaves?(year = Time.now.year)
+    is_regularized? and !is_resigned? and date_regularized.year <= year and
+    (is_early_regularized? and Time.now >= (date_hired.localtime + 6.months)) or
+    (is_intime_regularized? and Time.now >= (date_hired.localtime + 7.months))
+  end
+  
+  def is_early_regularized?
+    return false if date_hired.nil?
+    expected_reg_date = date_hired + 6.months
+    is_regularized? and date_regularized < expected_reg_date
+  end
+  
+  def is_intime_regularized?
+    return false if date_hired.nil?
+    expected_reg_date = date_hired + 6.months
+    is_regularized? and date_regularized >= expected_reg_date
+  end
+  
+  def is_regularized?
+    !date_regularized.nil?
+  end
+  
+  def is_resigned?
+    employment_status.eql? 'Resigned'
+  end
+  
+  def grant_major_leaves!(year = Time.now.year)
+    from = Time.local(year, 1, 1)
+    to = from.end_of_year
+    Leave::MAJOR_TYPES.each do |leave_type|
+      begin
+        leaves.create!(:leave_type => leave_type,
+                       :date_from  => from,
+                       :date_to    => to)
+      rescue
+        next
+      end
+    end
+  end
+  
+  def granted_with_major_leaves?(year = Time.now.year)
+    from = Time.local(year, 1, 1)
+    to = from.end_of_year
+    return leaves.major_leaves_within(from, to).any?
+  end
+  
+  def expected_vl_allocation
+    alloc = case years_from_hired
+            when 0 .. 3 then 12.0
+            when 4 .. 6 then 15.0
+            when 7 .. 9 then 18.0
+            else 21.0
+            end if years_from_hired
+  end
+  
+  def years_from_hired
+    ((Time.now - date_hired.localtime) / 1.year).floor if date_hired
   end
 
 end

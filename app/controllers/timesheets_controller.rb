@@ -2,6 +2,7 @@ class TimesheetsController < ApplicationController
   respond_to :json
 
   before_filter :authenticate_user!, :except => [:index]
+  before_filter :set_location
   before_filter :get_employee, :except => [:manual_timeout, :timesheets_nav]
   before_filter :get_active_timesheets, :only => [:index]
   before_filter :get_invalid_timesheet, :only => [:index]
@@ -259,6 +260,10 @@ private
     flash_message(type, @timesheet.errors.full_messages) if @timesheet.errors.any?
     js_params[:flash_messages] = flash.to_hash
     flash.discard
+  end
+  
+  def set_location(location = 'timesheets')
+    js_params[:current_location] = location
   end
 
 end

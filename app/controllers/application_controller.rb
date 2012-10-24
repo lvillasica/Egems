@@ -53,6 +53,7 @@ protected
 
   def js_params
     @js_params ||= {}
+    @data = @js_params
   end
 
   def js_params_json(options = {})

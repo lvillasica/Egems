@@ -24,3 +24,37 @@
       &:hover
         background-color: #d4e6f1
         cursor: pointer
+
+.toggle-contents
+  display: none
+  .arrow-up
+    border-color: white transparent
+    border-style: solid
+    border-width: 0px 10px 10px 10px
+    height: 0px
+    width: 0px
+    position: relative
+    top: 1px
+    left: 1px
+  
+  .content-holder
+    border-top: 1px solid #bfbfbf
+    -moz-box-shadow: 0px -5px 10px #e5e5e5
+    -webkit-box-shadow: 0px -5px 10px #e5e5e5
+    box-shadow: 0px -5px 10px #e5e5e5
+    
+    .title
+      background-color: #bfbfbf
+      font-weight: bold
+      font-size: 12pt
+      color: #333
+      padding: 10px
+      margin: 2px
+      background-image: linear-gradient(bottom, rgb(255,255,255) 0%, rgb(191,191,191) 100%)
+      background-image: -o-linear-gradient(bottom, rgb(255,255,255) 0%, rgb(191,191,191) 100%)
+      background-image: -moz-linear-gradient(bottom, rgb(255,255,255) 0%, rgb(191,191,191) 100%)
+      background-image: -webkit-linear-gradient(bottom, rgb(255,255,255) 0%, rgb(191,191,191) 100%)
+      background-image: -ms-linear-gradient(bottom, rgb(255,255,255) 0%, rgb(191,191,191) 100%)
+    
+    .contents
+      margin: 10px

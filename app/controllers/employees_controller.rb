@@ -2,11 +2,21 @@ class EmployeesController < ApplicationController
   respond_to :json
 
   before_filter :authenticate_user!
-  before_filter :get_employee
+  #before_filter :get_employee
   
   def index
     @employees = Employee.all
     js_params[:employees] = @employees
+    respond_with_json
+  end
+  
+  def for_leave_crediting
+    @year = Time.now.year
+    @for_leave_crediting = Employee.regularized_on_year(@year).asc_name
+                                   .all_qualified_for_leaves(@year)
+    js_params[:for_leave_crediting] = @for_leave_crediting.select do |e|
+      !e.granted_with_major_leaves?(@year)
+    end
     respond_with_json
   end
 
@@ -17,10 +27,9 @@ private
   end
 
   def respond_with_json
-    @data = js_params
     respond_to do | format |
       format.html { render :template => "layouts/application" }
-      format.json { render :json => @data.to_json }
+      format.json { render :json => js_params.to_json }
     end
   end
 end

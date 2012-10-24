@@ -73,9 +73,20 @@ Egems::Application.routes.draw do
         post :cancel
       end
     end
+    
+    resources :employees do
+      collection do
+        get :for_leave_crediting
+      end
+    end
 
-    resources :leaves
-
+    resources :leaves, { :except => [:new, :edit] } do
+      collection do
+        get :crediting
+        post :grant
+      end
+    end
+    
     resources :employee_mappings, :except => [:new, :edit]
 
     root :to => 'timesheets#index', :as => 'timesheets', :via => :get

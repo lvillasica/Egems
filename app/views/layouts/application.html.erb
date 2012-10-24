@@ -36,7 +36,7 @@
 
             <div class="nav-collapse collapse">
               <% current_uri = request.env['PATH_INFO'] %>
-              <ul class="nav">
+              <ul id="navs-to-pages" class="nav">
                 <%= timesheet_top_nav(current_user, current_uri) %>
                 <%= overtime_top_nav(current_user, current_uri) %>
                 <%= leave_details_top_nav(current_user, current_uri) %>

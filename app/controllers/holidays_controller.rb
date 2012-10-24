@@ -3,6 +3,7 @@ class HolidaysController < ApplicationController
   respond_to :json
 
   before_filter :authenticate_user!
+  before_filter :set_location
   before_filter :get_employee
 
   def index
@@ -10,6 +11,7 @@ class HolidaysController < ApplicationController
       default_month_range(params[:searchRange])
       js_params[:range] = [@range.first, @range.last]
       js_params[:holidays] = attrs Holiday.asc.within(@range)
+      set_location('hrmodule')
       respond_js_params
     else
       render_404
@@ -72,5 +74,9 @@ class HolidaysController < ApplicationController
       format.html { render :template => "layouts/application" }
       format.json { render :json => js_params.to_json }
     end
+  end
+  
+  def set_location(location = 'leaves')
+    js_params[:current_location] = location
   end
 end

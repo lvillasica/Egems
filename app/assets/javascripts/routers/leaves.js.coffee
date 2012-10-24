@@ -1,6 +1,7 @@
 class Egems.Routers.Leaves extends Backbone.Router
   routes:
     'leaves': 'index'
+    'leaves/crediting': 'crediting'
   
   initializeCollection: ->
     @collection = new Egems.Collections.Leaves()
@@ -19,3 +20,19 @@ class Egems.Routers.Leaves extends Backbone.Router
     leaves_accordion = new Egems.Views.LeavesAccordion(collection: @collection)
     $('#main-container').html(index.render().el)
     $('#leave_details_container').html(leaves_accordion.render().el)
+  
+  crediting: ->
+    years = $('#data-container').data('years')
+    leavesCrediting = new Egems.Views.LeavesCrediting(years: years)
+    $('#main-container').html(leavesCrediting.render().el)
+    @forCreditingEmployees = new Egems.Collections.Employees()
+    @forCreditingEmployees.fetch
+      url: '/employees/for_leave_crediting'
+      success: @renderForLeaveCrediting
+  
+  renderForLeaveCrediting: (collection, response) =>
+    @forCreditingEmployees.reset(response.for_leave_crediting)
+    forLeaveCrediting = new Egems.Views.ForLeaveCrediting
+      collection: @forCreditingEmployees
+    $('#qualified-for-leaves-container').html(forLeaveCrediting.render().el)
+    

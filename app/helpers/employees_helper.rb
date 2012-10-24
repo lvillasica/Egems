@@ -9,6 +9,7 @@ module EmployeesHelper
                   <li>#{ link_to "Employee Mapping", employee_mappings_path }</li>
                   <li>#{ link_to "Holidays", holidays_path }</li>
                   <li>#{ link_to "Shift Schedules", shifts_path }</li>
+                  <li>#{ link_to "Leave Credits", crediting_leaves_path }</li>
                 </ul>
               </li>
               }

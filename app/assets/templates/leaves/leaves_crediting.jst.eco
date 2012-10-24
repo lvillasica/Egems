@@ -1,0 +1,38 @@
+<div id="annual-leave-credit-form-container">
+  <form id="annual-leave-credit-form" class="form-inline no-margin">
+    <legend>ANNUAL LEAVE CREDIT</legend>
+    <label><strong>Year:</strong>
+      <select class="span1" name="year"></select>
+    </label>
+    <span class="controls" style="padding-left:10px;">
+      <button class="btn btn-success grant"><strong>GRANT NOW</strong></button>
+      <button class="btn view"><strong>VIEW</strong></button>
+    </span>
+  </form>
+
+  <div class="toggle-contents">
+    <div class="arrow-up"></div>
+    <div class="content-holder">
+      <div class="title">Leave Credits</div>
+      <div class="contents">
+        <div class="small-ajax-loader-container">
+          <img src="/assets/ajax-loader.gif" alt="Loading..." height="10" width="20" />
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<br /><br />
+<legend>QUALIFIED FOR LEAVE CREDIT</legend>
+<div id="qualified-for-leaves-container">
+  <div class="small-ajax-loader-container">
+    <img src="/assets/ajax-loader.gif" alt="Loading..." height="10" width="20" />
+  </div>
+</div>
+<br /><br />
+<legend>OTHER TYPES OF LEAVES</legend>
+<div id="other-types-of-leaves-container">
+  <div class="small-ajax-loader-container">
+    <img src="/assets/ajax-loader.gif" alt="Loading..." height="10" width="20" />
+  </div>
+</div>

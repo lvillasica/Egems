@@ -6,7 +6,7 @@ module LeaveDetailsHelper
     end
 
     nav = %Q{
-            <li class="dropdown #{set_active(current_uri =~ /leave/)}">
+            <li class="dropdown">
               <a id="leaves-lnk" href="#" data-toggle="dropdown">Leaves <i class="caret"></i></a>
               <ul class="dropdown-menu">
                 <li>#{link_to "My Leaves", leaves_path}</li>

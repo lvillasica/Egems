@@ -1,0 +1,7 @@
+<td style="width:5%"><input value="<%= @employee.id %>" type="checkbox"></td>
+<td><%= @employee.fullName() %></td>
+<td class="time mins"><%= @mixins.format_date @employee.dateHired() %></td>
+<td class="time mins"><%= @mixins.format_date @employee.dateRegularized() %></td>
+<td style="width:5%">
+  <a href="#" class="view no-decor">View</a>
+</td>

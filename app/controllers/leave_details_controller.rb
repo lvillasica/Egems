@@ -2,9 +2,10 @@ class LeaveDetailsController < ApplicationController
   respond_to :json
 
   before_filter :authenticate_user!, :except => [:index]
+  before_filter :set_location
   before_filter :get_employee
   before_filter :get_leave_detail, :only => [:edit, :update, :cancel]
-  before_filter :get_leave
+  before_filter :get_leave, :except => [:leave_requests, :bulk_approve, :bulk_reject]
   before_filter :set_non_working_days, :only => [:new]
 
   def index
@@ -204,6 +205,10 @@ private
         :employee_name => leave_detail.employee.full_name,
         :is_respondable => leave_detail.is_respondable_by?(@employee) })
     end
+  end
+  
+  def set_location(location = 'leaves')
+    js_params[:current_location] = location
   end
 
 end

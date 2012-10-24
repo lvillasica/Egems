@@ -24,3 +24,7 @@ $(document).ready ->
       $(this).modal(backdrop: 'static', 'show')
     .ajaxStop (event) ->
       $(this).modal('hide')
+  
+  currentLoc = $('#data-container').data('current-location')
+  $('ul#navs-to-pages li.active').removeClass('active')
+  $("##{ currentLoc }-lnk").closest('li').addClass('active')

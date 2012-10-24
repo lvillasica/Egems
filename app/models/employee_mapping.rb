@@ -26,10 +26,11 @@ class EmployeeMapping < ActiveRecord::Base
   scope :sups, where(:approver_type => 'Supervisor/TL')
   scope :pms, where(:approver_type => 'Project Manager')
   scope :conflicts_on_dates, lambda { | from, to |
-    where("? between employee_mappings.from and employee_mappings.to or
-           ? between employee_mappings.from and employee_mappings.to", from, to)
-    where("employee_mappings.from between ? and ? or
-           employee_mappings.to between ? and ?", from, to, from, to)
+    where(":from between employee_mappings.from and employee_mappings.to or
+           :to between employee_mappings.from and employee_mappings.to or
+           employee_mappings.from between :from and :to or
+           employee_mappings.to between :from and :to",
+           {:from => from, :to => to})
   }
   scope :exclude_ids, lambda { |ids|
     where(["employee_mappings.id NOT IN (?)", ids]) if ids.any?

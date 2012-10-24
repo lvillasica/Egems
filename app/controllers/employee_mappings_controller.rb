@@ -2,6 +2,7 @@ class EmployeeMappingsController < ApplicationController
   respond_to :json
   
   before_filter :authenticate_user!
+  before_filter :set_location
   before_filter :get_employees, :only => [:index]
   before_filter :get_employee
   before_filter :authenticate_hr!
@@ -58,6 +59,7 @@ class EmployeeMappingsController < ApplicationController
   
 private
   def authenticate_hr!
+    set_location('hrmodule')
     render_404 unless @employee.is_hr? or @employee.is_supervisor_hr?
   end
   
@@ -85,6 +87,10 @@ private
       format.html { render :template => "layouts/application" }
       format.json { render :json => @data.to_json }
     end
+  end
+  
+  def set_location(location = 'leaves')
+    js_params[:current_location] = location
   end
 
 end

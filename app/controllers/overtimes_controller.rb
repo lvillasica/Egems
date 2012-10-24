@@ -2,6 +2,7 @@ class OvertimesController < ApplicationController
   respond_to :json
 
   before_filter :authenticate_user!, except: [:index]
+  before_filter :set_location
   before_filter :get_employee
   before_filter :get_overtime, :only => [:edit, :update, :cancel]
 
@@ -163,5 +164,9 @@ private
         :work_details => overtime.work_details
       })
     end
+  end
+  
+  def set_location(location = 'overtimes')
+    js_params[:current_location] = location
   end
 end

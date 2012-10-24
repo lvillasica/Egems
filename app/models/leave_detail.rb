@@ -50,6 +50,7 @@ class LeaveDetail < ActiveRecord::Base
   scope :type, lambda { |type| where(:leave_type => type).order(:leave_date) }
   scope :approved, where(:status => 'Approved')
   scope :rejected, where(:status => 'Rejected')
+  scope :exclude_canceled, where("#{LeaveDetail.table_name}.status <> 'Canceled'")
   scope :pending, where("status = 'Pending' or status = 'HR Approved'")
   scope :approved_from_hr, where("status = 'HR Approved' or status = 'Approved'")
   scope :asc, order(:leave_date, :period)
@@ -590,7 +591,8 @@ private
 
   def validate_leave_conflicts
     nwd = @day_offs + @holidays
-    @units_per_leave_date = @employee.leave_details.exclude_ids([self.id])
+    @units_per_leave_date = @employee.leave_details.exclude_canceled
+                            .exclude_ids([self.id])
                             .get_units_per_leave_date(nwd)
     maxed_out_leaves = []
     units = ((@leave_dates.count > 1)? 1 : leave_unit.to_f)

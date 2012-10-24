@@ -3,7 +3,7 @@ module TimesheetsHelper
   def timesheet_top_nav(current_user, current_uri)
     if current_user.employee.is_supervisor?
       nav = %Q{
-              <li class="dropdown #{set_active(current_uri =~ /timesheet/)}">
+              <li class="dropdown">
                 <a id="timesheets-lnk" href="#" data-toggle="dropdown">Timesheets <i class="caret"></i></a>
                 <ul class="dropdown-menu">
                   <li>#{link_to "My Timesheets", timesheets_path}</li>
@@ -13,8 +13,8 @@ module TimesheetsHelper
               }
     else
       nav = %Q{
-              <li class="#{set_active(current_uri =~ /timesheet/ || current_uri.eql?('/'))}">
-                <a href="#{timesheets_path}">Timesheets</a>
+              <li>
+                <a id="timesheets-lnk" href="#{timesheets_path}">Timesheets</a>
               </li>
               }
     end
