@@ -48,16 +48,29 @@ class Holiday < ActiveRecord::Base
     if day > Date.today.to_time
       leaves = LeaveDetail.filed_for(day)
       leaves.each do |detail|
-        if branches.include?(detail.employee.branch) && !detail.is_canceled?
-          days = detail.leave_unit
-          status = days <= 1 ? 'Canceled' : 'Pending'
-          detail.update_consumed_count(0-days) if detail.is_approved?
-          detail.remove_response_attrs
-          detail.update_column(:status, status)
-          detail.update_column(:leave_unit, days-1) if days > 1
+        if detail.is_holidayed?
+          restore_leave(detail) unless branches.include?(detail.employee.branch)
+        else
+          if branches.include?(detail.employee.branch) && !detail.is_canceled?
+            days = detail.leave_unit
+            status = days <= 1 ? 'Holiday' : 'Pending'
+            detail.update_consumed_count(0-days) if detail.is_approved?
+            detail.remove_response_attrs
+            detail.update_column(:status, status)
+            detail.update_column(:leave_unit, days-1) if days > 1
+          end
         end
       end
     end
+  end
+
+  def restore_leave(leave)
+    binding.pry
+    days = leave.leave_unit
+    leave.update_consumed_count(0-days) if leave.is_approved?
+    leave.remove_response_attrs
+    leave.update_column(:status, 'Pending')
+    leave.update_column(:leave_unit, days+1) if days > 1
   end
 
   def restore_leaves
@@ -66,11 +79,7 @@ class Holiday < ActiveRecord::Base
       leaves = LeaveDetail.filed_for(day)
       leaves.each do |detail|
         if branches.include?(detail.employee.branch)
-          days = detail.leave_unit
-          detail.update_consumed_count(0-days) if detail.is_approved?
-          detail.remove_response_attrs
-          detail.update_column(:status, 'Pending')
-          detail.update_column(:leave_unit, days+1) if days > 1
+          restore_leave(detail) if !detail.is_canceled? && !detail.is_rejected?
         end
       end
     end

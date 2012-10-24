@@ -9,7 +9,7 @@ class Egems.Views.OvertimeRequestsIndex extends Backbone.View
 
   initialize: ->
     @collection.on('reset', @render, this)
-    @mixins = _.extend(Egems.Mixins.Defaults)
+    @mixins = _.extend(this, Egems.Mixins.Defaults)
 
   render: ->
     $(@el).html(@template(overtime_requests: @collection))

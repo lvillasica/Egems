@@ -78,7 +78,7 @@ class LeaveDetail < ActiveRecord::Base
     .joins("LEFT OUTER JOIN #{Employee.table_name} employees2 ON employees2.id = #{LeaveDetail.table_name}.employee_id")
     .where([condition, supervisor_id, special_leaves, supervisor_id, supervisor_id])
   }
-  
+
   scope :within, lambda { |range|
     start_date, end_date = range
     asc
@@ -178,7 +178,8 @@ class LeaveDetail < ActiveRecord::Base
 
   def set_default_responders
     if needs_hr_action?
-      self.responders = employee.hr_personnel.compact.uniq unless employee.is_hr?
+      # send special leaves to supervisor HRs only *10.24.12
+      self.responders = employee.super_hr_personnel.compact.uniq unless employee.is_hr?
     else
       self.responders = employee.responders_on(leave_date.localtime).compact.uniq
     end
@@ -190,7 +191,7 @@ class LeaveDetail < ActiveRecord::Base
       self.responders << responder unless self.responders.include?(responder)
     end
   end
-  
+
   def reset_responders(responders=[])
     unless needs_hr_action?
       self.responders = responders.compact.uniq
@@ -365,6 +366,10 @@ class LeaveDetail < ActiveRecord::Base
 
   def is_canceled?
     status == 'Canceled'
+  end
+
+  def is_holidayed?
+    status == 'Holiday'
   end
 
   def recompute_timesheets

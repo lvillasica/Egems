@@ -33,7 +33,7 @@ class Employee < ActiveRecord::Base
                           :association_foreign_key => :employee_timesheet_id
 
   belongs_to :job_position, :foreign_key => :current_job_position_id
-  
+
   # -------------------------------------------------------
   # Namescopes
   # -------------------------------------------------------
@@ -55,11 +55,11 @@ class Employee < ActiveRecord::Base
   def mapped_supervisors
     employee_mappings_as_member.sups
   end
-  
+
   def mapped_project_managers
     employee_mappings_as_member.pms
   end
-  
+
   def immediate_supervisor
     Employee.find_by_id(employee_supervisor_id)
   end
@@ -67,9 +67,13 @@ class Employee < ActiveRecord::Base
   def project_manager
     Employee.find_by_id(employee_project_manager_id)
   end
-  
+
   def responders_on(datetime)
     approvers.mapped_on(datetime)
+  end
+
+  def super_hr_personnel
+    hr_personnel.keep_if(&:is_supervisor_hr?)
   end
 
   def hr_personnel

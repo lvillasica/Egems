@@ -4,7 +4,7 @@ class Egems.Views.HolidayForm extends Backbone.View
 
   initialize: ->
     @action   = this.options.action
-    @mixins   = _.extend(Egems.Mixins.Defaults, Egems.Mixins.Holidays)
+    @mixins   = _.extend(this, Egems.Mixins.Defaults, Egems.Mixins.Holidays)
     @branches = new Egems.Collections.Branches()
     @branches.fetch
       async: false
@@ -38,9 +38,9 @@ class Egems.Views.HolidayForm extends Backbone.View
     nextDay = new Date().addDays(1)
     @dateSelector(@dateFld, {minDate: nextDay})
     if @model.date() == undefined
-      @dateFld.val(@mixins.format_date nextDay)
+      @dateFld.val(@format_date nextDay)
     else
-      @dateFld.val(@mixins.format_date @model.date())
+      @dateFld.val(@format_date @model.date())
     @typeFld.val(@model.type())
     @descFld.val(@model.description())
     @nameFld.val(@model.name())
@@ -95,6 +95,7 @@ class Egems.Views.HolidayForm extends Backbone.View
       success: (data) =>
         if data.errors != undefined
           @modalFlashMsg data.errors
+          @enableFormActions()
         else
           @exitForm()
           holidays = new Egems.Routers.Holidays()
@@ -110,12 +111,12 @@ class Egems.Views.HolidayForm extends Backbone.View
     $('#holiday-form').parents('#apply-holiday-modal').length == 1
 
   enableFormActions: ->
-    $('#leave-detail-form-actions .submit').removeAttr('disabled')
-    $('#leave-detail-form-actions .cancel').removeAttr('disabled')
+    $('#holiday-form-actions .submit').removeAttr('disabled')
+    $('#holiday-form-actions .cancel').removeAttr('disabled')
 
   disableFormActions: ->
-    $('#leave-detail-form-actions .submit').attr('disabled', true)
-    $('#leave-detail-form-actions .cancel').attr('disabled', true)
+    $('#holiday-form-actions .submit').attr('disabled', true)
+    $('#holiday-form-actions .cancel').attr('disabled', true)
 
   modalFlashMsg: (msg) ->
     $("#holiday-form > #flash_messages").html @mixins.flash_messages(msg)

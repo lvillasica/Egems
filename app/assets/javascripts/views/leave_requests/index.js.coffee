@@ -103,9 +103,9 @@ class Egems.Views.LeaveRequestsIndex extends Backbone.View
     target = event.target
     tr = $(target).parents("tr")
 
-    if target.className != 'icon-comment'
-      tr.toggleClass('selected')
-
-    if target.type != 'checkbox' and target.className != 'icon-comment'
-      c = $(':checkbox', tr[0])
-      c.prop('checked', !c.attr("checked"))
+    box = $(':checkbox', tr[0])
+    if box.attr('disabled') == undefined
+      if target.className != 'icon-comment'
+        tr.toggleClass('selected')
+      if target.type != 'checkbox' and target.className != 'icon-comment'
+        box.prop('checked', !box.attr("checked"))
