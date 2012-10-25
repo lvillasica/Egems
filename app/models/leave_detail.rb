@@ -214,7 +214,7 @@ class LeaveDetail < ActiveRecord::Base
     attrs.merge!(:status => 'Pending') unless status.eql?('Pending')
     # select only attributes to be changed to avoid malicious attacks.
     self.attributes = attrs.select do |a|
-      tmp = [:leave_date, :end_date, :leave_unit, :details]
+      tmp = [:leave_date, :end_date, :leave_unit, :details, :status]
       tmp << :period if [1, 2].include?(attrs[:period].to_i)
       tmp.include?(a)
     end

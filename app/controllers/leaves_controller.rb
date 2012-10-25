@@ -39,9 +39,9 @@ class LeavesController < ApplicationController
       @qualified_for_leaves.each do |emp|
         emp.grant_major_leaves!(@year)
       end
-      flash_message(:success, 'VL / SL / AWOP granted to all qualified employees.')
+      flash_message(:success, 'VL / SL / AWOP successfully granted to employee(s).')
     else
-      flash_message(:info, 'VL / SL / AWOP already granted to all qualified employees.')
+      flash_message(:info, 'No employees to grant.')
     end
     set_flash
     respond_with_json

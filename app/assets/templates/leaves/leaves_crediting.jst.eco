@@ -1,6 +1,6 @@
+<legend>ANNUAL LEAVE CREDIT</legend>
 <div id="annual-leave-credit-form-container">
   <form id="annual-leave-credit-form" class="form-inline no-margin">
-    <legend>ANNUAL LEAVE CREDIT</legend>
     <label><strong>Year:</strong>
       <select class="span1" name="year"></select>
     </label>

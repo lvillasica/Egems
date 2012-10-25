@@ -32,7 +32,7 @@ class Egems.Views.LeavesCrediting extends Backbone.View
         success: @onSuccessfulGrant
   
   onSuccessfulGrant: (data) =>
-    @showFlash(data.flash_messages)
+    @showFlash(data.flash_messages, null, '#annual-leave-credit-form-container')
   
   viewEmployees: (event) ->
     event.preventDefault()

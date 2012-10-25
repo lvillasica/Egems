@@ -51,8 +51,12 @@ class Employee < ActiveRecord::Base
   scope :regularized_on_year, lambda { | year |
     where('extract(year from date_regularized) = ?', year.to_i)
   }
+  scope :exclude_ids, lambda { |ids|
+    where(["employees.id NOT IN (?)", ids]) if ids.any?
+  }
   scope :not_resigned, where("employment_status <> 'Resigned'")
   scope :asc_name, order(:full_name)
+  scope :all_supervisor_hr, where(:current_department_id => 4, :current_job_position_id => 61)
   
   # -------------------------------------------------------
   # Class Methods
@@ -83,7 +87,9 @@ class Employee < ActiveRecord::Base
   end
 
   def responders_on(datetime)
-    approvers.mapped_on(datetime)
+    res = approvers.mapped_on(datetime)
+    res = Employee.all_supervisor_hr.exclude_ids([self.id]) if res.blank?
+    res
   end
 
   def super_hr_personnel
