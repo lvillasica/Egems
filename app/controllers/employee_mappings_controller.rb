@@ -65,9 +65,9 @@ private
   
   def get_employees
     @employees = if ['Supervisor/TL', 'Project Manager'].include?(params[:type])
-      Employee.with_supervisory.select([:id, :full_name]).order(:full_name)
+      Employee.not_resigned.with_supervisory.select([:id, :full_name]).order(:full_name)
     else
-      Employee.select([:id, :full_name]).order(:full_name)
+      Employee.not_resigned.select([:id, :full_name]).order(:full_name)
     end
   end
   
