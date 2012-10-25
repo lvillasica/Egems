@@ -1,5 +1,13 @@
 class Egems.Models.ShiftDetail extends Backbone.Model
 
+  defaults: ->
+    'local_am_start' : new Date().setHours(0,0,0,0)
+    'am_time_duration': 0
+    'am_time_allowance': 0
+    'local_pm_start' : new Date().setHours(0,0,0,0)
+    'pm_time_duration': 0
+    'pm_time_allowance': 0
+
   amStart: ->
     @get 'local_am_start'
 

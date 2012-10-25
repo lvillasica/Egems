@@ -2,6 +2,8 @@ class ShiftScheduleDetail < ActiveRecord::Base
 
   attr_protected :shift_schedule_id
 
+  validates_inclusion_of :day_of_week, :in => 0..6
+
   # -------------------------------------------------------
   # Associations
   # -------------------------------------------------------

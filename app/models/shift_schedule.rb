@@ -2,6 +2,10 @@ class ShiftSchedule < ActiveRecord::Base
 
   attr_accessible :name, :description, :differential_rate
 
+  validates_presence_of :name, :description, :is_strict, :is_custom
+  validates_length_of :name, :minimum => 3
+  validates_length_of :description, :minimum => 3
+
   # -------------------------------------------------------
   # Associations
   # -------------------------------------------------------
@@ -9,7 +13,7 @@ class ShiftSchedule < ActiveRecord::Base
   has_many :timesheets
   has_and_belongs_to_many :employees, :join_table => 'employee_shift_schedules'
 
-  scope :asc, order('created_on asc')
+  scope :asc, order('name asc')
 
   # -------------------------------------------------------
   # Instance Methods

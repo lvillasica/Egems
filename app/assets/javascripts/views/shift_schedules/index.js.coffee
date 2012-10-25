@@ -2,6 +2,9 @@ class Egems.Views.ShiftSchedulesIndex extends Backbone.View
 
   template: JST['shift_schedules/index']
 
+  events: ->
+    'click #add-shift-btn' : 'addShift'
+
   initialize: ->
     @collection.on('add', @appendShift, this)
 
@@ -39,3 +42,11 @@ class Egems.Views.ShiftSchedulesIndex extends Backbone.View
   showDetails: (event) ->
     shiftId = $(event.target).parents("tr:first").attr('id')
     $('.' + shiftId + '_details').toggle()
+
+  addShift: (event) ->
+    event.preventDefault()
+    view = new Egems.Views.NewShiftSchedule(modal: true)
+    $('#main-container').append('<div id="apply-shift-modal" class="modal hide fade" />')
+    $('#apply-shift-modal').append(view.render().el)
+                           .modal(backdrop: 'static', 'show')
+                           .on 'hidden', -> $(this).remove()

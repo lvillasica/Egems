@@ -1,0 +1,20 @@
+<form method="post" id="shift-form" class="form-horizontal" accept-charset="UTF-8">
+  <div id="flash_messages"></div>
+  <fieldset>
+    <div class="control-group required">
+      <label class="control-label">Name</label>
+      <div class="controls">
+        <input name="shift[name]" id="shift_name" type="text" />
+      </div>
+    </div>
+
+    <div class="control-group required">
+      <label class="control-label">Description</label>
+      <div class="controls">
+        <textarea name="shift[description]" id="shift_description" class="input-large" rows=4></textarea>
+      </div>
+    </div>
+
+    <div id="details-tabs" class="tabbable"></div>
+  </fieldset>
+</form>

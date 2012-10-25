@@ -55,6 +55,7 @@ Egems::Application.routes.draw do
 
     scope '/hr/shifts' do
       match '', to: 'shift_schedules#index', as: 'shifts', via: 'get'
+      match '/new', to: 'shift_schedules#new', as: 'new_shift_schedule', via: 'post'
       match '/:id/details/', to: 'shift_schedules#details', as: 'shift_details', via: 'get'
     end
 

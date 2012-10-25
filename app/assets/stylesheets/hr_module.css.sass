@@ -1,3 +1,26 @@
+form div.tiny
+  fieldset, label, input, select
+    font-size: 12px
+    line-height: 12px
+
+  input, select
+    padding: 2px 6px
+
+#details-tabs .tab-content div.two-column
+  .control-group
+    label.control-label
+      width: 100px
+    div.controls
+      margin-left: 110px
+
+
+div.control-group.required
+  label.control-label
+    &:after
+      content: ' *'
+      color: #cc0000
+
+
 #holiday-search
   .ui-datepicker-inline
     border: 0
@@ -12,6 +35,10 @@
   tr
     th, td
       padding: 2px
+
+    &:hover
+      td
+        background-color: #c0ddee
 
     th.thin, td.thin
       width: 35px
@@ -36,13 +63,13 @@
     position: relative
     top: 1px
     left: 1px
-  
+
   .content-holder
     border-top: 1px solid #bfbfbf
     -moz-box-shadow: 0px -5px 10px #e5e5e5
     -webkit-box-shadow: 0px -5px 10px #e5e5e5
     box-shadow: 0px -5px 10px #e5e5e5
-    
+
     .title
       background-color: #bfbfbf
       font-weight: bold
@@ -55,6 +82,19 @@
       background-image: -moz-linear-gradient(bottom, rgb(255,255,255) 0%, rgb(191,191,191) 100%)
       background-image: -webkit-linear-gradient(bottom, rgb(255,255,255) 0%, rgb(191,191,191) 100%)
       background-image: -ms-linear-gradient(bottom, rgb(255,255,255) 0%, rgb(191,191,191) 100%)
-    
+
     .contents
       margin: 10px
+
+#holiday-form, #shift-form
+  textarea
+    resize: none
+  .small
+    font-size: 10px
+
+
+#details-tabs .tab-pane
+  input.ui-timepicker-input, input
+    min-width: 5.5em
+    width: 5.5em
+    border-color: #ccc

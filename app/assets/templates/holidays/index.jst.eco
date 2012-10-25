@@ -12,8 +12,8 @@
     <tr>
       <th>Date</th>
       <th class="sorttable_nosort">Description</th>
-      <th>Type</th>
       <th>Branch</th>
+      <th>Type</th>
       <th class="sorttable_nosort">Action</th>
     </tr>
   </thead>

@@ -1,6 +1,10 @@
 <h4>Shift Schedules</h4>
 <br>
 
+<div style="display: inline-block; width: 100%; margin-bottom: 9px;" id="shift-actions-container">
+  <button id="add-shift-btn" class="btn btn-primary pull-right hidden">Add Shift Schedule</button>
+</div>
+
 <table id="shifts-tbl" class="table table-condensed timesheets">
   <thead>
     <tr>

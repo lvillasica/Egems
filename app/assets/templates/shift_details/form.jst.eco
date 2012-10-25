@@ -1,0 +1,51 @@
+
+<div class="row-fluid tiny two-column">
+  <div class="span10">
+    <div class="span6">
+      <input name="details[][day_of_week]" id="detail_day_of_week" class="uneditable-input" type="hidden" />
+      <div class="control-group">
+        <label class="control-label">AM Time In</label>
+        <div class="controls">
+          <input name="details[][am_time_start]" id="detail_am_time_start" class="input-small timein" type="text" />
+        </div>
+      </div>
+
+      <div class="control-group">
+        <label class="control-label">AM Duration</label>
+        <div class="controls">
+          <input name="details[][am_time_duration]" id="detail_am_time_duration" class="input-small" type="text" />
+        </div>
+      </div>
+
+      <div class="control-group">
+        <label class="control-label">AM Allowance</label>
+        <div class="controls">
+          <input name="details[][am_time_allowance]" id="detail_am_time_allowance" class="input-small" type="text" />
+        </div>
+      </div>
+    </div>
+
+    <div class="span6">
+      <div class="control-group">
+        <label class="control-label">PM Time In</label>
+        <div class="controls">
+          <input name="details[][pm_time_start]" id="detail_pm_time_start" class="input-small timein" type="text" />
+        </div>
+      </div>
+
+      <div class="control-group">
+        <label class="control-label">PM Duration</label>
+        <div class="controls">
+          <input name="details[][pm_time_duration]" id="detail_pm_time_duration" class="input-small" type="text" />
+        </div>
+      </div>
+
+      <div class="control-group">
+        <label class="control-label">PM Allowance</label>
+        <div class="controls">
+          <input name="details[][pm_time_allowance]" id="detail_pm_time_allowance" class="input-small" type="text" />
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

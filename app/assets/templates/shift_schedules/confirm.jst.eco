@@ -1,0 +1,13 @@
+<div id="view-details-body">
+  <table class="table table-condensed" id="details-tbl">
+    <tr>
+      <th>Name</th>
+      <td><%= @shift.name() %></td>
+    </tr>
+    <tr>
+      <th>Description</th>
+      <td><%= @shift.description() %></td>
+    </tr>
+  </table>
+  </div>
+</div>
