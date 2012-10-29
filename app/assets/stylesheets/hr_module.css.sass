@@ -31,26 +31,52 @@ div.control-group.required
 
 #shifts-tbl
   table-layout: fixed
+  border-collapse: collapse
 
+  thead
+    tr
+      border-bottom: 2px solid #aaa
   tr
     th, td
       padding: 2px
 
-    &:hover
-      td
-        background-color: #c0ddee
-
     th.thin, td.thin
       width: 35px
 
+  thead tr th, tr.shift-schedule th
+    padding: 4px
+
   tbody tr
+    &:hover
+      th
+        background-color: #96c5ff
+        cursor: pointer
+
     th
       border: 1px solid #ccc
+      border-top: 2px
       background-color: #edecec
+      padding-left: 6px
 
-      &:hover
-        background-color: #d4e6f1
-        cursor: pointer
+    span.actions
+      float: right
+      margin-right: 6px
+
+  tbody tr.open th
+    background-color: #d4e6f1
+    border: 1px solid #ccc
+
+  tbody tr.details-header
+    font-size: 10px
+    font-weight: bold
+    background-color: #d4e6f1
+    text-align: center
+
+    &:hover, td
+      background-color: #d4e6f1
+      padding: 2px
+
+
 
 .toggle-contents
   display: none

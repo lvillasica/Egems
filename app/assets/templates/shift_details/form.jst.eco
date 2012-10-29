@@ -13,14 +13,14 @@
       <div class="control-group">
         <label class="control-label">AM Duration</label>
         <div class="controls">
-          <input name="details[][am_time_duration]" id="detail_am_time_duration" class="input-small" type="text" />
+          <input name="details[][am_time_duration]" id="detail_am_time_duration" class="input-small mins" type="text" />
         </div>
       </div>
 
       <div class="control-group">
         <label class="control-label">AM Allowance</label>
         <div class="controls">
-          <input name="details[][am_time_allowance]" id="detail_am_time_allowance" class="input-small" type="text" />
+          <input name="details[][am_time_allowance]" id="detail_am_time_allowance" class="input-small mins" type="text" />
         </div>
       </div>
     </div>
@@ -36,14 +36,14 @@
       <div class="control-group">
         <label class="control-label">PM Duration</label>
         <div class="controls">
-          <input name="details[][pm_time_duration]" id="detail_pm_time_duration" class="input-small" type="text" />
+          <input name="details[][pm_time_duration]" id="detail_pm_time_duration" class="input-small mins" type="text" />
         </div>
       </div>
 
       <div class="control-group">
         <label class="control-label">PM Allowance</label>
         <div class="controls">
-          <input name="details[][pm_time_allowance]" id="detail_pm_time_allowance" class="input-small" type="text" />
+          <input name="details[][pm_time_allowance]" id="detail_pm_time_allowance" class="input-small mins" type="text" />
         </div>
       </div>
     </div>

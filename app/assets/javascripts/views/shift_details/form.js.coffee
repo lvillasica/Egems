@@ -3,10 +3,11 @@ class Egems.Views.ShiftDetailForm extends Backbone.View
   template: JST['shift_details/form']
 
   initialize: ->
-    @mixins = _.extend(this, Egems.Mixins.Defaults)
+    @mixins = _.extend(this, Egems.Mixins.Defaults, Egems.Mixins.Timesheets)
     @initValues()
 
   initValues: =>
+    @detailId    = @model.getId()
     @dayNum      = @model.dayNum()
     @amStart     = @model.amStart()
     @amDuration  = @model.amDuration()
@@ -31,8 +32,8 @@ class Egems.Views.ShiftDetailForm extends Backbone.View
     @pmAllowanceFld = @$('#detail_pm_time_allowance')
 
     timePickerAttrs = { acceptNull: true, step: 15, timeFormat: 'h:i A' }
-    @$('#detail_am_time_start').timepicker(timePickerAttrs)
-    @$('#detail_pm_time_start').timepicker(timePickerAttrs)
+    @amStartFld.timepicker(timePickerAttrs)
+    @pmStartFld.timepicker(timePickerAttrs)
 
     $(@el).find(":input:not(.timein)").change(@toDefaultValue)
     @dayNumFld.val(@dayNum).change => @dayNumFld.val(@dayNum)
@@ -47,6 +48,16 @@ class Egems.Views.ShiftDetailForm extends Backbone.View
     @pmAllowanceFld.val(@pmAllowance).keydown(@validateNumeric)
 
 
+    if @detailId != undefined
+      dname = "details[#{ @detailId }]"
+      @dayNumFld.attr('name', dname + "[day_of_week]")
+      @amStartFld.attr('name', dname + "[am_time_start]")
+      @pmStartFld.attr('name', dname + "[pm_time_start]")
+      @amDurationFld.attr('name', dname + "[am_time_duration]")
+      @pmDurationFld.attr('name', dname + "[pm_time_duration]")
+      @amAllowanceFld.attr('name', dname + "[am_time_allowance]")
+      @pmAllowanceFld.attr('name', dname + "[pm_time_allowance]")
+
   toDefaultValue: (event) =>
     target = $(event.target)
     if target.val().trim().length == 0
@@ -58,6 +69,7 @@ class Egems.Views.ShiftDetailForm extends Backbone.View
     if val == "--:--" || val.length == 0
       grp = fld.parents("#" + @model.day().toLowerCase())
       grp.find(".timein").val("--:--")
+      grp.find(".mins").val(0)
 
 
   validateNumeric: (event) =>

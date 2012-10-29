@@ -25,6 +25,9 @@ class Egems.Models.ShiftDetail extends Backbone.Model
   dayNum: ->
     @get 'day_of_week'
 
+  getId: ->
+    @get 'id'
+
   pmStart: ->
     @get 'local_pm_start'
 

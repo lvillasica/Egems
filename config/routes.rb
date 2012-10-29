@@ -55,8 +55,10 @@ Egems::Application.routes.draw do
 
     scope '/hr/shifts' do
       match '', to: 'shift_schedules#index', as: 'shifts', via: 'get'
-      match '/new', to: 'shift_schedules#new', as: 'new_shift_schedule', via: 'post'
+      match '/new', to: 'shift_schedules#create', as: 'new_shift_schedule', via: 'post'
       match '/:id/details/', to: 'shift_schedules#details', as: 'shift_details', via: 'get'
+      match '/delete/:id', to: 'shift_schedules#destroy', as: 'delete_shift_schedule', via: 'delete'
+      match '/edit/:id', to: 'shift_schedules#update', as: 'edit_shift_schedule', via: 'put'
     end
 
     scope '/hr' do
@@ -74,7 +76,7 @@ Egems::Application.routes.draw do
         post :cancel
       end
     end
-    
+
     resources :employees do
       collection do
         get :for_leave_crediting
@@ -87,7 +89,7 @@ Egems::Application.routes.draw do
         post :grant
       end
     end
-    
+
     resources :employee_mappings, :except => [:new, :edit]
 
     root :to => 'timesheets#index', :as => 'timesheets', :via => :get

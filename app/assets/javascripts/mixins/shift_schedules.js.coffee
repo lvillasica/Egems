@@ -19,5 +19,37 @@ Egems.Mixins.ShiftSchedules =
 
     return navs + divs
 
+  detailsHeader: (shift) ->
+    header = """
+             <tr class="shift_#{ shift.getId() }_details details-header">
+               <td class="thin">Day</td>
+               <td>AM Time In</td>
+               <td>Duration</td>
+               <td>Allowance</td>
+               <td>PM Time In</td>
+               <td>Duration</td>
+               <td>Allowance</td>
+             </tr>
+             """
 
-  shiftDetailForm: ->
+  displayShiftRow: (shift) ->
+    actions = new Array
+    if shift.isEditable()
+      actions.push """
+                   <a class="edit" href="#">
+                     <i class="icon-edit" id="#{shift.getId()}"></i>
+                   </a>
+                   """
+    if shift.isCancelable()
+      actions.push """
+                   <a class="remove" href="#">
+                     <i class="icon-remove" id="#{shift.getId()}"></i>
+                   </a>
+                   """
+
+    row = """
+          <th colspan='7'>
+            #{ shift.name() }
+            <span class="actions">#{ actions.join("&nbsp;") }</span>
+          </th>
+          """

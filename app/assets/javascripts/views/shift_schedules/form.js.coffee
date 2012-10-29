@@ -10,7 +10,7 @@ class Egems.Views.ShiftScheduleForm extends Backbone.View
     @action  = this.options.action
     @days    = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
     @mixins  = _.extend(this, Egems.Mixins.Defaults, Egems.Mixins.ShiftSchedules)
-    @details = new Array
+    @details = @model.details
 
   render: ->
     $(@el).html(@template(shift: @model, mixins: @mixins, days: @days))
@@ -38,9 +38,16 @@ class Egems.Views.ShiftScheduleForm extends Backbone.View
 
   setupDetails: ->
     @$('#details-tabs').append(@tabbableShiftDetails(@days))
-    _.each @days, (day) =>
-      detailForm  = new Egems.Views.NewShiftDetail({ dayNum: @days.indexOf(day) })
-      @$('#' + day.toLowerCase()).append(detailForm.render().el)
+    if @action == 'create'
+      _.each @days, (day) =>
+        detailForm  = new Egems.Views.NewShiftDetail({ dayNum: @days.indexOf(day) })
+        @$('#' + day.toLowerCase()).append(detailForm.render().el)
+    else if @action == 'update'
+      _.each @details.models, (detail) =>
+        detailForm = new Egems.Views.EditShiftDetail(model: detail)
+        day = detail.day()
+        if day != undefined
+          @$('#' + day.toLowerCase()).append(detailForm.render().el)
 
   submitForm: (event) ->
     event.preventDefault()

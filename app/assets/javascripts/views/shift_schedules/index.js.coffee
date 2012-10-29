@@ -7,6 +7,7 @@ class Egems.Views.ShiftSchedulesIndex extends Backbone.View
 
   initialize: ->
     @collection.on('add', @appendShift, this)
+    @mixins = _.extend(this, Egems.Mixins.ShiftSchedules)
 
   render: ->
     $(@el).html(@template(shifts: @collection))
@@ -18,30 +19,10 @@ class Egems.Views.ShiftSchedulesIndex extends Backbone.View
       nodata.remove()
 
     rowId = shift.getId()
-    @shiftView = """
-                 <tr id='shift_#{ rowId }'>
-                   <th colspan='7'>#{ shift.name() }</th>
-                 </tr>
-                 """
+    @shiftView = new Egems.Views.ShiftSchedule(model: shift)
 
-    $("#shifts-tbl tbody").append(@shiftView)
-    $('#shift_' + rowId).click @showDetails
-    @putDetails(shift)
+    $("#shifts-tbl tbody").append(@shiftView.render().el)
 
-  putDetails: (shift) ->
-    @details = new Egems.Collections.ShiftDetails({shiftId: shift.getId()})
-    @details.fetch
-      add: true
-    @details.on('add', @appendDetails, this)
-
-  appendDetails: (detail) ->
-    detailView = new Egems.Views.ShiftDetail(model: detail)
-    shiftView = $('#shifts-tbl tbody tr#shift_' + detail.shift())
-    $(detailView.render().el).insertAfter(shiftView).css('display', 'none')
-
-  showDetails: (event) ->
-    shiftId = $(event.target).parents("tr:first").attr('id')
-    $('.' + shiftId + '_details').toggle()
 
   addShift: (event) ->
     event.preventDefault()

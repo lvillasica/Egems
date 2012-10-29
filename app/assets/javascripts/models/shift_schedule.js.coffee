@@ -12,5 +12,11 @@ class Egems.Models.ShiftSchedule extends Backbone.Model
   getId: ->
     @get 'id'
 
+  isCancelable: ->
+    @get 'cancelable'
+
+  isEditable: ->
+    @get 'editable'
+
   name: ->
     @get 'name'

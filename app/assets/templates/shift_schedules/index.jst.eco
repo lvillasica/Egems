@@ -1,6 +1,7 @@
 <h4>Shift Schedules</h4>
 <br>
 
+<div id="flash_messages"></div>
 <div style="display: inline-block; width: 100%; margin-bottom: 9px;" id="shift-actions-container">
   <button id="add-shift-btn" class="btn btn-primary pull-right hidden">Add Shift Schedule</button>
 </div>
@@ -8,13 +9,7 @@
 <table id="shifts-tbl" class="table table-condensed timesheets">
   <thead>
     <tr>
-      <th class="thin">Day</th>
-      <th>AM Time In</th>
-      <th>Duration</th>
-      <th>Allowance</th>
-      <th>PM Time In</th>
-      <th>Duration</th>
-      <th>Allowance</th>
+      <th colspan="7">SHIFT SCHEDULES</th>
     </tr>
   </thead>
   <tbody>
