@@ -29,7 +29,7 @@ Egems.Mixins.ShiftSchedules =
                <td>PM Time In</td>
                <td>Duration</td>
                <td>Allowance</td>
-             </tr>
+              </tr>
              """
 
   displayShiftRow: (shift) ->
@@ -49,7 +49,7 @@ Egems.Mixins.ShiftSchedules =
 
     row = """
           <th colspan='7'>
-            #{ shift.name() }
-            <span class="actions">#{ actions.join("&nbsp;") }</span>
+              <div class="pull-left">#{ shift.name() }</div>
+              <span class="actions">#{ actions.join("&nbsp;") }</span>
           </th>
           """

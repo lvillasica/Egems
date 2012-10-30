@@ -1,6 +1,9 @@
 class ShiftScheduleDetail < ActiveRecord::Base
 
-  attr_protected :shift_schedule_id
+  attr_protected :shift_schedule_id, :id
+  attr_accessible :am_time_start, :am_time_duration, :am_time_allowance, :differential_rate,
+                  :pm_time_start, :pm_time_duration, :pm_time_allowance, :day_of_week
+
 
   validates_inclusion_of :day_of_week, :in => 0..6
 
@@ -15,6 +18,16 @@ class ShiftScheduleDetail < ActiveRecord::Base
   # -------------------------------------------------------
   # Instance Methods
   # -------------------------------------------------------
+  def am_time_start=(value)
+    value = begin (v=Time.parse(value)) + v.utc_offset rescue nil end
+    write_attribute(:am_time_start, value)
+  end
+
+  def pm_time_start=(value)
+    value = begin (v=Time.parse(value)) + v.utc_offset rescue nil end
+    write_attribute(:pm_time_start, value)
+  end
+
   def get_shift_date(datetime)
     t_date = datetime.localtime.to_date
     week_num = t_date.cweek

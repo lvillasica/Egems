@@ -2,6 +2,7 @@
 <div class="row-fluid tiny two-column">
   <div class="span10">
     <div class="span6">
+      <input name="details[][id]" id="detail_id" class="uneditable-input" type="hidden" />
       <input name="details[][day_of_week]" id="detail_day_of_week" class="uneditable-input" type="hidden" />
       <div class="control-group">
         <label class="control-label">AM Time In</label>

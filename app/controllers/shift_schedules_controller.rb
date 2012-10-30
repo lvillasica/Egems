@@ -34,11 +34,10 @@ class ShiftSchedulesController < ApplicationController
   end
 
   def update
-    if @shift.update_attrs_with_details(params[:shift], params[:details])
-      js_params[:success] = { success: "Shift Schedule was updated successfully." }
-    else
-      errors = get_details_errors
-      js_params[:errors] = { errors: errors.full_messages.join('<br>') }
+    errors = @shift.errors unless @shift.update_attributes(params[:shift])
+
+    js_params[:success] = { success: "Shift Schedule was updated successfully." } unless errors
+    js_params[:errors] = { errors: errors.full_messages.join('<br>') } if errors
     end
     respond_with_json
   end

@@ -22,6 +22,7 @@ class Egems.Views.ShiftDetailForm extends Backbone.View
     this
 
   initFields: =>
+    @detailIdFld    = @$('#detail_id')
     @dayNumFld      = @$('#detail_day_of_week')
     @rateFld        = @$('#detail_rate')
     @amStartFld     = @$('#detail_am_time_start')
@@ -36,6 +37,7 @@ class Egems.Views.ShiftDetailForm extends Backbone.View
     @pmStartFld.timepicker(timePickerAttrs)
 
     $(@el).find(":input:not(.timein)").change(@toDefaultValue)
+    @detailIdFld.val(@detailId).change => @detailIdFld.val(@detailId)
     @dayNumFld.val(@dayNum).change => @dayNumFld.val(@dayNum)
     #time starts
     @amStartFld.val(@format_time_only(@amStart)).change(@changedTimein)
@@ -49,7 +51,8 @@ class Egems.Views.ShiftDetailForm extends Backbone.View
 
 
     if @detailId != undefined
-      dname = "details[#{ @detailId }]"
+      dname = "shift[details_attributes][]"
+      @detailIdFld.attr('name', dname + "[id]")
       @dayNumFld.attr('name', dname + "[day_of_week]")
       @amStartFld.attr('name', dname + "[am_time_start]")
       @pmStartFld.attr('name', dname + "[pm_time_start]")

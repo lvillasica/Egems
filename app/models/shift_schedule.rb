@@ -1,6 +1,6 @@
 class ShiftSchedule < ActiveRecord::Base
 
-  attr_accessible :name, :description, :differential_rate
+  attr_accessible :name, :description, :differential_rate, :details_attributes
 
   validates_presence_of :name, :description, :is_strict, :is_custom
   validates_length_of :name, :minimum => 3
@@ -13,6 +13,7 @@ class ShiftSchedule < ActiveRecord::Base
   # Associations
   # -------------------------------------------------------
   has_many :details, :class_name => 'ShiftScheduleDetail', :dependent => :destroy
+  accepts_nested_attributes_for :details
   has_many :timesheets
   has_and_belongs_to_many :employees, :join_table => 'employee_shift_schedules'
 
@@ -47,18 +48,5 @@ class ShiftSchedule < ActiveRecord::Base
 
   def is_cancelable?
     employees.count == 0 && Employee.where(["shift_schedule_id=?", id]).count == 0
-  end
-
-  def update_attrs_with_details(attrs, _details)
-    self.attributes = attrs
-    if self.save
-      details.each do |detail|
-        detail_attrs = _details["#{detail.id}"].clone()
-        detail_attrs.delete('id')
-        detail_attrs.delete('shift_schedule_id')
-        p detail.update_attributes(detail_attrs), "--------------"
-        p detail
-      end
-    end
   end
 end
