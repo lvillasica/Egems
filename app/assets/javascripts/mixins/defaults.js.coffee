@@ -156,6 +156,13 @@ Egems.Mixins.Defaults =
       , false
     else
       alert "HTML 5 is not supported in your browser."
+  
+  smallLoadingIndicator: ->
+    """
+    <div class="small-ajax-loader-container">
+      <img src="/assets/ajax-loader.gif" alt="Loading..." height="10" width="20" />
+    </div>
+    """
 
   showTinyLoadingAt: (fld) ->
     loadingIndicator = """

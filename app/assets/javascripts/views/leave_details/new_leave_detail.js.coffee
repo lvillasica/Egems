@@ -7,7 +7,9 @@ class Egems.Views.NewLeaveDetail extends Backbone.View
     'click #leave-detail-form-actions .submit': 'triggerSubmit'
 
   initialize: ->
-    @form = new Egems.Views.LeaveDetailForm(model: @model)
+    @form = new Egems.Views.LeaveDetailForm
+      model: @model
+      inTimesheet: @options.inTimesheet
 
   render: ->
     $(@el).html(@template())

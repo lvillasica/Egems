@@ -1,0 +1,15 @@
+<% if @employees.length >= 1 : %>
+<table id="leaves-credited-employees-tbl" class="table timesheets">
+  <thead>
+    <tr class="align-middle">
+      <th>Employee</th>
+      <th>Date Hired</th>
+      <th>Date Regularized</th>
+      <th>Action</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
+</table>
+<% else : %>
+  <div class="well"> No data found. </div>
+<% end %>

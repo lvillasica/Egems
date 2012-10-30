@@ -1,13 +1,12 @@
-class Egems.Views.Employee extends Backbone.View
+class Egems.Views.ForLeaveCreditingEmployee extends Backbone.View
+
+  template: JST['employees/for_leave_crediting_employee']
   
   tagName: 'tr'
+  
   events:
     'click': 'toggleCheckbox'
-    'click .view': 'showLeaves'
     'click input[type="checkbox"]': 'stopPropagation'
-
-  initialize: ->
-    @template = @options.template
 
   render: ->
     $(@el).html @template
@@ -22,11 +21,6 @@ class Egems.Views.Employee extends Backbone.View
       checkbox.removeAttr('checked')
     else
       checkbox.attr('checked', true)
-  
-  showLeaves: (event) ->
-    event.preventDefault()
-    event.stopPropagation()
-    alert @model.fullName()
   
   stopPropagation: (event) ->
     event.stopPropagation()

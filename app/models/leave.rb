@@ -94,14 +94,31 @@ class Leave < ActiveRecord::Base
   end
   
   def set_allocation
+    total_alloc = 0.0
+    @employee = self.employee
     case self.leave_type
     when 'Sick Leave'
-      self.leaves_allocated = 12.0
+      total_alloc = prorated_alloc(12.0) if @employee
+      self.leaves_allocated = total_alloc
     when 'Vacation Leave'
-      self.leaves_allocated = self.employee.expected_vl_allocation if self.employee
+      total_alloc = prorated_alloc(@employee.expected_vl_allocation) if @employee
+      self.leaves_allocated = total_alloc
     when 'AWOP'
-      self.leaves_allocated = 0.0
+      self.leaves_allocated = total_alloc
     end
+  end
+  
+  def prorated_alloc(allocation)
+    res = 0.0
+    @employee ||= self.employee
+    validity_range = (date_from.localtime .. date_to.localtime)
+    emp_hired_date = @employee.date_hired.localtime
+    res = if @employee.years_from_hired.eql? 0 and validity_range.cover?(emp_hired_date)
+      (@employee.date_hired.month .. allocation).count.to_f
+    else
+      allocation
+    end
+    res
   end
   
   def set_consumed

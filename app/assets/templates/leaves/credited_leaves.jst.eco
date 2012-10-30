@@ -1,0 +1,15 @@
+<% if @leaves.length >= 1 : %>
+<table id="credited-leaves-tbl" class="table timesheets">
+  <thead>
+    <tr class="align-middle">
+      <th>Leave Type</th>
+      <th>From</th>
+      <th>To</th>
+      <th>Allocation</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
+</table>
+<% else : %>
+  <div class="well"> No data found. </div>
+<% end %>

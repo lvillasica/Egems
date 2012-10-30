@@ -47,6 +47,17 @@ class LeavesController < ApplicationController
     respond_with_json
   end
   
+  def credited
+    @emp = Employee.find_by_id(params[:employee_id].to_i)
+    @year = params[:year].blank? ? Time.now.year : params[:year].to_i
+    if @emp
+      js_params[:credited_leaves] = @emp.granted_major_leaves(@year)
+      respond_with_json
+    else
+      render_404
+    end
+  end
+  
 private
   def authenticate_hr!
     set_location('hrmodule')

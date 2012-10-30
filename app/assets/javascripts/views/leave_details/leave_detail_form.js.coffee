@@ -10,6 +10,8 @@ class Egems.Views.LeaveDetailForm extends Backbone.View
     _.extend(this, Egems.Mixins.Defaults, Egems.Mixins.Leaves)
     @leaves = @options.leaves
     @oldData = @options.oldData
+    @edit = @options.edit
+    @inTimesheet = @options.inTimesheet
     @leaveTypeFld = null
     @leaveDateFld = null
     @endDateFld = null
@@ -108,7 +110,7 @@ class Egems.Views.LeaveDetailForm extends Backbone.View
     @$("#leave_detail_period_#{@model.period()}").attr('checked', 'checked')
 
   setDateFldVal: (dateFld, newDateVal) ->
-    fldDateVal = if @options.edit then Date.parse(dateFld.val()) else new Date()
+    fldDateVal = if @edit or @inTimesheet then Date.parse(dateFld.val()) else new Date()
     if fldDateVal >= @minDate and fldDateVal <= @maxDate
       dateFld.val(@format_date fldDateVal)
     else

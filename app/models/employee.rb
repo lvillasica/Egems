@@ -207,9 +207,13 @@ class Employee < ActiveRecord::Base
   end
   
   def granted_with_major_leaves?(year = Time.now.year)
+    granted_major_leaves(year).any?
+  end
+  
+  def granted_major_leaves(year = Time.now.year)
     from = Time.local(year, 1, 1)
     to = from.end_of_year
-    return leaves.major_leaves_within(from, to).any?
+    return leaves.major_leaves_within(from, to)
   end
   
   def expected_vl_allocation

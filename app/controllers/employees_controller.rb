@@ -19,6 +19,14 @@ class EmployeesController < ApplicationController
     end
     respond_with_json
   end
+  
+  def leaves_credited
+    @year = params[:year].blank? ? Time.now.year : params[:year].to_i
+    js_params[:granted_employees] = Employee.not_resigned.asc_name.select do |e|
+      e.granted_with_major_leaves?(@year)
+    end
+    respond_with_json
+  end
 
 private
   def get_employee

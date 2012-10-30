@@ -80,6 +80,7 @@ Egems::Application.routes.draw do
     resources :employees do
       collection do
         get :for_leave_crediting
+        get :leaves_credited
       end
     end
 
@@ -87,6 +88,7 @@ Egems::Application.routes.draw do
       collection do
         get :crediting
         post :grant
+        get :credited
       end
     end
 

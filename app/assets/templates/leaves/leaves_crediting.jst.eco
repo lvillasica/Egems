@@ -1,4 +1,4 @@
-<h3>Leave Credits</h3>
+<h3>Leave Credits Maintenance</h3>
 <br />
 <legend>ANNUAL LEAVE CREDIT</legend>
 <div id="annual-leave-credit-form-container">
@@ -15,7 +15,9 @@
   <div class="toggle-contents">
     <div class="arrow-up"></div>
     <div class="content-holder">
-      <div class="title">Granted Employees</div>
+      <div class="title">
+        <span>Granted Employees</span>
+      </div>
       <div class="contents">
         <div class="small-ajax-loader-container">
           <img src="/assets/ajax-loader.gif" alt="Loading..." height="10" width="20" />

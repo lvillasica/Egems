@@ -38,7 +38,6 @@ class ShiftSchedulesController < ApplicationController
 
     js_params[:success] = { success: "Shift Schedule was updated successfully." } unless errors
     js_params[:errors] = { errors: errors.full_messages.join('<br>') } if errors
-    end
     respond_with_json
   end
 

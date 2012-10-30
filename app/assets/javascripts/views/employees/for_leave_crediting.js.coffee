@@ -16,9 +16,7 @@ class Egems.Views.ForLeaveCrediting extends Backbone.View
     this
 
   appendEmployee: (employee) =>
-    view = new Egems.Views.Employee
-      model: employee
-      template: JST['employees/for_leave_crediting_employee']
+    view = new Egems.Views.ForLeaveCreditingEmployee(model: employee)
     @$("#employees-tbl tbody").append(view.render().el)
   
   toggleCheckBoxes: (event) ->

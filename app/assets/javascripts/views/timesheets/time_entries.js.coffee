@@ -94,7 +94,7 @@ class Egems.Views.TimeEntries extends Backbone.View
         if data.leave_detail == undefined or data.leave_detail == null
           leave.showError(data.flash_messages)
         else
-          leave.showLeaveForm(data)
+          leave.showLeaveForm(data, Egems.Views.NewLeaveDetail, null, null, true)
 
   overtimeApplication: (event) =>
     event.preventDefault()
