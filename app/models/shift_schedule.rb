@@ -3,8 +3,6 @@ class ShiftSchedule < ActiveRecord::Base
   attr_accessible :name, :description, :differential_rate, :details_attributes
 
   validates_presence_of :name, :description, :is_strict, :is_custom
-  validates_length_of :name, :minimum => 3
-  validates_length_of :description, :minimum => 3
 
   before_destroy :check_if_cancelable
   before_update  :check_if_editable
@@ -48,5 +46,10 @@ class ShiftSchedule < ActiveRecord::Base
 
   def is_cancelable?
     employees.count == 0 && Employee.where(["shift_schedule_id=?", id]).count == 0
+  end
+
+  def update_attributes_with_details(attrs)
+    self.attributes = attrs
+    self.save
   end
 end

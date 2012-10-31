@@ -6,6 +6,11 @@ class ShiftScheduleDetail < ActiveRecord::Base
 
 
   validates_inclusion_of :day_of_week, :in => 0..6
+  validates_numericality_of :am_time_duration, :am_time_allowance, :pm_time_duration, :pm_time_allowance,
+                           :greater_than_or_equal_to => 0, :only_integer => true
+  validate :time_starts_and_duration
+
+  before_save :times_for_rds
 
   # -------------------------------------------------------
   # Associations
@@ -25,7 +30,54 @@ class ShiftScheduleDetail < ActiveRecord::Base
 
   def pm_time_start=(value)
     value = begin (v=Time.parse(value)) + v.utc_offset rescue nil end
+    if value && am_time_start && (value < am_time_start)
+      #pm_time_start always greater than am_time_start, if it is lesser, then it means next day
+      write_attribute(:pm_time_start, am_time_start + 1.day)
+    end
     write_attribute(:pm_time_start, value)
+  end
+
+  def adjusted_pm_time_start
+    pm = read_attribute(:pm_time_start)
+    pm += 1.day if pm && pm < am_time_start
+    pm
+  end
+
+  def times_for_rds
+    if am_time_start.nil? && pm_time_start.nil?
+      self.am_time_duration  = 0
+      self.am_time_allowance = 0
+      self.pm_time_duration  = 0
+      self.pm_time_allowance = 0
+    end
+  end
+
+  def time_starts_and_duration
+    if am_time_start && pm_time_start
+      errors[:base] << "AM Allowance must be less than AM duration" if am_time_allowance > am_time_duration
+      errors[:base] << "PM Allowance must be less than PM duration" if pm_time_allowance > pm_time_duration
+
+      end_time = adjusted_pm_time_start + pm_time_duration.minutes
+      end_start_diff = (end_time - am_time_start) / 1.minute
+      if end_start_diff == (9.hours/1.minute)
+        min_pm_time = am_time_start + am_time_duration.minutes
+        errors[:base] << "PM Time In must be after AM Time In + AM duration" if adjusted_pm_time_start <= min_pm_time
+      else
+        errors[:base] << "Schedule must have a total of 9 hours"
+      end
+    elsif am_time_start && pm_time_start.nil?
+      errors[:base] << "PM Time In can't be empty."
+    elsif pm_time_start && am_time_start.nil?
+      errors[:base] << "AM Time In can't be empty."
+    end
+  end
+
+  def day_name
+    Date::DAYNAMES[day_of_week]
+  end
+
+  def abbr_day_name
+    Date::ABBR_DAYNAMES[day_of_week]
   end
 
   def get_shift_date(datetime)

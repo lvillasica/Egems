@@ -34,10 +34,12 @@ class ShiftSchedulesController < ApplicationController
   end
 
   def update
-    errors = @shift.errors unless @shift.update_attributes(params[:shift])
-
-    js_params[:success] = { success: "Shift Schedule was updated successfully." } unless errors
-    js_params[:errors] = { errors: errors.full_messages.join('<br>') } if errors
+    if @shift.update_attributes_with_details(params[:shift])
+      js_params[:success] = { success: "Shift Schedule was updated successfully." }
+    else
+      errors = get_details_errors
+      js_params[:errors] = { errors: errors.full_messages.join('<br>') }
+    end
     respond_with_json
   end
 
@@ -62,11 +64,14 @@ class ShiftSchedulesController < ApplicationController
     end
   end
 
-  def get_details_error
+  def get_details_errors
     errors = @shift.errors
-    if errors[:details].present?
-      errors.delete(:details)
-      errors[:base] << @shift.details.map { |d| d.errors.full_messages }.flatten.uniq
+    if (derrors = errors.keys.grep(/^details($|.)/)).present?
+      derrors.each { |d| errors.delete(d) }
+      @shift.details.each do |detail|
+        e = detail.errors.full_messages
+        errors[:base] << "#{detail.abbr_day_name}: #{e.join("<br>")}" if e.present?
+      end
     end
     errors
   end
