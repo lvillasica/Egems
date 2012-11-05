@@ -1,15 +1,14 @@
 class Egems.Views.ShiftScheduleEmployees extends Backbone.View
 
-  template: JST['shift_employees/index_by_shift']
+  template: JST['shift_employees/index']
   shiftView: JST['shift_schedules/shift']
-  employeeRow: JST['shift_employees/employee_by_shift']
 
   events: ->
     "click #add-shift-employee-btn" : "addEmployee"
 
   initialize: ->
     @tableId = "shift_#{ @model.getId() }_employees"
-    @mixins  = _.extend(this, Egems.Mixins.Defaults)
+    @mixins  = _.extend(this, Egems.Mixins.Defaults, Egems.Mixins.ShiftSchedules)
 
   render: ->
     $(@el).html(@shiftView(shift: @model))
@@ -32,8 +31,8 @@ class Egems.Views.ShiftScheduleEmployees extends Backbone.View
     if nodata.length > 0
       nodata.remove()
 
-    view = @employeeRow(employee: employee, mixins: @mixins)
-    @$("##{ @tableId } tbody").append(view)
+    view = new Egems.Views.ShiftScheduleEmployee(model: employee)
+    @$("##{ @tableId } tbody").append(view.render().el)
 
   addEmployee: (event) ->
     event.preventDefault()

@@ -59,3 +59,15 @@ Egems.Mixins.ShiftSchedules =
             <span class="actions">#{ actions.join("&nbsp;") }</span>
           </th>
           """
+
+  shiftEmployeeActions: ->
+    actions = """
+              <a class="edit" href="#edit">
+                <i class="icon-edit" title="Edit Employee in Shift"></i>
+              </a>
+              &nbsp;
+              <a class="remove" href="#cancel">
+                <i class="icon-remove" title="Delete Employee in Shift"></i>
+              </a>
+              """
+    return actions

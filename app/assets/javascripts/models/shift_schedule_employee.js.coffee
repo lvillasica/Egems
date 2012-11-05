@@ -9,3 +9,6 @@ class Egems.Models.ShiftScheduleEmployee extends Backbone.Model
 
   endDate: ->
     @get 'end_date'
+
+  shiftId: ->
+    @get 'shift_schedule_id'

@@ -32,6 +32,14 @@ class ShiftSchedulesController < ApplicationController
     respond_with_json
   end
 
+  def remove_employee
+    employee = @shift.employee_shift_schedules.find_by_id(params[:employee_id])
+    errors = employee.errors unless employee.destroy
+    js_params[:success] = { success: "Employee mapping to shift schedule was removed successfully." } unless errors
+    js_params[:errors] = { error: errors.full_messages.join("<br>") } if errors
+    respond_with_json
+  end
+
   def create
     @shift = ShiftSchedule.new(params[:shift])
     details_attrs = params[:details]
