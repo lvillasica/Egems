@@ -26,8 +26,6 @@ class Egems.Views.ShiftSchedulesIndex extends Backbone.View
 
   addShift: (event) ->
     event.preventDefault()
-    view = new Egems.Views.NewShiftSchedule(modal: true)
-    $('#main-container').append('<div id="apply-shift-modal" class="modal hide fade" />')
-    $('#apply-shift-modal').append(view.render().el)
-                           .modal(backdrop: 'static', 'show')
-                           .on 'hidden', -> $(this).remove()
+    view = new Egems.Views.NewShiftSchedule()
+    $('#main-container').fadeOut()
+                        .after(view.render().el)

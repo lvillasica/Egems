@@ -21,10 +21,12 @@ class Egems.Views.ShiftScheduleForm extends Backbone.View
   initFields: ->
     name = @model.name()
     desc = @model.description()
+    rate = @model.differentialRate()
 
     @form    = @$('#shift-form')
     @nameFld = @$('#shift_name')
     @descFld = @$('#shift_description')
+    @rateFld = @$('#shift_rate')
 
     @nameFld.val(name)
             .blur(@validNotEmpty)
@@ -35,6 +37,11 @@ class Egems.Views.ShiftScheduleForm extends Backbone.View
             .blur(@validNotEmpty)
             .keyup(@validNotEmpty)
             .change => @model.set('description', @descFld.val())
+
+    @rateFld.val(rate)
+            .keydown(@validateNumeric)
+            .keyup(@validateRate)
+            .change => @model.set('differential_rate', parseInt(@rateFld.val()))
 
   setupDetails: ->
     @$('#details-tabs').append(@tabbableShiftDetails(@days))
@@ -65,9 +72,12 @@ class Egems.Views.ShiftScheduleForm extends Backbone.View
             @modalFlashMsg data.errors
             @enableFormActions()
           else
-            @exitForm()
+            console.log @collection
+            $("#shift-form-container-wrapper").remove()
             shifts = new Egems.Routers.ShiftSchedules()
             shifts.index()
+            console.log @collection
+            $("#main-container").fadeIn()
             @flashMsg data.success
 
   validInput: ->
@@ -77,7 +87,17 @@ class Egems.Views.ShiftScheduleForm extends Backbone.View
     if @nameFld.parents('.control-group').hasClass('error') ||
        @descFld.parents('.control-group').hasClass('error')
       valid = false
+    if @rateFld.val().length == 0
+      @rateFld.val(0)
     return valid
+
+  validateRate: =>
+    fld = @rateFld
+    r = parseInt(fld.val())
+    if r > 100
+      @addError(fld, "value from 0 to 100 only")
+    else
+      @removeError(fld)
 
   confirmInput: ->
     #TODO
@@ -93,6 +113,10 @@ class Egems.Views.ShiftScheduleForm extends Backbone.View
       @addError(fld, "can't be blank")
     else
       @removeError(fld)
+
+  validateNumeric: (event) =>
+    if !@isNumeric(event)
+      event.preventDefault()
 
   addError: (fld, error) ->
     grp = fld.parents('.control-group')
@@ -114,11 +138,6 @@ class Egems.Views.ShiftScheduleForm extends Backbone.View
   disableFormActions: ->
     $('#shift-form-actions .submit').attr('disabled', true)
     $('#shift-form-actions .cancel').attr('disabled', true)
-
-  exitForm :->
-    $('#apply-shift-modal').remove()
-    $('.modal-backdrop').remove()
-    $('#loading-indicator').hide()
 
   findRowWithText: (txt) ->
     rows = $("th")

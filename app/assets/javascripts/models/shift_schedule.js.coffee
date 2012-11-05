@@ -7,7 +7,8 @@ class Egems.Models.ShiftSchedule extends Backbone.Model
     @get 'description'
 
   differentialRate: ->
-    @get 'differential_rate'
+    rate = @get 'differential_rate'
+    rate * 100
 
   getId: ->
     @get 'id'

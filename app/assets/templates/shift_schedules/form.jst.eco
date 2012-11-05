@@ -4,17 +4,25 @@
     <div class="control-group required">
       <label class="control-label">Name</label>
       <div class="controls">
-        <input name="shift[name]" id="shift_name" type="text" />
+        <input name="shift[name]" class="input-xlarge" id="shift_name" type="text" />
       </div>
     </div>
 
     <div class="control-group required">
       <label class="control-label">Description</label>
       <div class="controls">
-        <textarea name="shift[description]" id="shift_description" class="input-large" rows=4></textarea>
+        <textarea name="shift[description]" id="shift_description" class="input-xlarge" rows=4></textarea>
       </div>
     </div>
 
+    <div class="control-group">
+      <label class="control-label">Differential Rate</label>
+      <div class="controls">
+        <input name="shift[differential_rate]" id="shift_rate" class="input-small" maxlength="3"/> %
+      </div>
+    </div>
+
+    <br>
     <div id="details-tabs" class="tabbable"></div>
   </fieldset>
 </form>

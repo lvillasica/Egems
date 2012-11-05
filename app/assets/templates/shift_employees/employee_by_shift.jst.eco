@@ -1,0 +1,5 @@
+<tr>
+  <td><%= @employee.fullName() %></td>
+  <td><%= @mixins.format_date @employee.startDate() %></td>
+  <td><%= @mixins.format_date @employee.endDate() %></td>
+</tr>

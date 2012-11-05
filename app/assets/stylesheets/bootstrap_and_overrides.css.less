@@ -1,6 +1,4 @@
 @import "twitter/bootstrap/bootstrap";
-body { padding-top: 180px; }
-
 @import "twitter/bootstrap/responsive";
 
 // Set the correct sprite paths
@@ -28,7 +26,11 @@ body { padding-top: 180px; }
 // Example:
 // @linkColor: #ff0000;
 
-body { padding-top: 120px; font-size: 12px; }
+body {
+  padding-top: 120px;
+  font-size: 12px;
+  min-width: 768px;
+}
 
 /* Landscape phones and down */
 @media (max-width: 480px) {

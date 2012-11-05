@@ -1,0 +1,25 @@
+
+<table class="table table-condensed" id="shift-tbl">
+  <tbody>
+  <tr>
+    <th>Name</th>
+    <td><%= @shift.name() %></td>
+  </tr>
+  <tr>
+    <th>Description</th>
+    <td><%= @shift.description() %></td>
+  </tr>
+  <tr>
+    <th>Is strict?</th>
+    <td>checkbox</td>
+  </tr>
+  <tr>
+    <th>Is Custom?</th>
+    <td>checkbox</td>
+  </tr>
+  <tr>
+    <th>Differential Rate</th>
+    <td><%= @shift.differentialRate() %>%</td>
+  </tr>
+  </tbody>
+</table>

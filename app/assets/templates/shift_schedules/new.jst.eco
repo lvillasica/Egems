@@ -1,7 +1,7 @@
 <h3 id="new-shift-header">New Shift Schedule</h3>
-
+<hr>
 <div id="shift-form-container"></div>
 <div id="shift-form-actions" class="form-actions">
   <button class="btn btn-primary submit">Create</button>
-  <a class="btn cancel close" data-dismiss='modal' href="#">Cancel</a>
+  <a class="btn cancel" data-dismiss='modal' href="#">Cancel</a>
 </div>

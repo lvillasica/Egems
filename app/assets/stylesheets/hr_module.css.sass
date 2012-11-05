@@ -9,9 +9,9 @@ form div.tiny
 #details-tabs .tab-content div.two-column
   .control-group
     label.control-label
-      width: 100px
+      width: 130px
     div.controls
-      margin-left: 110px
+      margin-left: 140px
 
 
 div.control-group.required
@@ -28,6 +28,16 @@ div.control-group.required
 
   .ui-datepicker-calendar
     display: none
+
+#shift-tbl
+  tbody tr td
+    padding: 1px 10px
+
+  tbody tr th
+    background-color: #efefef
+    text-align: right
+    padding: 1px 8px
+    width: 160px
 
 #shifts-tbl
   table-layout: fixed
@@ -76,8 +86,6 @@ div.control-group.required
       background-color: #d4e6f1
       padding: 2px
 
-
-
 .toggle-contents
   display: none
   .arrow-up
@@ -114,15 +122,23 @@ div.control-group.required
       max-height: 350px
       overflow-y: auto
 
-#holiday-form, #shift-form
-  textarea
-    resize: none
-  .small
-    font-size: 10px
-
+.shift-form-container-wrapper
+  width: 600px
+  #holiday-form, #shift-form
+    textarea
+      resize: none
+    .small
+      font-size: 10px
 
 #details-tabs .tab-pane
   input.ui-timepicker-input, input
     min-width: 5.5em
     width: 5.5em
     border-color: #ccc
+
+.semi-modal
+  border: 1px solid #ccc
+  margin: 10px 0
+  padding: 10px
+  border-radius: 5px
+  -moz-border-radius: 5px

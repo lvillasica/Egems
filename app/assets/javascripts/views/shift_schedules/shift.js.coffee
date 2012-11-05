@@ -10,6 +10,7 @@ class Egems.Views.ShiftSchedule extends Backbone.View
   events: ->
     'click .icon-edit'   : 'editShift'
     'click .icon-remove' : 'cancelShift'
+    'click .icon-user'   : 'viewEmployees'
 
   render: ->
     $(@el).html(@displayShiftRow(@model))
@@ -24,7 +25,7 @@ class Egems.Views.ShiftSchedule extends Backbone.View
   rowClick: (event) =>
     event.preventDefault()
     target = event.target
-    if target.className != 'icon-edit' && target.className != 'icon-remove'
+    if target.className != 'icon-edit' && target.className != 'icon-remove' && target.className != 'icon-user'
       @showDetails(target)
 
   putDetails: ->
@@ -46,15 +47,12 @@ class Egems.Views.ShiftSchedule extends Backbone.View
 
   editShift: (event) ->
     event.preventDefault()
-    view = new Egems.Views.EditShiftSchedule(modal: true, model: @model)
-    $('#main-container').append('<div id="apply-shift-modal" class="modal hide fade" />')
-    $('#apply-shift-modal').append(view.render().el)
-                           .modal(backdrop: 'static', 'show')
-                           .on 'hidden', -> $(this).remove()
+    view = new Egems.Views.EditShiftSchedule(model: @model)
+    $('#main-container').fadeOut()
+                        .after(view.render().el)
 
   cancelShift: (event) ->
     event.preventDefault()
-    console.log "cancelShift"
     if confirm "Are you sure?"
       destroy_path = '/hr/shifts/delete/' + @model.getId().toString()
       $.ajax
@@ -77,3 +75,9 @@ class Egems.Views.ShiftSchedule extends Backbone.View
 
   flashMsg: (msg) ->
     $('#flash_messages').html @mixins.flash_messages(msg)
+
+  viewEmployees: (event) ->
+    event.preventDefault()
+    view = new Egems.Views.ShiftScheduleEmployees(model: @model)
+    $('#main-container').fadeOut()
+                        .after(view.render().el)

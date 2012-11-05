@@ -8,7 +8,8 @@ class Employee < ActiveRecord::Base
   # -------------------------------------------------------
   has_one :user
   has_many :timesheets, :table_name => 'employee_timesheets'
-  has_and_belongs_to_many :shift_schedules, :join_table => 'employee_shift_schedules'
+  has_many :employee_shift_schedules
+  has_many :shift_schedules, :through => :employee_shift_schedules
   belongs_to :branch
   has_many :leaves, :class_name => 'Leave'
   has_many :leave_details
@@ -58,7 +59,7 @@ class Employee < ActiveRecord::Base
   scope :asc_name, order(:full_name)
   scope :all_supervisor_hr, where(:current_department_id => 4, :current_job_position_id => 61)
   scope :regularized, where("date_regularized is not null and date_regularized <> '1970-01-01 00:00:00'")
-  
+
   # -------------------------------------------------------
   # Class Methods
   # -------------------------------------------------------
@@ -166,33 +167,33 @@ class Employee < ActiveRecord::Base
   def can_action_leaves?
     is_supervisor? or is_supervisor_hr?
   end
-  
+
   def is_qualified_for_leaves?(year = Time.now.year)
     is_regularized? and !is_resigned? and date_regularized.year <= year and
     (is_early_regularized? and Time.now >= (date_hired.localtime + 6.months)) or
     (is_intime_regularized? and Time.now >= (date_hired.localtime + 7.months))
   end
-  
+
   def is_early_regularized?
     return false if date_hired.nil?
     expected_reg_date = date_hired + 6.months
     is_regularized? and date_regularized < expected_reg_date
   end
-  
+
   def is_intime_regularized?
     return false if date_hired.nil?
     expected_reg_date = date_hired + 6.months
     is_regularized? and date_regularized >= expected_reg_date
   end
-  
+
   def is_regularized?
     !date_regularized.nil?
   end
-  
+
   def is_resigned?
     employment_status.eql? 'Resigned'
   end
-  
+
   def grant_major_leaves!(year = Time.now.year)
     local_date_hired = date_hired.localtime
     from = Time.local(year, 1, 1)
@@ -209,17 +210,17 @@ class Employee < ActiveRecord::Base
       end
     end
   end
-  
+
   def granted_with_major_leaves?(year = Time.now.year)
     granted_major_leaves(year).any?
   end
-  
+
   def granted_major_leaves(year = Time.now.year)
     from = Time.local(year, 1, 1)
     to = from.end_of_year
     return leaves.major_leaves_within(from, to)
   end
-  
+
   def expected_vl_allocation
     alloc = case years_from_hired
             when 0 .. 3 then 12.0
@@ -228,7 +229,7 @@ class Employee < ActiveRecord::Base
             else 21.0
             end if years_from_hired
   end
-  
+
   def years_from_hired
     ((Time.now - date_hired.localtime) / 1.year).floor if date_hired
   end

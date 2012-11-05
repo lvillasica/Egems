@@ -1,4 +1,4 @@
-<h4>Shift Schedules</h4>
+<h3>Shift Schedules</h3>
 <br>
 
 <div id="flash_messages"></div>
@@ -6,7 +6,7 @@
   <button id="add-shift-btn" class="btn btn-primary pull-right hidden">Add Shift Schedule</button>
 </div>
 
-<table id="shifts-tbl" class="table table-condensed timesheets">
+<table id="shifts-tbl" class="table table-condensed timesheets sortable">
   <thead>
     <tr>
       <th colspan="7">SHIFT SCHEDULES</th>

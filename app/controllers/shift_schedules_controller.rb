@@ -2,7 +2,7 @@ class ShiftSchedulesController < ApplicationController
 
   respond_to :json
   before_filter :authenticate_user!
-  before_filter :get_shift, :only => [:details, :update, :destroy]
+  before_filter :get_shift, :except => [:index, :create]
 
   def index
     #don't store data in data-container
@@ -12,6 +12,23 @@ class ShiftSchedulesController < ApplicationController
 
   def details
     @data_ = details_attrs @shift.details.desc
+    respond_with_json
+  end
+
+  def employees
+    @data_ = Array.new
+    employee_attrs @shift.employee_shift_schedules.group_by(&:employee_id)
+    respond_with_json
+  end
+
+  def add_employee
+    shift_employee = @shift.employee_shift_schedules.create(params[:employee])
+    if (errors=shift_employee.errors).empty?
+      js_params[:shift] = @shift
+      js_params[:success] = { success: "Employee was mapped to shift schedule successfully." }
+    else
+      js_params[:errors] = { error: errors.full_messages.join("<br>") }
+    end
     respond_with_json
   end
 
@@ -84,6 +101,15 @@ class ShiftSchedulesController < ApplicationController
     respond_to do |format|
       format.html { render :template => 'layouts/application' }
       format.json { render :json => (@data_ || js_params).to_json }
+    end
+  end
+
+  def employee_attrs(collection)
+    collection.map do |k, employees|
+      employee = Employee.select(:full_name).find_by_id(k)
+      employees.map do |emp|
+        @data_ << emp.attributes.merge({ :full_name => employee.full_name })
+      end if employee
     end
   end
 

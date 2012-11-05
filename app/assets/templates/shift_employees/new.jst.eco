@@ -1,0 +1,14 @@
+<h6>Add Employee</h6>
+<br>
+<div>
+  <form class="form-inline" id="new-shift-employee-form">
+    <select name="employee[employee_id]">
+    </select>
+    <input type="text" name="employee[start_date]" class="input-small uneditable-input" placeholder="Start Date"/>
+    <input type="text" name="employee[end_date]" class="input-small" placeholder="End Date"/>
+  </form>
+</div>
+<div class="btn-group">
+  <button class="btn btn-primary btn-mini submit">Add</button>
+  <button class="btn btn-mini cancel">Cancel</button>
+</div>

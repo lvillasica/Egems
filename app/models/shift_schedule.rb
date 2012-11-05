@@ -1,8 +1,11 @@
 class ShiftSchedule < ActiveRecord::Base
 
-  attr_accessible :name, :description, :differential_rate, :details_attributes
+  attr_accessible :name, :description, :differential_rate,
+                  :details_attributes, :employees_attributes
 
   validates_presence_of :name, :description, :is_strict, :is_custom
+  validates_numericality_of :differential_rate
+  validates_inclusion_of :differential_rate, :in => 0..1
 
   before_destroy :check_if_cancelable
   before_update  :check_if_editable
@@ -13,13 +16,17 @@ class ShiftSchedule < ActiveRecord::Base
   has_many :details, :class_name => 'ShiftScheduleDetail', :dependent => :destroy
   accepts_nested_attributes_for :details
   has_many :timesheets
-  has_and_belongs_to_many :employees, :join_table => 'employee_shift_schedules'
-
+  has_many :employee_shift_schedules
+  has_many :employees, :through => :employee_shift_schedules
   scope :asc, order('name asc')
 
   # -------------------------------------------------------
   # Instance Methods
   # -------------------------------------------------------
+  def differential_rate=(val)
+    write_attribute(:differential_rate, val.to_f/100)
+  end
+
   def check_if_cancelable
     errors[:base] << "Cannot delete shift schedules with assigned employees." unless is_cancelable?
   end

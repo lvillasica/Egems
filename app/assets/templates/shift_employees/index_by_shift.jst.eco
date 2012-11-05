@@ -1,0 +1,23 @@
+<br>
+<div style="display: inline-block; width: 100%; margin-bottom: 9px;" id="shift-actions-container">
+  <button id="add-shift-employee-btn" class="btn btn-primary">Add Employee</button>
+</div>
+<div id="flash_messages"></div>
+
+<table class="table table-condensed table-striped timesheets sortable">
+  <thead>
+    <tr>
+      <th>Employee Name</th>
+      <th>From</th>
+      <th>To</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% if @employees.length == 0 :%>
+      <tr class="nodata">
+        <td colspan="3"><em>No data found.</em></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
+</div>

@@ -34,22 +34,28 @@ Egems.Mixins.ShiftSchedules =
 
   displayShiftRow: (shift) ->
     actions = new Array
+
     if shift.isEditable()
       actions.push """
-                   <a class="edit" href="#">
-                     <i class="icon-edit" id="#{shift.getId()}"></i>
+                   <a class="edit" href="#edit">
+                     <i class="icon-edit" title="Edit Shift Schedule"></i>
                    </a>
                    """
     if shift.isCancelable()
       actions.push """
-                   <a class="remove" href="#">
-                     <i class="icon-remove" id="#{shift.getId()}"></i>
+                   <a class="remove" href="#cancel">
+                     <i class="icon-remove" title="Delete Shift Schedule"></i>
                    </a>
                    """
 
     row = """
           <th colspan='7'>
-              <div class="pull-left">#{ shift.name() }</div>
-              <span class="actions">#{ actions.join("&nbsp;") }</span>
+            <div class="pull-left">
+              <a class="members" href="#employee">
+                <i class="icon-user" title="View Employees"></i>
+              </a> &nbsp;
+              #{ shift.name() }
+            </div>
+            <span class="actions">#{ actions.join("&nbsp;") }</span>
           </th>
           """
