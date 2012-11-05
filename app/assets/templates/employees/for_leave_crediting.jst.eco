@@ -1,6 +1,22 @@
-<% if @employees.length >= 1 : %>
 <form method="post" id="for-leave-crediting-form" accept-charset="UTF-8">
   <button class="btn btn-success grant"><strong>GRANT NOW</strong></button>
+  <button class="btn view"><strong>VIEW</strong></button>
+  
+  <div class="toggle-contents" style="padding: 5px 0;">
+    <div class="arrow-up"></div>
+    <div class="content-holder">
+      <div class="title">
+        <span>Granted Employees</span>
+      </div>
+      <div class="contents">
+        <div class="small-ajax-loader-container">
+          <img src="/assets/ajax-loader.gif" alt="Loading..." height="10" width="20" />
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <% if @employees.length >= 1 : %>
   <table id="employees-tbl" class="table timesheets" style="margin-top:10px">
     <thead>
       <tr class="align-middle">
@@ -14,7 +30,7 @@
     </thead>
     <tbody></tbody>
   </table>
+  <% else : %>
+    <div class="well" style="margin-top:15px;"> No data found. </div>
+  <% end %>
 </form>
-<% else : %>
-  <div class="well"> No data found. </div>
-<% end %>

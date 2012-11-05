@@ -4,15 +4,20 @@ class Egems.Views.ForLeaveCrediting extends Backbone.View
   
   events:
     "click #toggle-boxes" : "toggleCheckBoxes"
-    "click #for-leave-crediting-form .grant": "grantEmployees"
+    "click #for-leave-crediting-form button.grant": "grantEmployees"
+    "click #for-leave-crediting-form button.view": "viewEmployees"
 
   initialize: ->
     _.extend(this, Egems.Mixins.Defaults)
     @collection.on('reset', @render, this)
 
   render: ->
+    @grantedEmployees = new Egems.Collections.Employees()
     $(@el).html(@template(employees: @collection))
     @collection.each(@appendEmployee)
+    @$('#for-leave-crediting-form button.view').tooltip
+      title: "View Granted Employees"
+      placement: 'right'
     this
 
   appendEmployee: (employee) =>
@@ -56,4 +61,44 @@ class Egems.Views.ForLeaveCrediting extends Backbone.View
       success: (collection, response) =>
         @collection.reset(response.for_leave_crediting)
     @showFlash(data.flash_messages, null, '#qualified-for-leaves-container')
+  
+  viewEmployees: (event) ->
+    event.preventDefault()
+    @toggleViewContainer(event)
+    @renderRootView()
+  
+  toggleViewContainer: (event) ->
+    @target = $(event.target)
+    @toggleContents = $('#qualified-for-leaves-container .toggle-contents')
+    @setArrowPos(@target)
+    @toggleContents.slideToggle 300, =>
+      unless @toggleContents.is(':hidden')
+        unless @grantedEmployees.length > 0 or @toggleContents.find('.contents:contains("No data")').length > 0
+          @renderGrantedEmployeesView()
+  
+  setArrowPos: (target) ->
+    arrowPos = ((target.innerWidth() / 2) + @getViewBtnLeftPos(target) - 10)
+    @toggleContents.find('.arrow-up').css(left: "#{ arrowPos }px")
+  
+  getViewBtnLeftPos: (viewBtn) ->
+    parent = $('#qualified-for-leaves-container')
+    o1 = viewBtn.offset()
+    o2 = parent.offset()
+    leftPos = o1.left - o2.left
+  
+  renderGrantedEmployeesView: ->
+    year = parseInt(I18n.strftime(new Date(), "%Y"))
+    @grantedEmployees.fetch
+      url: '/employees/leaves_credited'
+      data: { year: year }
+      success: (collection, response) =>
+        @grantedEmployees.reset(response.granted_employees)
+        view = new Egems.Views.LeavesCredited
+          collection: @grantedEmployees
+          year: year
+        @toggleContents.find('.contents').html(view.render().el)
+  
+  renderRootView: ->
+    rootLnk = @toggleContents.find('a.root')
+    rootLnk.trigger('click') unless rootLnk.length is 0
 

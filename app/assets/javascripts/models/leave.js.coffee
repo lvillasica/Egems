@@ -27,3 +27,12 @@ class Egems.Models.Leave extends Backbone.Model
       return "#{ format_date @dateFrom() } to #{ format_date @dateTo() }"
     else
       return "Not Applicable"
+  
+  employeeName: ->
+    @get 'employee_name'
+  
+  employeeId: ->
+    @get 'employee_id'
+  
+  wDocs: ->
+    @get 'w_docs'

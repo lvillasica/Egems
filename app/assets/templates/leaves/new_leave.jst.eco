@@ -1,0 +1,7 @@
+<h3 id="leave-form-header">New Leave</h3>
+<hr/>
+<div id="leave-form-container"></div>
+<div id="leave-form-actions" class="form-actions">
+  <button class="btn btn-primary submit">Create</button>
+  <button class="btn cancel">Cancel</button>
+</div>

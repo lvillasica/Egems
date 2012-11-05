@@ -19,6 +19,7 @@ class Egems.Views.LeavesCreditedEmployee extends Backbone.View
   
   showLeaves: (event) ->
     event.preventDefault()
+    @showLeavesTarget = $(event.target)
     @creditedLeaves.fetch
       url: '/leaves/credited'
       data: { employee_id: @model.id, year: @year }
@@ -27,12 +28,12 @@ class Egems.Views.LeavesCreditedEmployee extends Backbone.View
   renderLeavesView: (collection, response) =>
     @creditedLeaves.reset(response.credited_leaves)
     view = new Egems.Views.CreditedLeaves(collection: @creditedLeaves)
-    toggleView = $('.toggle-contents')
-    title = toggleView.find('.title')
+    @toggleView = @showLeavesTarget.parents('.toggle-contents')
+    title = @toggleView.find('.title')
     title.append("<span class='active'>#{ @model.fullName() }</span>")
     title.find('span:first').wrapInner('<a href="#" class="root">')
     $('<span class="divider"> / </span>').insertAfter(title.find('span:first'))
-    toggleView.find('.contents').html(view.render().el)
+    @toggleView.find('.contents').html(view.render().el)
     $('.root').click @renderRootView
   
   renderRootView: (event) =>
@@ -40,6 +41,6 @@ class Egems.Views.LeavesCreditedEmployee extends Backbone.View
     view = new Egems.Views.LeavesCredited
       collection: @model.collection
       year: @year
-    $('.toggle-contents .title').html('<span>Granted Employees</span>')
-    $('.toggle-contents .contents').html(view.render().el)
+    @toggleView.find('.title').html('<span>Granted Employees</span>')
+    @toggleView.find('.contents').html(view.render().el)
     

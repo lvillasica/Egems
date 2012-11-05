@@ -1,0 +1,9 @@
+en:
+  activerecord:
+    attributes:
+      leave:
+        leave_type: 'Type'
+        date_from: 'From'
+        date_to: 'To'
+        leaves_allocated: 'Allocation'
+        w_docs: 'w/ Docs'

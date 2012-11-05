@@ -29,10 +29,19 @@ class Egems.Routers.Leaves extends Backbone.Router
     @forCreditingEmployees.fetch
       url: '/employees/for_leave_crediting'
       success: @renderForLeaveCrediting
+    @specialTypes = new Egems.Collections.Leaves()
+    @specialTypes.fetch
+      url: '/leaves/special_types'
+      success: @renderSpecialTypes
   
   renderForLeaveCrediting: (collection, response) =>
     @forCreditingEmployees.reset(response.for_leave_crediting)
     forLeaveCrediting = new Egems.Views.ForLeaveCrediting
       collection: @forCreditingEmployees
     $('#qualified-for-leaves-container').html(forLeaveCrediting.render().el)
+  
+  renderSpecialTypes: (collection, response) =>
+    @specialTypes.reset(response.special_types)
+    view = new Egems.Views.SpecialTypes(collection: @specialTypes)
+    $('#other-types-of-leaves-container').html(view.render().el)
     

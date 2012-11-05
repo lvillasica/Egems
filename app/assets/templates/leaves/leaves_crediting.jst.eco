@@ -34,7 +34,12 @@
   </div>
 </div>
 <br /><br />
-<legend>OTHER TYPES OF LEAVES</legend>
+<legend>
+  OTHER TYPES OF LEAVES
+  <span class="pull-right" style="margin-right:10px; font-size:20pt;">
+    <a id="add-special-type" href="#"><i class="icon-plus-sign"></i></a>
+  </span>
+</legend>
 <div id="other-types-of-leaves-container">
   <div class="small-ajax-loader-container">
     <img src="/assets/ajax-loader.gif" alt="Loading..." height="10" width="20" />

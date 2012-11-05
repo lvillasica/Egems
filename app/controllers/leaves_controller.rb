@@ -4,7 +4,7 @@ class LeavesController < ApplicationController
   before_filter :authenticate_user!, :except => [:index]
   before_filter :set_location
   before_filter :get_employee
-  before_filter :authenticate_hr!, :only => [:crediting, :grant]
+  before_filter :authenticate_hr!, :except => [:index]
   before_filter :get_qualified_for_leaves, :only => [:grant]
   
   def index
@@ -17,15 +17,37 @@ class LeavesController < ApplicationController
   end
   
   def create
-    # TODO
+    @emp = Employee.find(params[:leave].delete(:employee_id).to_i) rescue render_404
+    @leave = @emp.leaves.new(params[:leave])
+    if @leave.save
+      flash_message(:success, "#{ @leave.leave_type } was successfully granted to #{ @emp.full_name }.")
+    else
+      flash_message(:error, @leave.errors.full_messages) if @leave.errors.any?
+    end
+    js_params[:leave] = @leave
+    set_flash
+    respond_with_json
   end
   
   def update
-    # TODO
+    @leave = Leave.find(params[:id]) rescue render_404
+    params[:leave].delete(:employee_id)
+    if @leave.update_attributes(params[:leave])
+      flash_message(:success, "Leave was successfully updated.")
+    else
+      flash_message(:error, @leave.errors.full_messages) if @leave.errors.any?
+    end
+    js_params[:leave] = @leave
+    set_flash
+    respond_with_json
   end
   
   def destroy
-    # TODO
+    @leave = Leave.find(params[:id]) rescue render_404
+    @leave.destroy
+    flash_message(:success, "Removed Leave.")
+    set_flash
+    respond_with_json
   end
   
   def crediting
@@ -48,14 +70,17 @@ class LeavesController < ApplicationController
   end
   
   def credited
-    @emp = Employee.find_by_id(params[:employee_id].to_i)
+    @emp = Employee.find(params[:employee_id].to_i) rescue render_404
     @year = params[:year].blank? ? Time.now.year : params[:year].to_i
-    if @emp
-      js_params[:credited_leaves] = @emp.granted_major_leaves(@year)
-      respond_with_json
-    else
-      render_404
+    js_params[:credited_leaves] = @emp.granted_major_leaves(@year)
+    respond_with_json
+  end
+  
+  def special_types
+    js_params[:special_types] = Leave.special_types.map do |l|
+      l.attributes.merge(:employee_name => l.employee.full_name)
     end
+    respond_with_json
   end
   
 private

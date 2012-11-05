@@ -1,0 +1,18 @@
+<% if @leaves.length >= 1 : %>
+<table id="special-types-leaves-tbl" class="table timesheets">
+  <thead>
+    <tr class="align-middle">
+      <th>Employee</th>
+      <th>Leave Type</th>
+      <th>From</th>
+      <th>To</th>
+      <th>Allocation</th>
+      <th>w/ Docs</th>
+      <th>Action</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
+</table>
+<% else : %>
+  <div class="well"> No data found. </div>
+<% end %>

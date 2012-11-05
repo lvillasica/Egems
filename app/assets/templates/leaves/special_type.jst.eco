@@ -1,0 +1,7 @@
+<td><%= @leave.employeeName() %></td>
+<td><%= @leave.leaveType() %></td>
+<td class="time mins"><%= @mixins.format_date @leave.dateFrom() %></td>
+<td class="time mins"><%= @mixins.format_date @leave.dateTo() %></td>
+<td style="width:5%"><%= @mixins.format_float @leave.leavesAllocated() %></td>
+<td style="width:5%"><i class="<%= 'icon-check' if @leave.wDocs() %>"></i></td>
+<td style="width:5%"><%- @mixins.specialTypeActions @leave %></td>

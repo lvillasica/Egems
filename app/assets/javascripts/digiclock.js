@@ -19,6 +19,6 @@ Date.prototype.toCustomFormat = function() {
       hh = prependZero((h_12hr == 0)? 12 : h_12hr),
       mm = prependZero(this.getMinutes()),
       ss = prependZero(this.getSeconds()),
-      a  = (h >= 12)? "pm" : "am";
+      a  = (h >= 12)? "PM" : "AM";
   return (this.toString("MMM dd, yyyy") + " " + hh + ":" + mm + ":" + ss + " " + a);
 }

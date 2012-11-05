@@ -1,7 +1,7 @@
 class Leave < ActiveRecord::Base
 
   self.table_name = 'employee_truancies'
-  attr_accessible :leave_type, :date_from, :date_to, :leaves_allocated
+  attr_accessible :leave_type, :date_from, :date_to, :leaves_allocated, :w_docs
 
   SPECIAL_TYPES = ['Maternity Leave', 'Paternity Leave', 'Magna Carta', 'Solo Parent Leave', 'Violence Against Women']
   MAJOR_TYPES = ['Sick Leave', 'Vacation Leave', 'AWOP']
@@ -15,8 +15,9 @@ class Leave < ActiveRecord::Base
   # -------------------------------------------------------
   # Validations
   # -------------------------------------------------------
-  validates_presence_of :leave_type, :date_from, :date_to
-  validate :leave_validity
+  validates_presence_of :leave_type, :date_from, :date_to, :message => 'is invalid.'
+  validates_numericality_of :leaves_allocated, :message => 'is invalid.'
+  validate :invalid_leave
   
   # -------------------------------------------------------
   # Callbacks
@@ -34,7 +35,7 @@ class Leave < ActiveRecord::Base
     where(:leave_type => type).order(:id, :created_on)
   }
   scope :within_validity, lambda { |date|
-    where("? between date_from and date_to", date)
+    where("Date(?) between Date(date_from) and Date(date_to)", date.utc)
   }
 
   scope :from_timesheets, where(["leave_type not in ('Vacation Leave', 'Maternity Leave', 'Magna Carta')"])
@@ -54,6 +55,12 @@ class Leave < ActiveRecord::Base
             #{Leave.table_name}.date_to <= :to",
             { :from => from.utc, :to => to.utc })
   }
+  
+  scope :special_types, where(:leave_type => Leave::SPECIAL_TYPES)
+  
+  scope :exclude_ids, lambda { |ids|
+    where(["#{Leave.table_name}.id NOT IN (?)", ids]) if ids.any?
+  }
 
   # -------------------------------------------------------
   # Class Methods
@@ -69,6 +76,14 @@ class Leave < ActiveRecord::Base
   # -------------------------------------------------------
   # Instance Methods
   # -------------------------------------------------------
+  def date_from=(date)
+    self[:date_from] = Time.parse(date.to_s).utc rescue nil
+  end
+
+  def date_to=(date)
+    self[:date_to] = Time.parse(date.to_s).utc rescue nil
+  end
+  
   def active?
     status == 1
   end
@@ -125,11 +140,51 @@ class Leave < ActiveRecord::Base
     self.leaves_consumed = 0.0
   end
   
+  def max_credits
+    credits = case leave_type
+              when 'Paternity Leave' then 7.0
+              when 'Maternity Leave' then 72.0
+              when 'Solo Parent Leave' then 7.0
+              when 'Violence Against Women' then 10.0
+              when 'Magna Carta' then 60.0
+              end
+  end
+  
 private
-  def leave_validity
-    # TODO exclude self
-    if employee
-      errors[:base] << "Conflict on leave validity." if employee.leaves.find_conflict(self).any?
+  def invalid_leave
+    check_if_changed
+    
+    if employee and date_from and date_to
+      has_conflict = employee.leaves.exclude_ids([self.id]).find_conflict(self).any?
+      errors[:base] << 'Conflict on leave validity.' if has_conflict
+      
+      if Leave::SPECIAL_TYPES.include?(leave_type)
+        if date_from_changed? and date_from.localtime.to_date <= Date.today
+          errors[:base] << 'Leave should be for future dates.'
+        end
+        
+        validate_max_credits
+      end
+      
+      if date_from > date_to
+        errors[:base] << 'From must not be later than To.'
+      end
+      
+      errors[:base] << 'Employee must be regularized.' unless employee.is_regularized?
+    end
+    
+    if !self.new_record? and leaves_consumed > 0
+      errors[:base] << 'Leave has already been consumed.'
+    end
+  end
+  
+  def check_if_changed
+    errors[:base] << 'Nothing changed.' if !self.new_record? and !self.changed?
+  end
+  
+  def validate_max_credits
+    if max_credits and leaves_allocated > max_credits
+      errors[:leaves_allocated] << "for #{ leave_type } must not exceed to #{ max_credits }."
     end
   end
   

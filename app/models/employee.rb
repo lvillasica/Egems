@@ -57,6 +57,7 @@ class Employee < ActiveRecord::Base
   scope :not_resigned, where("employment_status <> 'Resigned'")
   scope :asc_name, order(:full_name)
   scope :all_supervisor_hr, where(:current_department_id => 4, :current_job_position_id => 61)
+  scope :regularized, where("date_regularized is not null and date_regularized <> '1970-01-01 00:00:00'")
   
   # -------------------------------------------------------
   # Class Methods
@@ -193,13 +194,16 @@ class Employee < ActiveRecord::Base
   end
   
   def grant_major_leaves!(year = Time.now.year)
+    local_date_hired = date_hired.localtime
     from = Time.local(year, 1, 1)
+    from = local_date_hired if local_date_hired > from
     to = from.end_of_year
     Leave::MAJOR_TYPES.each do |leave_type|
       begin
         leaves.create!(:leave_type => leave_type,
                        :date_from  => from,
-                       :date_to    => to)
+                       :date_to    => to,
+                       :leaves_allocated => 0.0)
       rescue
         next
       end

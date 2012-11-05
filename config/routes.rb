@@ -81,6 +81,7 @@ Egems::Application.routes.draw do
       collection do
         get :for_leave_crediting
         get :leaves_credited
+        get :regularized
       end
     end
 
@@ -89,6 +90,7 @@ Egems::Application.routes.draw do
         get :crediting
         post :grant
         get :credited
+        get :special_types
       end
     end
 

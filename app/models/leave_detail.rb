@@ -306,7 +306,7 @@ class LeaveDetail < ActiveRecord::Base
   end
 
   def needs_hr_action?
-    Leave::SPECIAL_TYPES.include?(leave_type)
+    Leave::SPECIAL_TYPES.include?(leave_type) and !w_docs
   end
 
   def is_whole_day?
