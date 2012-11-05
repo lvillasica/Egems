@@ -9,7 +9,8 @@ class Egems.Views.SpecialTypes extends Backbone.View
 
   render: ->
     $(@el).html(@template(leaves: @collection))
-    @collection.each(@appendLeaveEntry)
+    sortedLeaves = @collection.sortBy (l) -> l.employeeName()
+    _.each(sortedLeaves, @appendLeaveEntry)
     @initActionsTooltip()
     this
 

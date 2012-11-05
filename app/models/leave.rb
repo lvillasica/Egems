@@ -183,7 +183,7 @@ private
   end
   
   def validate_max_credits
-    if max_credits and leaves_allocated > max_credits
+    if max_credits and leaves_allocated.to_f > max_credits.to_f
       errors[:leaves_allocated] << "for #{ leave_type } must not exceed to #{ max_credits }."
     end
   end

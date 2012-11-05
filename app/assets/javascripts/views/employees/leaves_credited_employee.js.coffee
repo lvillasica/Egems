@@ -32,7 +32,7 @@ class Egems.Views.LeavesCreditedEmployee extends Backbone.View
     title = @toggleView.find('.title')
     title.append("<span class='active'>#{ @model.fullName() }</span>")
     title.find('span:first').wrapInner('<a href="#" class="root">')
-    $('<span class="divider"> / </span>').insertAfter(title.find('span:first'))
+    $('<span class="divider"> &raquo; </span>').insertAfter(title.find('span:first'))
     @toggleView.find('.contents').html(view.render().el)
     $('.root').click @renderRootView
   
