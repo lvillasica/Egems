@@ -1,5 +1,6 @@
 class EmployeeMapping < ActiveRecord::Base
-  attr_accessible :approver_id, :approver_type, :employee_id, :from, :to
+  attr_accessor :no_validity
+  attr_accessible :approver_id, :approver_type, :employee_id, :from, :to, :no_validity
   
   # -------------------------------------------------------
   # Relationships / Associations
@@ -11,8 +12,9 @@ class EmployeeMapping < ActiveRecord::Base
   # Validations
   # -------------------------------------------------------
   validates_inclusion_of :approver_type, :in => ['Supervisor/TL', 'Project Manager'], :message => 'is invalid'
-  validate :invalid_mapping, :if => :valid_dates
-  validates_presence_of :approver_id, :employee_id, :approver_type, :from, :to, :message => 'is invalid.'
+  validate :invalid_mapping
+  validates_presence_of :approver_id, :employee_id, :approver_type, :message => 'is invalid.'
+  validates_presence_of :from, :to, :unless => "no_validity == 'true'", :message => 'is invalid'
 
   # -------------------------------------------------------
   # Callbacks
@@ -64,7 +66,7 @@ class EmployeeMapping < ActiveRecord::Base
   def update_if_changed(attrs)
     # select only attributes to be changed to avoid malicious attacks.
     self.attributes = attrs.symbolize_keys.select do |a|
-      [:approver_type, :from, :to].include?(a)
+      [:approver_type, :from, :to, :no_validity].include?(a)
     end
     
     if changed?
@@ -76,7 +78,7 @@ class EmployeeMapping < ActiveRecord::Base
   end
   
   def reset_responders
-    @new_range = [from.localtime, to.localtime]
+    @new_range = [from.localtime, to.localtime] rescue []
     @old_range = [from_was.localtime, to_was.localtime] rescue []
     timesheets = objs_to_reset_responders(:timesheets)
     overtimes = objs_to_reset_responders(:overtimes)
@@ -110,7 +112,7 @@ private
   end
   
   def invalid_mapping
-    if from > to
+    if valid_dates and from > to
       errors[:from] << 'should not be later than To'
     end
     
@@ -122,12 +124,32 @@ private
   end
   
   def validate_conflict
-    if EmployeeMapping.where(:approver_id => approver.id, :employee_id => member.id)
-                      .exclude_ids([self.id]).conflicts_on_dates(from, to).any? or
-       EmployeeMapping.where(:approver_id => member.id, :employee_id => approver.id)
-                      .exclude_ids([self.id]).conflicts_on_dates(from, to).any?
-      errors[:base] << "Conflicting dates."
+    if has_conflict?
+      errors[:base] << "Conflict in validity."
     end
+  end
+  
+  def has_conflict?
+    conflicts = []
+    
+    # TODO: Refactor
+    if valid_dates
+      conflicts << EmployeeMapping.where(:approver_id => approver.id, :employee_id => member.id)
+                                  .exclude_ids([self.id]).conflicts_on_dates(from, to)
+      conflicts << EmployeeMapping.where(:approver_id => member.id, :employee_id => approver.id)
+                                  .exclude_ids([self.id]).conflicts_on_dates(from, to)
+      conflicts << EmployeeMapping.where(:approver_id => approver.id, :employee_id => member.id)
+                                  .exclude_ids([self.id]).where(:from => nil, :to => nil)
+      conflicts << EmployeeMapping.where(:approver_id => member.id, :employee_id => approver.id)
+                                  .exclude_ids([self.id]).where(:from => nil, :to => nil)
+    else
+      conflicts << EmployeeMapping.where(:approver_id => approver.id, :employee_id => member.id)
+                                  .exclude_ids([self.id])
+      conflicts << EmployeeMapping.where(:approver_id => member.id, :employee_id => approver.id)
+                                  .exclude_ids([self.id])
+    end
+    
+    return conflicts.flatten.uniq.any?
   end
   
 end

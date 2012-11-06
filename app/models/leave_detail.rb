@@ -82,9 +82,11 @@ class LeaveDetail < ActiveRecord::Base
 
   scope :within, lambda { |range|
     start_date, end_date = range
-    asc
-    .where(["leave_date between ? and ?",
-             start_date.utc, end_date.utc])
+    if start_date and end_date
+      asc
+      .where(["leave_date between ? and ?",
+               start_date.utc, end_date.utc])
+    end
   }
 
   # -------------------------------------------------------

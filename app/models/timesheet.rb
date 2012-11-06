@@ -63,10 +63,12 @@ class Timesheet < ActiveRecord::Base
   }
   scope :within, lambda { |range|
     start_date, end_date = range
-    asc
-    .includes(:shift_schedule_detail)
-    .where(["date between ? and ?",
-             start_date.utc, end_date.utc])
+    if start_date and end_date
+      asc
+      .includes(:shift_schedule_detail)
+      .where(["date between ? and ?",
+               start_date.utc, end_date.utc])
+    end
   }
 
   scope :response_by, lambda { |supervisor|

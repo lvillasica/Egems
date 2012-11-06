@@ -23,6 +23,13 @@
     <% end %>
     
     <div class="control-group">
+      <label class="control-label"><%= l 'no_validity' %></label>
+      <div class="controls" style="padding:3px 0">
+        <input name="employee_mapping[no_validity]" type="checkbox" />
+      </div>
+    </div>
+    
+    <div class="control-group">
       <label class="control-label"><%= l 'from' %></label>
       <div class="controls">
         <div class="input-append">

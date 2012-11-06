@@ -44,6 +44,8 @@ class Employee < ActiveRecord::Base
     .where('employee_mappings.approver_type' => 'Supervisor/TL')
   scope :pms, includes(:employee_mappings_as_member)
     .where('employee_mappings.approver_type' => 'Project Manager')
+  scope :no_validity_mappings, includes(:employee_mappings_as_member)
+    .where('employee_mappings.from is null and employee_mappings.to is null')
   scope :mapped_on, lambda { | datetime |
     includes(:employee_mappings_as_member)
     .where('Date(?) between Date(employee_mappings.from) and Date(employee_mappings.to)',
@@ -89,7 +91,7 @@ class Employee < ActiveRecord::Base
   end
 
   def responders_on(datetime)
-    res = approvers.mapped_on(datetime)
+    res = (approvers.mapped_on(datetime) | approvers.no_validity_mappings)
     res = Employee.all_supervisor_hr.exclude_ids([self.id]) if res.blank?
     res
   end

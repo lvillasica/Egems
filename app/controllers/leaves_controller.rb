@@ -94,15 +94,27 @@ private
   end
   
   def get_qualified_for_leaves
-    @year = params[:year] ? params[:year].to_i : Time.now.year
-    @qualified_for_leaves = if params[:qualified_ids]
-      Employee.find_all_by_id(params[:qualified_ids]).select do |e|
-        e.is_qualified_for_leaves?(@year) and !e.granted_with_major_leaves?(@year)
+    cyear = Time.now.year
+    if params[:year]
+      @year = (params[:year].to_i <= cyear ? nil : params[:year].to_i)
+    else
+      @year = cyear
+    end
+    
+    if @year
+      @qualified_for_leaves = if params[:qualified_ids]
+        Employee.find_all_by_id(params[:qualified_ids]).select do |e|
+          e.is_qualified_for_leaves?(@year) and !e.granted_with_major_leaves?(@year)
+        end
+      else
+        Employee.all_qualified_for_leaves(@year).select do |e|
+          !e.granted_with_major_leaves?(@year)
+        end
       end
     else
-      Employee.all_qualified_for_leaves(@year).select do |e|
-        !e.granted_with_major_leaves?(@year)
-      end
+      flash_message(:error, 'You cannot specify neither current nor previous year.')
+      set_flash
+      respond_with_json
     end
   end
   

@@ -13,6 +13,9 @@ class Egems.Views.EmployeeMappingForm extends Backbone.View
     @employees = new Egems.Collections.Employees()
     @mappedEmployees = @options.mappedEmployees
     @mappableEmployeeView = @options.mappableEmployeeView
+    if @model
+      @approverFrom = @model.approverFrom()
+      @approverTo = @model.approverTo()
 
   render: ->
     $(@el).html(@template(
@@ -20,6 +23,7 @@ class Egems.Views.EmployeeMappingForm extends Backbone.View
       mixins: $.extend(Egems.Mixins.Defaults)
     ))
     @initFields()
+    @noValidityFld.change @setDates
     @initValues()
     @initDatePickers()
     this
@@ -29,6 +33,7 @@ class Egems.Views.EmployeeMappingForm extends Backbone.View
     @typeFld = @$('select[name="employee_mapping[approver_type]"]')
     @fromFld = @$('input[name="employee_mapping[from]"]')
     @toFld = @$('input[name="employee_mapping[to]"]')
+    @noValidityFld = @$('input[name="employee_mapping[no_validity]"]')
     this
   
   initValues: ->
@@ -37,11 +42,30 @@ class Egems.Views.EmployeeMappingForm extends Backbone.View
       @nameFld.append("<option value='#{ id }'>#{ @model.fullName() }</option>")
       .attr('disabled', true)
       @typeFld.val(@model.approverType()) if @typeFld
-      @fromFld.val(@format_date @model.approverFrom()) if @model.approverFrom()
-      @toFld.val(@format_date @model.approverTo()) if @model.approverTo()
+      @noValidityFld.attr('checked', not (@approverFrom and @approverTo))
     else
       @setEmployeeNameFld()
+    
+    @setDates()
     this
+  
+  setDates: =>
+    if @noValidityFld.is(':checked')
+      @fromFld.val('').attr('disabled', true)
+      .next('button').attr('disabled', true)
+      @toFld.val('').attr('disabled', true)
+      .next('button').attr('disabled', true)
+    else
+      today = new Date()
+      endOfYear = new Date((today.getFullYear() + 1), 0, 1).addDays(-1)
+      from = @approverFrom or today
+      to = @approverTo or endOfYear
+      @fromFld.val(@format_date from)
+      .removeAttr('disabled')
+      .next('button').removeAttr('disabled')
+      @toFld.val(@format_date to)
+      .removeAttr('disabled')
+      .next('button').removeAttr('disabled')
   
   initDatePickers: ->
     @dateSelector(@fromFld)
@@ -110,6 +134,7 @@ class Egems.Views.EmployeeMappingForm extends Backbone.View
     params['approver_type'] = @getType()
     params['from'] = @fromFld.val()
     params['to'] = @toFld.val()
+    params['no_validity'] = @noValidityFld.is(':checked')
     params
   
   submitForm: (event) ->

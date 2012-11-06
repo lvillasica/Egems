@@ -39,7 +39,7 @@ class Overtime < ActiveRecord::Base
   scope :within, lambda { |range|
     start_date, end_date = range
     where(["date_of_overtime between ? and ?",
-             start_date.utc, end_date.utc])
+             start_date.utc, end_date.utc]) if start_date and end_date
   }
 
   # -------------------------------------------------------
