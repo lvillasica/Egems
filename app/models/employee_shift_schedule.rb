@@ -5,21 +5,29 @@ class EmployeeShiftSchedule < ActiveRecord::Base
   belongs_to :shift_schedule
   belongs_to :employee
 
+  validates_presence_of :employee_id, :shift_schedule_id, :start_date, :end_date
   validate :dates_and_values
   after_save :recompute_timesheets
 
   include ApplicationHelper
 
   def dates_and_values
-    sched = self.class.where(["employee_id=?", employee_id])
-    taken_dates = sched.map { |s| Range.new(s.start_date.to_date, s.end_date.to_date) }
+    if start_date && end_date
+      dstart = start_date.to_date
+      dend = end_date.to_date
 
-    dstart = start_date.to_date
-    dend = end_date.to_date
-    taken_dates.each do |d|
-      if d.include?(dstart) or d.include?(dend)
-        errors[:base] << "Employee has shift schedule for #{format_date d.first} to #{format_date d.last}"
-        break
+      if dstart > dend
+        errors[:base] << "Start date can't be greater than end date."
+      end
+
+      sched = self.class.where(["employee_id=?", employee_id])
+      sched = sched.delete_if {|s| s.id == id } unless new_record?
+      taken_dates = sched.map { |s| Range.new(s.start_date.to_date, s.end_date.to_date) }
+      taken_dates.each do |d|
+        if d.include?(dstart) or d.include?(dend)
+          errors[:base] << "Employee has shift schedule for #{format_date d.first} to #{format_date d.last}"
+          break
+        end
       end
     end
   end

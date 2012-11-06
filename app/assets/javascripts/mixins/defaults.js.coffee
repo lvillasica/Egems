@@ -113,6 +113,9 @@ Egems.Mixins.Defaults =
   dasherize: (str) ->
     str.replace(/\s+/g, '-').toLowerCase()
 
+  capitalize: (str) ->
+    str.charAt(0).toUpperCase() + str.slice(1)
+
   getHoursFromMins: (minutes) ->
     return parseInt(minutes / 60)
 
@@ -156,7 +159,7 @@ Egems.Mixins.Defaults =
       , false
     else
       alert "HTML 5 is not supported in your browser."
-  
+
   smallLoadingIndicator: ->
     """
     <div class="small-ajax-loader-container">

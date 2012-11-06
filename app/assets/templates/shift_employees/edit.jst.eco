@@ -1,4 +1,4 @@
-<h6>Add Employee</h6>
+<h6>Edit Employee</h6>
 <br>
 <div>
   <form class="form-inline" id="new-shift-employee-form">
@@ -7,6 +7,7 @@
     <input type="text" name="employee[end_date]" class="input-small" placeholder="End Date"/>&nbsp;
   </form>
 </div>
+<br>
 <div class="btn-group">
   <button class="btn btn-primary btn-small submit">Add</button>
   <button class="btn btn-small cancel">Cancel</button>

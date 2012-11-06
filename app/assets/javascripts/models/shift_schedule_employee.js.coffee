@@ -1,6 +1,5 @@
 class Egems.Models.ShiftScheduleEmployee extends Backbone.Model
 
-
   fullName: ->
     @get 'full_name'
 
@@ -12,3 +11,6 @@ class Egems.Models.ShiftScheduleEmployee extends Backbone.Model
 
   shiftId: ->
     @get 'shift_schedule_id'
+
+  employeeId: ->
+    @get 'employee_id'

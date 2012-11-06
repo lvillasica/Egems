@@ -6,10 +6,18 @@ form div.tiny
   input, select
     padding: 2px 6px
 
-table.shift-employee
+table.shift-employees
   table-layout: fixed
   .thin
     width: 50px
+
+.table tbody tr.updating
+  td, th
+    background-color: #D4E6F1
+    color: #888a85
+    .icon-edit
+      color: #888a85
+      cursor: default
 
 #details-tabs .tab-content div.two-column
   .control-group
@@ -142,8 +150,16 @@ div.control-group.required
     border-color: #ccc
 
 .semi-modal
-  border: 1px solid #ccc
-  margin: 10px 0
-  padding: 10px
-  border-radius: 5px
-  -moz-border-radius: 5px
+  border: 2px solid #b2cced
+  margin: 0
+  margin-bottom: 25px
+  padding: 15px
+  border-radius: 3px
+  -moz-border-radius: 3px
+  background-color: #e3f0f8
+
+  input, select
+    border-color: #ccc
+
+  h6
+    color: black

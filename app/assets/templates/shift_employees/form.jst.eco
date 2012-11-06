@@ -1,0 +1,19 @@
+<h6><%= @actionHeader %> Employee</h6>
+<br>
+
+<div>
+  <form class="form-inline">
+    <select name="employee[employee_id]"></select>&nbsp;
+    <div class="input-append">
+      <input type="text" name="employee[start_date]" class="input-small" placeholder="Start Date"/>&nbsp;
+    </div>
+    <div class="input-append">
+      <input type="text" name="employee[end_date]" class="input-small" placeholder="End Date"/>&nbsp;
+    </div>
+  </form>
+</div>
+
+<div class="btn-group">
+  <button class="btn btn-primary btn-small submit"><%= @actionHeader %></button>
+  <button class="btn btn-small cancel">Cancel</button>
+</div>

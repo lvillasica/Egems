@@ -59,9 +59,11 @@ Egems::Application.routes.draw do
       match '/:id/details/', to: 'shift_schedules#details', as: 'shift_details', via: 'get'
       match '/delete/:id', to: 'shift_schedules#destroy', as: 'delete_shift_schedule', via: 'delete'
       match '/edit/:id', to: 'shift_schedules#update', as: 'edit_shift_schedule', via: 'put'
+
       scope '/:id/employees' do
         match '', to: 'shift_schedules#employees', as: 'shift_employees', via: 'get'
         match '/new', to: 'shift_schedules#add_employee', as: 'add_shift_employee', via: 'post'
+        match '/edit/:employee_id', to: 'shift_schedules#update_employee', as: 'edit_shift_schedule', via: 'put'
         match '/delete/:employee_id', to: 'shift_schedules#remove_employee', as: 'delete_shift_schedule', via: 'delete'
       end
     end

@@ -51,7 +51,7 @@ Egems.Mixins.ShiftSchedules =
     row = """
           <th colspan='7'>
             <div class="pull-left">
-              <a class="members" href="#employee">
+              <a class="members" href="#employee" style="font-size: 13px">
                 <i class="icon-user" title="View Employees"></i>
               </a> &nbsp;
               #{ shift.name() }
