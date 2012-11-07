@@ -21,6 +21,8 @@ class Egems.Views.ShiftSchedule extends Backbone.View
   attrShift: ->
     $(@el).attr('id', @rowId)
           .click @rowClick
+    @mainDiv = $("#main-container")
+    @indexDiv = $("#shifts-index-container")
 
   rowClick: (event) =>
     event.preventDefault()
@@ -48,8 +50,11 @@ class Egems.Views.ShiftSchedule extends Backbone.View
   editShift: (event) ->
     event.preventDefault()
     view = new Egems.Views.EditShiftSchedule(model: @model)
-    $('#main-container').fadeOut()
-                        .after(view.render().el)
+    if $(".shift-form-container-wrapper").length == 0
+      form = $(view.render().el)
+      @indexDiv.after(form)
+      @mainDiv.addClass("slide-main-container")
+      @slideEffect(@indexDiv, form)
 
   cancelShift: (event) ->
     event.preventDefault()
@@ -79,5 +84,8 @@ class Egems.Views.ShiftSchedule extends Backbone.View
   viewEmployees: (event) ->
     event.preventDefault()
     view = new Egems.Views.ShiftScheduleEmployees(model: @model)
-    $('#main-container').fadeOut()
-                        .after(view.render().el)
+    if $(".shift-form-container-wrapper").length == 0
+      form = $(view.render().el)
+      @indexDiv.after(form)
+      @mainDiv.addClass("slide-main-container")
+      @slideEffect(@indexDiv, form)

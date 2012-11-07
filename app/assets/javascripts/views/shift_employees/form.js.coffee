@@ -85,7 +85,7 @@ class Egems.Views.ShiftScheduleEmployeeForm extends Backbone.View
     @remove()
 
   removeRowHighlights: ->
-    employessTable = $("#shift-#{@shiftId}-employees-tbl tbody")
+    employeesTable = $("#shift-#{@shiftId}-employees-tbl tbody")
     employeesTable.find('tr').each (i, row) ->
       $(row).removeClass("updating")
 

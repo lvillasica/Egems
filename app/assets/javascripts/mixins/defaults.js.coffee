@@ -178,3 +178,22 @@ Egems.Mixins.Defaults =
 
   removeTinyLoadingAt: (fld) ->
     $(fld).next('img.tiny-loading').remove()
+
+  slideEffect: (a, b, options={}) ->
+    # a=hiddenDiv, b=shownDiv
+
+    compOpt = options.complete
+    options.complete = ->
+      if b.height() < a.height()
+        $(".slide-container").css('height', b.height())
+      else
+        $('.slide-container').css('height', '')
+      compOpt() if compOpt != undefined
+
+    slideContainer = $(".slide-container")
+    a.addClass("slide")
+    b.addClass("slide")
+    $('html, body').animate({ scrollTop: 0 }, 1)
+    $(".slide-main-container").stop(false, false).animate({
+      left: (-100 * b.position().left / slideContainer.width()) + "%"
+      }, options)

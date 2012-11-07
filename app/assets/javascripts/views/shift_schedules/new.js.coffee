@@ -4,12 +4,14 @@ class Egems.Views.NewShiftSchedule extends Backbone.View
   id: 'shift-form-container-wrapper'
 
   events: ->
+    'click .root' : 'cancelForm'
     'click #shift-form-actions button.submit' : 'submitForm'
     'click #shift-form-actions a.cancel' : 'cancelForm'
 
   initialize: ->
     @model = new Egems.Models.ShiftSchedule()
     @form  = new Egems.Views.ShiftScheduleForm(model: @model, action: 'create')
+    _.extend(this, Egems.Mixins.Defaults)
 
   render: ->
     $(@el).html(@template)
@@ -34,5 +36,4 @@ class Egems.Views.NewShiftSchedule extends Backbone.View
 
   cancelForm: (event) ->
     event.preventDefault()
-    @remove()
-    $("#main-container").fadeIn()
+    @slideEffect($(@el), $("#shifts-index-container"), { complete: => @remove() })

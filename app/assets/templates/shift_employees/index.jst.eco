@@ -1,4 +1,14 @@
+<ul class="breadcrumb">
+  <li>
+    <a href="" class="root">Shift Schedules</a>
+    <span class="divider">&raquo;</span>
+  </li>
+  <li>
+    <span>Employee-Shift Schedule Mapping</span>
+  </li>
+</ul>
 <br>
+
 <div style="display: inline-block; width: 100%; margin-bottom: 15px;">
   <button id="add-shift-employee-btn" class="btn btn-primary">Add Employee</button>
 </div>

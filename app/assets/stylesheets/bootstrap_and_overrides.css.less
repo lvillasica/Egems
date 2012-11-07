@@ -28,9 +28,10 @@
 
 body {
   padding-top: 120px;
-  font-size: 12px;
   min-width: 768px;
 }
+
+textarea { resize: vertical; }
 
 /* Landscape phones and down */
 @media (max-width: 480px) {
@@ -173,3 +174,17 @@ th.align-middle, tr.align-middle th {
 
 table.sortable tr th { cursor: pointer; }
 table.sortable tr th.sorttable_nosort { cursor: default; }
+
+/* General
+-------------------------------------------------- */
+
+.small { font-size: 10px }
+
+/* slide, max divs = 2 */
+.slide-container {
+  position: relative;
+  overflow: hidden;
+}
+
+.slide-main-container { position: relative; width: 200%; }
+.slide-main-container .slide { float: left; width: 50% }

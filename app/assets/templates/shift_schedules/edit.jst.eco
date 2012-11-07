@@ -1,5 +1,13 @@
-<h3 id="edit-shift-header">Edit Shift Schedule</h3>
-<hr>
+<ul class="breadcrumb">
+  <li>
+    <a href="" class="root">Shift Schedules</a>
+    <span class="divider">&raquo;</span>
+  </li>
+  <li>
+    <span>Edit Shift Schedule</span>
+  </li>
+</ul>
+<br>
 <div id="shift-form-container"></div>
 <div id="shift-form-actions" class="form-actions">
   <button class="btn btn-primary submit">Update</button>

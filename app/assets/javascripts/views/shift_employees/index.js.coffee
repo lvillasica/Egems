@@ -4,6 +4,7 @@ class Egems.Views.ShiftScheduleEmployees extends Backbone.View
   template: JST['shift_employees/index']
 
   events: ->
+    "click a.root" : "gotoShiftsIndex"
     "click #add-shift-employee-btn" : "showAddForm"
 
   initialize: ->
@@ -47,3 +48,7 @@ class Egems.Views.ShiftScheduleEmployees extends Backbone.View
       @employeesTable.before(newForm.render().el)
     else
       formContainer.replaceWith(newForm.render().el)
+
+  gotoShiftsIndex: (event) ->
+    event.preventDefault()
+    @slideEffect($(@el), $("#shifts-index-container"), { complete: => @remove() })

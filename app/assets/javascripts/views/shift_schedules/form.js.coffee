@@ -72,12 +72,10 @@ class Egems.Views.ShiftScheduleForm extends Backbone.View
             @modalFlashMsg data.errors
             @enableFormActions()
           else
-            console.log @collection
             $("#shift-form-container-wrapper").remove()
             shifts = new Egems.Routers.ShiftSchedules()
             shifts.index()
-            console.log @collection
-            $("#main-container").fadeIn()
+            $("#main-container").removeClass("slide-main-container")
             @flashMsg data.success
 
   validInput: ->
