@@ -1,13 +1,13 @@
 class EmployeeMapping < ActiveRecord::Base
   attr_accessor :no_validity
   attr_accessible :approver_id, :approver_type, :employee_id, :from, :to, :no_validity
-  
+
   # -------------------------------------------------------
   # Relationships / Associations
   # -------------------------------------------------------
   belongs_to :approver, :foreign_key => :approver_id, :class_name => 'Employee'
   belongs_to :member, :foreign_key => :employee_id, :class_name => 'Employee'
-  
+
   # -------------------------------------------------------
   # Validations
   # -------------------------------------------------------
@@ -21,12 +21,13 @@ class EmployeeMapping < ActiveRecord::Base
   # -------------------------------------------------------
   after_save :reset_responders
   after_destroy :reset_responders
-  
+
   # -------------------------------------------------------
   # Namescopes
   # -------------------------------------------------------
   scope :sups, where(:approver_type => 'Supervisor/TL')
   scope :pms, where(:approver_type => 'Project Manager')
+  scope :find_by_type, lambda { | type | where(:approver_type => type) }
   scope :conflicts_on_dates, lambda { | from, to |
     where(":from between employee_mappings.from and employee_mappings.to or
            :to between employee_mappings.from and employee_mappings.to or
@@ -34,10 +35,14 @@ class EmployeeMapping < ActiveRecord::Base
            employee_mappings.to between :from and :to",
            {:from => from, :to => to})
   }
+  scope :no_validity, where(:from => nil, :to => nil)
+  scope :with_validity,
+    where("employee_mappings.from is not null and
+           employee_mappings.to is not null")
   scope :exclude_ids, lambda { |ids|
     where(["employee_mappings.id NOT IN (?)", ids]) if ids.any?
   }
-  
+
   # -------------------------------------------------------
   # Class Methods
   # -------------------------------------------------------
@@ -51,24 +56,24 @@ class EmployeeMapping < ActiveRecord::Base
       end
     end
   end
-  
+
   # -------------------------------------------------------
   # Instance Methods
   # -------------------------------------------------------
   def from=(date)
     self[:from] = Time.parse(date.to_s).utc rescue nil
   end
-  
+
   def to=(date)
     self[:to] = Time.parse(date.to_s).utc rescue nil
   end
-  
+
   def update_if_changed(attrs)
     # select only attributes to be changed to avoid malicious attacks.
     self.attributes = attrs.symbolize_keys.select do |a|
       [:approver_type, :from, :to, :no_validity].include?(a)
     end
-    
+
     if changed?
       self.save
     else
@@ -76,14 +81,14 @@ class EmployeeMapping < ActiveRecord::Base
       return false
     end
   end
-  
+
   def reset_responders
     @new_range = [from.localtime, to.localtime] rescue []
     @old_range = [from_was.localtime, to_was.localtime] rescue []
     timesheets = objs_to_reset_responders(:timesheets)
     overtimes = objs_to_reset_responders(:overtimes)
     leave_details = objs_to_reset_responders(:leave_details)
-    
+
     timesheets.each do |timesheet|
       t_date = timesheet.date.localtime
       timesheet.reset_responders(member.responders_on(t_date))
@@ -97,59 +102,66 @@ class EmployeeMapping < ActiveRecord::Base
       leave_detail.reset_responders(member.responders_on(ld_date))
     end
   end
-  
+
 private
   def objs_to_reset_responders(obj_name)
     old_obj = member.send(obj_name.to_sym).within(@old_range) rescue []
     new_obj = member.send(obj_name.to_sym).within(@new_range) rescue []
     old_obj | new_obj
   end
-  
+
   def valid_dates
     Time.parse(from.to_s) rescue self.from = nil
     Time.parse(to.to_s) rescue self.to = nil
     from && to
   end
-  
+
   def invalid_mapping
     if valid_dates and from > to
       errors[:from] << 'should not be later than To'
     end
-    
+
     if approver.eql? member
       errors[:base] << "You can't be your own Supervisor / PM / Member."
     end
-    
+
     validate_conflict
   end
-  
+
   def validate_conflict
     if has_conflict?
       errors[:base] << "Conflict in validity."
     end
   end
-  
+
   def has_conflict?
     conflicts = []
-    
-    # TODO: Refactor
+
     if valid_dates
       conflicts << EmployeeMapping.where(:approver_id => approver.id, :employee_id => member.id)
                                   .exclude_ids([self.id]).conflicts_on_dates(from, to)
       conflicts << EmployeeMapping.where(:approver_id => member.id, :employee_id => approver.id)
                                   .exclude_ids([self.id]).conflicts_on_dates(from, to)
       conflicts << EmployeeMapping.where(:approver_id => approver.id, :employee_id => member.id)
-                                  .exclude_ids([self.id]).where(:from => nil, :to => nil)
+                                  .exclude_ids([self.id])
+                                  .find_by_type(approver_type).no_validity
       conflicts << EmployeeMapping.where(:approver_id => member.id, :employee_id => approver.id)
-                                  .exclude_ids([self.id]).where(:from => nil, :to => nil)
+                                  .exclude_ids([self.id])
+                                  .find_by_type(approver_type).no_validity
     else
       conflicts << EmployeeMapping.where(:approver_id => approver.id, :employee_id => member.id)
                                   .exclude_ids([self.id])
+                                  .find_by_type(approver_type).with_validity
       conflicts << EmployeeMapping.where(:approver_id => member.id, :employee_id => approver.id)
                                   .exclude_ids([self.id])
+                                  .find_by_type(approver_type).with_validity
+      conflicts << EmployeeMapping.where(:approver_id => approver.id, :employee_id => member.id)
+                                  .exclude_ids([self.id]).where(:from => nil, :to => nil)
+      conflicts << EmployeeMapping.where(:approver_id => member.id, :employee_id => approver.id)
+                                  .exclude_ids([self.id]).where(:from => nil, :to => nil)
     end
-    
+
     return conflicts.flatten.uniq.any?
   end
-  
+
 end
