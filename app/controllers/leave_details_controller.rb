@@ -14,6 +14,17 @@ class LeaveDetailsController < ApplicationController
     request.xhr? ? respond_with_json : redirect_to(:timesheets)
   end
 
+  def of_type
+    @type = if params[:type].eql?("Vacation Leave")
+      ['Vacation Leave', 'Emergency Leave']
+    else
+      params[:type]
+    end
+    @leave_details = @employee.leave_details.type(@type)
+    init_data
+    request.xhr? ? respond_with_json : redirect_to(:timesheets)
+  end
+
   def new
     @leave_detail = @employee.leave_details.new({ :leave_type => @leave.leave_type })
     leave_detail_attrs
@@ -184,7 +195,8 @@ private
       :day_offs => @employee.day_offs_within(leave_range),
       :holidays => @employee.holidays_within(leave_range),
       :leave_total_pending => @leave.total_pending,
-      :leave_remaining_balance => @leave.remaining_balance
+      :leave_remaining_balance => @leave.remaining_balance,
+      :get_responders => @leave_detail.get_responders
     })
     js_params[:total_pending] = @employee.total_pending_leaves
     js_params[:flash_messages] = flash.to_hash
@@ -206,7 +218,7 @@ private
         :is_respondable => leave_detail.is_respondable_by?(@employee) })
     end
   end
-  
+
   def set_location(location = 'leaves')
     js_params[:current_location] = location
   end

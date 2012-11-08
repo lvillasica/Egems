@@ -105,7 +105,7 @@ class Egems.Views.LeaveDetailForm extends Backbone.View
     @setLeaveUnitFldVal()
     @disableAttr()
     @setHalfDay()
-  
+
   setPeriodFldVal: ->
     @$("#leave_detail_period_#{@model.period()}").attr('checked', 'checked')
 
@@ -247,7 +247,11 @@ class Egems.Views.LeaveDetailForm extends Backbone.View
         if flash_messages.error is undefined
           @exitForm(event, data)
           @check_mailing_job_status("leave_detail")
-          $.extend(attributes, {status: data.leave_detail.status, period: data.leave_detail.period})
+          $.extend(attributes, {
+            status: data.leave_detail.status
+            period: data.leave_detail.period
+            get_responders: data.leave_detail.get_responders
+            responded_on: data.leave_detail.responded_on})
           @oldData.set attributes if @oldData
           @updateNotif(data.total_pending)
         else
@@ -282,12 +286,11 @@ class Egems.Views.LeaveDetailForm extends Backbone.View
 
   inModal: ->
     $('#leave_detail_form').parents('#apply-leave-modal').length == 1
-  
+
   enableFormActions: ->
     $('#leave-detail-form-actions .submit').removeAttr('disabled')
     $('#leave-detail-form-actions .cancel').removeAttr('disabled')
-  
+
   disableFormActions: ->
     $('#leave-detail-form-actions .submit').attr('disabled', true)
     $('#leave-detail-form-actions .cancel').attr('disabled', true)
-

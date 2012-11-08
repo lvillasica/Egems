@@ -1,22 +1,21 @@
 class Egems.Views.LeavesAccordion extends Backbone.View
 
   template: JST['leaves/leaves_accordion']
-  
+
   render: ->
     $(@el).html(@template())
-    @collection.each(@appendLeave)
+    leaveTypes = _.uniq(_.map(@collection.models, (l) -> l.leaveType()))
+    _.each(leaveTypes, @appendLeave)
     this
-  
-  appendLeave: (leave) =>
-    leaveType = leave.get('leave_type')
+
+  appendLeave: (leaveType) =>
     leaveTypeTrimmed = leaveType.replace(/\s/g, "")
     # synchronous ajax to maintain ordering
     $.ajax
       async: false
       type: 'GET'
       dataType: 'json'
-      url: "/leave_details"
-      data: {'leave_type': leaveType}
+      url: "/leave_details/of_type/#{ leaveType }"
       success: (data) =>
         collection = new Egems.Collections.LeaveDetails()
         collection.reset(data.leave_details)

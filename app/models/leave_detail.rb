@@ -180,11 +180,9 @@ class LeaveDetail < ActiveRecord::Base
   end
 
   def set_default_responders
+    self.responders = employee.responders_on(leave_date.localtime).compact.uniq
     if needs_hr_action?
-      # send special leaves to supervisor HRs only *10.24.12
-      self.responders = employee.super_hr_personnel.compact.uniq unless employee.is_hr?
-    else
-      self.responders = employee.responders_on(leave_date.localtime).compact.uniq
+      self.responders << employee.super_hr_personnel.compact.uniq unless employee.is_hr?
     end
   end
 
@@ -196,10 +194,11 @@ class LeaveDetail < ActiveRecord::Base
   end
 
   def reset_responders(responders=[])
-    unless needs_hr_action?
-      self.responders = responders.compact.uniq
-      self.responders.reset
+    self.responders = responders.compact.uniq
+    if needs_hr_action?
+      self.responders << employee.super_hr_personnel.compact.uniq unless employee.is_hr?
     end
+    self.responders.reset
   end
 
   def set_old_date_entries
@@ -214,6 +213,8 @@ class LeaveDetail < ActiveRecord::Base
   def update_attributes_and_reset_status(attrs)
     attrs = attrs.symbolize_keys
     attrs.merge!(:status => 'Pending') unless status.eql?('Pending')
+    self.responder_id = nil
+    self.responded_on = nil
     # select only attributes to be changed to avoid malicious attacks.
     self.attributes = attrs.select do |a|
       tmp = [:leave_date, :end_date, :leave_unit, :details, :status]

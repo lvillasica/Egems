@@ -44,6 +44,7 @@ Egems::Application.routes.draw do
       match '/requests', to: 'leave_details#leave_requests', as: 'leave_requests', via: 'get'
       match '/approve', to: 'leave_details#bulk_approve', as: 'leave_details_approve', via: 'post'
       match '/reject', to: 'leave_details#bulk_reject', as: 'leave_details_reject', via: 'post'
+      match '/of_type/:type', to: 'leave_details#of_type', as: 'leaves_details_of_type', via: 'get'
     end
 
     scope '/hr/holidays' do
