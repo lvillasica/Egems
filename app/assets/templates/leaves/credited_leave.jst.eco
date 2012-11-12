@@ -1,4 +1,9 @@
 <td><%= @leave.leaveType() %></td>
 <td class="time mins"><%= @mixins.format_date @leave.dateFrom() %></td>
 <td class="time mins"><%= @mixins.format_date @leave.dateTo() %></td>
-<td style="width:5%"><%= @mixins.format_float @leave.leavesAllocated() %></td>
+<td style="width:5%">
+  <input type="text" class="time" style="width:30px; font-size:8pt; margin:0;"
+         name="leave[leaves_allocated]"
+         value="<%= @mixins.format_float @leave.leavesAllocated() %>" />
+  <span class="action" style="position:absolute; margin:3px;"></span>
+</td>

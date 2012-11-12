@@ -1,7 +1,7 @@
 class Egems.Views.ForLeaveCrediting extends Backbone.View
 
   template: JST['employees/for_leave_crediting']
-  
+
   events:
     "click #toggle-boxes" : "toggleCheckBoxes"
     "click #for-leave-crediting-form button.grant": "grantEmployees"
@@ -23,7 +23,7 @@ class Egems.Views.ForLeaveCrediting extends Backbone.View
   appendEmployee: (employee) =>
     view = new Egems.Views.ForLeaveCreditingEmployee(model: employee)
     @$("#employees-tbl tbody").append(view.render().el)
-  
+
   toggleCheckBoxes: (event) ->
     event.preventDefault()
     className  = $('#toggle-boxes')[0].className
@@ -35,11 +35,12 @@ class Egems.Views.ForLeaveCrediting extends Backbone.View
       when "icon-remove"
         $(event.target).removeClass('icon-remove').addClass('icon-ok')
         checkBoxes.attr('checked', false)
-  
+    checkBoxes.trigger('change')
+
   getCheckedIds: ->
     _.map $("#for-leave-crediting-form input[type='checkbox']:checked"), (box) ->
       $(box).val()
-  
+
   grantEmployees: (event) ->
     event.preventDefault()
     ids = @getCheckedIds()
@@ -54,19 +55,19 @@ class Egems.Views.ForLeaveCrediting extends Backbone.View
           success: @onSuccessfulGrant
     else
       alert 'No employees selected.'
-  
+
   onSuccessfulGrant: (data) =>
     @collection.fetch
       url: '/employees/for_leave_crediting'
       success: (collection, response) =>
         @collection.reset(response.for_leave_crediting)
     @showFlash(data.flash_messages, null, '#qualified-for-leaves-container')
-  
+
   viewEmployees: (event) ->
     event.preventDefault()
     @toggleViewContainer(event)
     @renderRootView()
-  
+
   toggleViewContainer: (event) ->
     @target = $(event.target)
     @toggleContents = $('#qualified-for-leaves-container .toggle-contents')
@@ -75,17 +76,17 @@ class Egems.Views.ForLeaveCrediting extends Backbone.View
       unless @toggleContents.is(':hidden')
         unless @grantedEmployees.length > 0 or @toggleContents.find('.contents:contains("No data")').length > 0
           @renderGrantedEmployeesView()
-  
+
   setArrowPos: (target) ->
     arrowPos = ((target.innerWidth() / 2) + @getViewBtnLeftPos(target) - 10)
     @toggleContents.find('.arrow-up').css(left: "#{ arrowPos }px")
-  
+
   getViewBtnLeftPos: (viewBtn) ->
     parent = $('#qualified-for-leaves-container')
     o1 = viewBtn.offset()
     o2 = parent.offset()
     leftPos = o1.left - o2.left
-  
+
   renderGrantedEmployeesView: ->
     year = parseInt(I18n.strftime(new Date(), "%Y"))
     @grantedEmployees.fetch
@@ -97,8 +98,7 @@ class Egems.Views.ForLeaveCrediting extends Backbone.View
           collection: @grantedEmployees
           year: year
         @toggleContents.find('.contents').html(view.render().el)
-  
+
   renderRootView: ->
     rootLnk = @toggleContents.find('a.root')
     rootLnk.trigger('click') unless rootLnk.length is 0
-

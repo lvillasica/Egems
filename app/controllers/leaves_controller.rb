@@ -1,12 +1,12 @@
 class LeavesController < ApplicationController
   respond_to :json
-  
+
   before_filter :authenticate_user!, :except => [:index]
   before_filter :set_location
   before_filter :get_employee
   before_filter :authenticate_hr!, :except => [:index]
   before_filter :get_qualified_for_leaves, :only => [:grant]
-  
+
   def index
     @leaves = @employee.leaves.active.order_by_id
     init_data
@@ -15,9 +15,9 @@ class LeavesController < ApplicationController
       format.json { render :json => @data.to_json }
     end
   end
-  
+
   def create
-    @emp = Employee.find(params[:leave].delete(:employee_id).to_i) rescue render_404
+    @emp = Employee.find(params[:leave].delete(:employee_id).to_i) rescue record_not_found
     @leave = @emp.leaves.new(params[:leave])
     if @leave.save
       flash_message(:success, "#{ @leave.leave_type } was successfully granted to #{ @emp.full_name }.")
@@ -28,9 +28,9 @@ class LeavesController < ApplicationController
     set_flash
     respond_with_json
   end
-  
+
   def update
-    @leave = Leave.find(params[:id]) rescue render_404
+    @leave = Leave.find(params[:id]) rescue record_not_found
     params[:leave].delete(:employee_id)
     if @leave.update_attributes(params[:leave])
       flash_message(:success, "Leave was successfully updated.")
@@ -41,21 +41,21 @@ class LeavesController < ApplicationController
     set_flash
     respond_with_json
   end
-  
+
   def destroy
-    @leave = Leave.find(params[:id]) rescue render_404
+    @leave = Leave.find(params[:id]) rescue record_not_found
     @leave.destroy
     flash_message(:success, "Removed Leave.")
     set_flash
     respond_with_json
   end
-  
+
   def crediting
     current_year = Time.now.year + 1
     js_params[:years] = (current_year ... (current_year + 10))
     respond_with_json
   end
-  
+
   def grant
     if @qualified_for_leaves.any?
       @qualified_for_leaves.each do |emp|
@@ -68,31 +68,31 @@ class LeavesController < ApplicationController
     set_flash
     respond_with_json
   end
-  
+
   def credited
     @emp = Employee.find(params[:employee_id].to_i) rescue render_404
     @year = params[:year].blank? ? Time.now.year : params[:year].to_i
     js_params[:credited_leaves] = @emp.granted_major_leaves(@year)
     respond_with_json
   end
-  
+
   def special_types
     js_params[:special_types] = Leave.special_types.map do |l|
       l.attributes.merge(:employee_name => l.employee.full_name)
     end
     respond_with_json
   end
-  
+
 private
   def authenticate_hr!
     set_location('hrmodule')
     render_404 unless @employee.is_hr? or @employee.is_supervisor_hr?
   end
-  
+
   def get_employee
     @employee = current_user.employee
   end
-  
+
   def get_qualified_for_leaves
     cyear = Time.now.year
     if params[:year]
@@ -100,7 +100,7 @@ private
     else
       @year = cyear
     end
-    
+
     if @year
       @qualified_for_leaves = if params[:qualified_ids]
         Employee.find_all_by_id(params[:qualified_ids]).select do |e|
@@ -117,12 +117,12 @@ private
       respond_with_json
     end
   end
-  
+
   def init_data
     js_params[:leaves] = leaves_with_pending_and_balance
     @data = js_params
   end
-  
+
   def leaves_with_pending_and_balance
     @leaves.map do | l |
       l.attributes.merge({
@@ -131,7 +131,7 @@ private
       })
     end
   end
-  
+
   def set_flash
     js_params[:flash_messages] = flash.to_hash
     flash.discard # make sure error msgs don't show on other page
@@ -143,7 +143,13 @@ private
       format.json { render :json => js_params.to_json }
     end
   end
-  
+
+  def record_not_found
+    flash_message(:error, 'Record not found.')
+    set_flash
+    respond_with_json
+  end
+
   def set_location(location = 'leaves')
     js_params[:current_location] = location
   end
