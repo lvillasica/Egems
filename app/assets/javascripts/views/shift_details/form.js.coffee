@@ -40,8 +40,8 @@ class Egems.Views.ShiftDetailForm extends Backbone.View
     @detailIdFld.val(@detailId).change => @detailIdFld.val(@detailId)
     @dayNumFld.val(@dayNum).change => @dayNumFld.val(@dayNum)
     #time starts
-    @amStartFld.val(@format_time_only(@amStart))
-    @pmStartFld.val(@format_time_only(@pmStart))
+    @amStartFld.val(@format_time_only(@amStart)).attr('readonly', true)
+    @pmStartFld.val(@format_time_only(@pmStart)).attr('readonly', true)
     #durations
     @amDurationFld.val(@amDuration).keydown(@validateNumeric)
     @pmDurationFld.val(@pmDuration).keydown(@validateNumeric)

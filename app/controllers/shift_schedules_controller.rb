@@ -24,7 +24,7 @@ class ShiftSchedulesController < ApplicationController
   def add_employee
     shift_employee = @shift.employee_shift_schedules.create(params[:employee])
     if (errors=shift_employee.errors).empty?
-      js_params[:shift] = @shift
+      js_params[:shift] = shift_attrs @shift
       js_params[:success] = { success: "Employee was mapped to shift schedule successfully." }
     else
       js_params[:errors] = { error: errors.full_messages.join("<br>") }
@@ -37,7 +37,7 @@ class ShiftSchedulesController < ApplicationController
     shift_employee.update_attributes(params[:employee])
 
     if (errors=shift_employee.errors).empty?
-      js_params[:shift] = @shift
+      js_params[:shift] = shift_attrs @shift
       js_params[:success] = { success: "Employee was mapped to shift schedule successfully." }
     else
       js_params[:errors] = { error: errors.full_messages.join("<br>") }
@@ -48,6 +48,7 @@ class ShiftSchedulesController < ApplicationController
   def remove_employee
     employee = @shift.employee_shift_schedules.find_by_id(params[:employee_id])
     errors = employee.errors unless employee.destroy
+    js_params[:shift] = shift_attrs @shift
     js_params[:success] = { success: "Employee mapping to shift schedule was removed successfully." } unless errors
     js_params[:errors] = { error: errors.full_messages.join("<br>") } if errors
     respond_with_json
@@ -135,10 +136,18 @@ class ShiftSchedulesController < ApplicationController
   end
 
   def shift_attrs(collection)
-    collection.map do |col|
-      col.attributes.merge({
-        :editable   => col.is_editable?,
-        :cancelable => col.is_cancelable?
+    if collection.is_a? Array
+      collection.map do |col|
+        col.attributes.merge({
+          :editable   => col.is_editable?,
+          :cancelable => col.is_cancelable?
+        })
+      end
+    elsif collection.is_a? ShiftSchedule
+      shift = collection
+      shift.attributes.merge({
+        :editable   => shift.is_editable?,
+        :cancelable => shift.is_cancelable?
       })
     end
   end

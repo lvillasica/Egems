@@ -55,8 +55,13 @@ class Egems.Views.ShiftScheduleEmployee extends Backbone.View
             @remove()
             $(".shift-employee-form-container").remove()
             @msgsDiv.html(@flash_messages(data.success))
-            @checkEmptyTable()
+            shift = new Egems.Models.ShiftSchedule(data.shift)
+            @checkEmptyTable(shift)
 
-  checkEmptyTable: ->
+  checkEmptyTable: (shift) ->
     if @employeesTable.find('tbody tr').length == 0
       @employeesTable.append "<tr><td colspan='4' class='well'><em>No data found.</em></td></tr>"
+      rowId = shift.id
+      view = new Egems.Views.ShiftSchedule(model: shift)
+      $("#shift_#{rowId}").replaceWith(view.render().el)
+      $(".shift_#{rowId}_details").remove()

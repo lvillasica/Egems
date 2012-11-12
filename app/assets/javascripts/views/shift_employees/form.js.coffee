@@ -73,8 +73,7 @@ class Egems.Views.ShiftScheduleEmployeeForm extends Backbone.View
           @msgsDiv.html(@flash_messages(data.errors))
         else
           shift = new Egems.Models.ShiftSchedule(data.shift)
-          shiftView = new Egems.Views.ShiftScheduleEmployees(model: shift)
-          @container.replaceWith(shiftView.render().el)
+          @updateShiftView(shift)
           @msgsDiv = $("div.shift-employees-container #flash_messages")
           @msgsDiv.html(@flash_messages(data.success))
 
@@ -83,6 +82,18 @@ class Egems.Views.ShiftScheduleEmployeeForm extends Backbone.View
     @removeRowHighlights()
     @msgsDiv.empty()
     @remove()
+
+  updateShiftView: (shift) =>
+    view = new Egems.Views.ShiftScheduleEmployees(model: shift)
+    @container.replaceWith(view.render().el)
+    $("div.shift-employees-container").addClass("slide")
+    @updateShift(shift)
+
+  updateShift: (shift) =>
+    rowId = shift.getId()
+    view = new Egems.Views.ShiftSchedule(model: shift)
+    $("#shift_#{rowId}").replaceWith(view.render().el)
+    $(".shift_#{rowId}_details").remove()
 
   removeRowHighlights: ->
     employeesTable = $("#shift-#{@shiftId}-employees-tbl tbody")
