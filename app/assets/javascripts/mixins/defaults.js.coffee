@@ -182,14 +182,6 @@ Egems.Mixins.Defaults =
   slideEffect: (a, b, options={}) ->
     # a=hiddenDiv, b=shownDiv
 
-    compOpt = options.complete
-    options.complete = ->
-      if b.height() < a.height()
-        $(".slide-container").css('height', b.height())
-      else
-        $('.slide-container').css('height', '')
-      compOpt() if compOpt != undefined
-
     slideContainer = $(".slide-container")
     a.addClass("slide")
     b.addClass("slide")

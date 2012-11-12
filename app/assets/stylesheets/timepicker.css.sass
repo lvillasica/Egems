@@ -1,43 +1,55 @@
-.ui-timepicker-list
-	overflow-y: auto
-	height: 150px
-	min-width: 6.5em
-	background: #fff
-	border: 1px solid #ddd
-	margin: 0
-	padding: 0
-	list-style: none
-	-webkit-box-shadow: 0 5px 10px rgba(0,0,0,0.2)
-	-moz-box-shadow: 0 5px 10px rgba(0,0,0,0.2)
-	box-shadow: 0 5px 10px rgba(0,0,0,0.2)
-	outline: none
-	z-index: 10001
+.ui-timepicker-container
+  position: absolute
+  overflow: hidden
 
-.ui-timepicker-list.ui-timepicker-with-duration
-	width: 11em
+.ui-timepicker
+  display: block
+  height: 200px
+  text-align: center
+  list-style: none outside none
+  overflow: auto
+  overflow-x: hidden /* IE */
+  margin: 0
+  padding: 0 0 0 1px
 
-.ui-timepicker-duration
-	margin-left: 5px
-	color: #888
+.ui-timepicker-standard
+  font-family: Verdana,Arial,sans-serif
+  font-size: 10px
 
-.ui-timepicker-list:hover .ui-timepicker-duration
-	color: #888
+  background-color: #FFF
+  border: 1px solid #AAA
+  color: #222
 
-.ui-timepicker-list li
-	padding: 3px 0 3px 5px
-	cursor: pointer
-	white-space: nowrap
-	color: #000
-	list-style: none
-	margin: 0
+  margin: 0
+  padding: 0
 
-.ui-timepicker-list:hover .ui-timepicker-selected
-	background: #fff
-	color: #000
+  a
+    color: #222
 
-li.ui-timepicker-selected, .ui-timepicker-list li:hover, .ui-timepicker-list:hover .ui-timepicker-selected:hover
-	background: #1980EC
-	color: #fff
+  .ui-state-hover
+    background-color: #DADADA
+    border: 1px solid #999
+    font-weight: normal
+    color: #212121
 
-li.ui-timepicker-selected .ui-timepicker-duration, .ui-timepicker-list li:hover .ui-timepicker-duration
-	color: #ccc
+  .ui-menu-item
+    margin: 0
+    padding: 0
+
+    a
+      display: block
+      padding: 0.2em 0.4em
+      line-height: 1.5
+      text-decoration: none
+      cursor: pointer
+
+    a.ui-state-hover
+      font-weight: normal
+      margin: -1px -1px -1px -1px
+
+.ui-timepicker-corners, .ui-timepicker-corners .ui-corner-all
+  -moz-border-radius: 2px
+  -webkit-border-radius: 2px
+
+.ui-timepicker-hidden
+  display: none

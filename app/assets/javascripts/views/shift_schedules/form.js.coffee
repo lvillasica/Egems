@@ -38,7 +38,7 @@ class Egems.Views.ShiftScheduleForm extends Backbone.View
             .keyup(@validNotEmpty)
             .change => @model.set('description', @descFld.val())
 
-    @rateFld.val(rate)
+    @rateFld.val(rate || 0)
             .keydown(@validateNumeric)
             .keyup(@validateRate)
             .change => @model.set('differential_rate', parseInt(@rateFld.val()))

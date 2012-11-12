@@ -32,16 +32,16 @@ class Egems.Views.ShiftDetailForm extends Backbone.View
     @pmDurationFld  = @$('#detail_pm_time_duration')
     @pmAllowanceFld = @$('#detail_pm_time_allowance')
 
-    timePickerAttrs = { acceptNull: true, step: 15, timeFormat: 'h:i A' }
-    @amStartFld.timepicker(timePickerAttrs)
-    @pmStartFld.timepicker(timePickerAttrs)
+    timepickerAttrs = { interval: 15, change: @changedTimein }
+    @amStartFld.timepicker(timepickerAttrs)
+    @pmStartFld.timepicker(timepickerAttrs)
 
-    $(@el).find(":input:not(.timein)").change(@toDefaultValue)
+    $(@el).find(":input:not(.timepicker)").change(@toDefaultValue)
     @detailIdFld.val(@detailId).change => @detailIdFld.val(@detailId)
     @dayNumFld.val(@dayNum).change => @dayNumFld.val(@dayNum)
     #time starts
-    @amStartFld.val(@format_time_only(@amStart)).change(@changedTimein)
-    @pmStartFld.val(@format_time_only(@pmStart)).change(@changedTimein)
+    @amStartFld.val(@format_time_only(@amStart))
+    @pmStartFld.val(@format_time_only(@pmStart))
     #durations
     @amDurationFld.val(@amDuration).keydown(@validateNumeric)
     @pmDurationFld.val(@pmDuration).keydown(@validateNumeric)
@@ -66,14 +66,17 @@ class Egems.Views.ShiftDetailForm extends Backbone.View
     if target.val().trim().length == 0
       target.val('0')
 
-  changedTimein: (event) =>
+  adjustPM: (event) =>
     fld = $(event.target)
     val = fld.val().trim()
-    if val == "--:--" || val.length == 0
-      grp = fld.parents("#" + @model.day().toLowerCase())
-      grp.find(".timein").val("--:--")
-      grp.find(".mins").val(0)
 
+  changedTimein: (time) =>
+    grp = $(@el).parents("#" + @model.day().toLowerCase())
+    if time == "--:--"
+      grp.find(".timepicker").val(time)
+      grp.find(".mins").val(0).attr("readonly", true)
+    else
+      grp.find(".mins").attr("readonly", false)
 
   validateNumeric: (event) =>
     if !@isNumeric(event)
