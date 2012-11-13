@@ -92,12 +92,12 @@ class Employee < ActiveRecord::Base
 
   def responders_on(datetime)
     res = (approvers.mapped_on(datetime) | approvers.no_validity_mappings)
-    res = Employee.all_supervisor_hr.exclude_ids([self.id]) if res.blank?
+    res = super_hr_personnel if res.blank?
     res
   end
 
   def super_hr_personnel
-    hr_personnel.keep_if(&:is_supervisor_hr?)
+    hr_personnel.all_supervisor_hr.exclude_ids([self.id])
   end
 
   def hr_personnel
