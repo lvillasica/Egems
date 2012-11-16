@@ -196,7 +196,8 @@ private
       :holidays => @employee.holidays_within(leave_range),
       :leave_total_pending => @leave.total_pending,
       :leave_remaining_balance => @leave.remaining_balance,
-      :get_responders => @leave_detail.get_responders
+      :get_responders => @leave_detail.get_responders,
+      :cancelable => @leave_detail.is_cancelable?
     })
     js_params[:total_pending] = @employee.total_pending_leaves
     js_params[:flash_messages] = flash.to_hash

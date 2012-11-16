@@ -250,6 +250,7 @@ class Egems.Views.LeaveDetailForm extends Backbone.View
           $.extend(attributes, {
             status: data.leave_detail.status
             period: data.leave_detail.period
+            cancelable: data.leave_detail.cancelable
             get_responders: data.leave_detail.get_responders
             responded_on: data.leave_detail.responded_on})
           @oldData.set attributes if @oldData
