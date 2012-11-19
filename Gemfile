@@ -34,6 +34,7 @@ gem 'i18n-js'
 gem 'delayed_job_active_record'
 gem 'daemons'
 gem 'mailcatcher'
+gem 'mailtrap'
 
 # To use ActiveModel has_secure_password
 # gem 'bcrypt-ruby', '~> 3.0.0'
