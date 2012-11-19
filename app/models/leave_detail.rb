@@ -344,10 +344,12 @@ class LeaveDetail < ActiveRecord::Base
   def is_respondable_by?(supervisor)
     return false if employee == supervisor
     if is_pending? or is_hr_approved?
+      is_responder = responders.include?(supervisor)
       if supervisor.is_supervisor_hr?
-        return true if responders.include?(supervisor) && is_pending? && needs_hr_action?
+        no_approvers = employee.approvers.empty?
+        return true if is_responder && (needs_hr_action? || (is_pending? && no_approvers))
       elsif supervisor.is_supervisor?
-        return true if responders.include?(supervisor) && (is_pending? || (needs_hr_action? && is_hr_approved?))
+        return true if is_responder && (is_pending? || (needs_hr_action? && is_hr_approved?))
       end
     end
     return false
