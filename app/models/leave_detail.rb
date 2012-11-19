@@ -327,8 +327,9 @@ class LeaveDetail < ActiveRecord::Base
   end
 
   def is_cancelable?
-    ['Pending', 'Approved', 'HR Approved'].include?(status) && with_time_entries? ||
-    ['Pending', 'Approved', 'HR Approved'].include?(status) && leave_date.localtime.to_date > Date.today
+    !new_record? &&
+    (['Pending', 'Approved', 'HR Approved'].include?(status) && with_time_entries? ||
+    ['Pending', 'Approved', 'HR Approved'].include?(status) && leave_date.localtime.to_date > Date.today)
   end
 
   def with_time_entries?
