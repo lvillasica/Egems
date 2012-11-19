@@ -11,6 +11,7 @@ class Holiday < ActiveRecord::Base
   validate :check_date
 
   after_save :recompute_leaves
+  before_destroy :keep_branches_record
   after_destroy :restore_leaves
 
   # -------------------------------------------------------
@@ -109,13 +110,18 @@ class Holiday < ActiveRecord::Base
       leaves = LeaveDetail.filed_for(day)
       leaves.each do |detail|
         branch = detail.employee.branch
-        restore_leave(detail) if branches.include?(branch)
+        restore_leave(detail) if @branches_was.include?(branch)
       end
     end
   end
 
-  def update_attrs_with_branches(attrs, branches)
+
+  def keep_branches_record
     @branches_was = self.branches.clone()
+  end
+
+  def update_attrs_with_branches(attrs, branches)
+    keep_branches_record
     self.attributes = attrs
     self.branches = branches
     self.save
