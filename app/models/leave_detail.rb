@@ -347,9 +347,21 @@ class LeaveDetail < ActiveRecord::Base
       is_responder = responders.include?(supervisor)
       if supervisor.is_supervisor_hr?
         no_approvers = employee.approvers.empty?
+        #superHRs can approve
+        #special leaves and
+        #normal leaves only if employee has no mapped pm/supervisor
         return true if is_responder && (needs_hr_action? || (is_pending? && no_approvers))
       elsif supervisor.is_supervisor?
-        return true if is_responder && (is_pending? || (needs_hr_action? && is_hr_approved?))
+        #supervisors can approve
+        #normal leaves of mapped employees
+        #special leaves only if status is 'HR Approved'
+        if is_responder
+          if needs_hr_action?
+            return true if is_hr_approved?
+          else
+            return true if is_pending?
+          end
+        end
       end
     end
     return false
