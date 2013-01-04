@@ -94,8 +94,8 @@ class ShiftSchedulesController < ApplicationController
   private
   def details_attrs(collection)
     collection.map do |col|
-      am_start = (a=col.am_time_start) ? (a.localtime - a.localtime.utc_offset) : nil
-      pm_start = (p=col.pm_time_start) ? (p.localtime - p.localtime.utc_offset) : nil
+      am_start = (a=col.am_time_start) ? a : nil
+      pm_start = (p=col.pm_time_start) ? p : nil
       col.attributes.merge({
         :local_am_start => am_start,
         :local_pm_start => pm_start

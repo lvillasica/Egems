@@ -39,20 +39,20 @@ class Overtime < ActiveRecord::Base
   scope :within, lambda { |range|
     start_date, end_date = range
     where(["date_of_overtime between ? and ?",
-             start_date.utc, end_date.utc]) if start_date and end_date
+             start_date, end_date]) if start_date and end_date
   }
 
   # -------------------------------------------------------
   # Instance Methods
   # -------------------------------------------------------
   def set_created_on
-    self.created_on = Time.now.utc
+    self.created_on = Time.now
   end
-  
+
   def set_action
     self.create_action
   end
-  
+
   def get_responders
     if action.responder
       return [action.responder]
@@ -60,21 +60,21 @@ class Overtime < ActiveRecord::Base
       return action.responders
     end
   end
-  
+
   def reset_status
     self.status = 'Pending' unless self.status.eql?('Pending')
   end
-  
+
   def max_duration
-    employee.timesheets.by_date(date_of_overtime.localtime).sum(:minutes_excess)
+    employee.timesheets.by_date(date_of_overtime).sum(:minutes_excess)
   end
-  
+
   def update_if_changed(attrs)
     # select only attributes to be changed to avoid malicious attacks.
     self.attributes = attrs.symbolize_keys.select do |a|
       [:duration, :work_details].include?(a)
     end
-    
+
     if changed?
       self.save
     else
@@ -82,7 +82,7 @@ class Overtime < ActiveRecord::Base
       return false
     end
   end
-  
+
   def cancel!
     if is_cancelable?
       update_column(:status, 'Canceled')
@@ -96,11 +96,11 @@ class Overtime < ActiveRecord::Base
       return false
     end
   end
-  
+
   def is_cancelable?
     ['Pending', 'Rejected'].include?(status)
   end
-  
+
   def response_date
     action.updated_at
   end
@@ -112,7 +112,7 @@ private
     elsif duration.minutes > max_duration.minutes
       errors[:duration] << "must not exceed #{ format_in_hours maxDuration }"
     end
-    
+
     unless ['Pending', 'Rejected', 'Un-Filed'].include?(status)
       errors[:base] << "You can no longer edit this entry."
     end
@@ -121,7 +121,7 @@ private
   def set_email_action_sent
     @email_action = 'sent'
   end
-  
+
   def set_email_action_edited
     @email_action = "edited" if @email_action == 'sent' or @email_action.nil?
   end

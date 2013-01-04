@@ -59,7 +59,7 @@ class LeaveDetail < ActiveRecord::Base
   }
 
   scope :filed_for, lambda {|date = Time.now.beginning_of_day|
-    where(["leave_date <= ? and optional_to_leave_date >= ?", date.utc, date.utc])
+    where(["leave_date <= ? and optional_to_leave_date >= ?", date, date])
   }
 
   scope :exclude_ids, lambda { |ids|
@@ -85,7 +85,7 @@ class LeaveDetail < ActiveRecord::Base
     if start_date and end_date
       asc
       .where(["leave_date between ? and ?",
-               start_date.utc, end_date.utc])
+               start_date, end_date])
     end
   }
 
@@ -102,8 +102,8 @@ class LeaveDetail < ActiveRecord::Base
     def get_units_per_leave_date(non_working_dates)
       units_per_leave_date = {}
       self.active.each do |ld|
-        local_leave_date = ld.leave_date.localtime.to_date
-        local_end_date = ld.optional_to_leave_date.localtime.to_date rescue
+        local_leave_date = ld.leave_date.to_date
+        local_end_date = ld.optional_to_leave_date.to_date rescue
                          (local_leave_date + ld.leave_unit.to_f.ceil.days) - 1.day
         if ld.leave_unit.to_f > 1
           leave_start = local_leave_date
@@ -132,11 +132,11 @@ class LeaveDetail < ActiveRecord::Base
   # Instance Methods
   # -------------------------------------------------------
   def leave_date=(date)
-    self[:leave_date] = Time.parse(date.to_s).utc rescue nil
+    self[:leave_date] = Time.parse(date.to_s) rescue nil
   end
 
   def end_date=(date)
-    self[:optional_to_leave_date] = Time.parse(date.to_s).utc rescue nil
+    self[:optional_to_leave_date] = Time.parse(date.to_s) rescue nil
   end
 
   def end_date
@@ -149,8 +149,8 @@ class LeaveDetail < ActiveRecord::Base
 
   # returns {<mm/dd/yyyy> to <mm/dd/yyyy> or <mm/dd/yyyy AM/PM> or <mm/dd/yyyy>}
   def dated_on
-    leave_start = leave_date.localtime.to_date
-    leave_end = end_date.localtime.to_date
+    leave_start = leave_date.to_date
+    leave_end = end_date.to_date
     range = (leave_start .. leave_end).to_a
     l_start_date = I18n.l(range.first, :format => :long_date_with_day)
     l_end_date = I18n.l(range.last, :format => :long_date_with_day) unless range.count == 1
@@ -172,15 +172,15 @@ class LeaveDetail < ActiveRecord::Base
   end
 
   def set_period
-    leave_date_local = leave_date.localtime.to_date
-    end_date_local = end_date.localtime.to_date
+    leave_date_local = leave_date.to_date
+    end_date_local = end_date.to_date
     if (leave_date_local .. end_date_local).count > 1
       self.period = 3
     end
   end
 
   def set_default_responders
-    self.responders = employee.responders_on(leave_date.localtime).compact.uniq
+    self.responders = employee.responders_on(leave_date).compact.uniq
     if needs_hr_action?
       self.responders << employee.super_hr_personnel.compact.uniq unless employee.is_hr?
     end
@@ -202,12 +202,12 @@ class LeaveDetail < ActiveRecord::Base
   end
 
   def set_old_date_entries
-    @old_leave_date_local = self.leave_date_was.localtime.to_date
-    @old_end_date_local = self.end_date_was.localtime.to_date
+    @old_leave_date_local = self.leave_date_was.to_date
+    @old_end_date_local = self.end_date_was.to_date
   end
 
   def set_created_on
-    self.created_on = Time.now.utc
+    self.created_on = Time.now
   end
 
   def update_attributes_and_reset_status(attrs)
@@ -237,7 +237,7 @@ class LeaveDetail < ActiveRecord::Base
         if (status == 'Pending' && supervisor.is_hr?) or is_hr_approved?
           if supervisor.is_hr?
             self.status = 'HR Approved'
-            update_responders(employee.responders_on(leave_date.localtime))
+            update_responders(employee.responders_on(leave_date))
           else
             self.status = 'Approved'
           end
@@ -271,12 +271,12 @@ class LeaveDetail < ActiveRecord::Base
       self.responder = supervisor
       self.responded_on = Time.now
       if supervisor.is_hr?
-        update_responders(employee.responders_on(leave_date.localtime))
+        update_responders(employee.responders_on(leave_date))
       end
       @email_action = 'rejected'
       @action_owner = supervisor
       if self.save(:validate => false)
-        @leave_dates = (leave_date.localtime.to_date .. end_date.localtime.to_date)
+        @leave_dates = (leave_date.to_date .. end_date.to_date)
         recompute_timesheets_without_leaves(@leave_dates.to_a)
         return true
       end
@@ -291,7 +291,7 @@ class LeaveDetail < ActiveRecord::Base
       update_consumed_count(0-leave_unit) if is_approved?
       update_column(:status, 'Canceled')
       remove_response_attrs
-      @leave_dates = (leave_date.localtime.to_date .. end_date.localtime.to_date)
+      @leave_dates = (leave_date.to_date .. end_date.to_date)
       dates_without_leaves = @leave_dates.to_a
       recompute_timesheets_without_leaves(dates_without_leaves)
       @email_action = 'canceled'
@@ -315,7 +315,7 @@ class LeaveDetail < ActiveRecord::Base
   def is_whole_day?
     @employee ||= employee
     return (period == 0 && leave_unit.to_f == 1) ||
-      @employee.leave_details.filed_for(leave_date.localtime).sum(:leave_unit) == 1
+      @employee.leave_details.filed_for(leave_date).sum(:leave_unit) == 1
   end
 
   def is_range?
@@ -329,10 +329,11 @@ class LeaveDetail < ActiveRecord::Base
   def is_cancelable?
     !new_record? &&
     (['Pending', 'Approved', 'HR Approved'].include?(status) && with_time_entries? ||
-    ['Pending', 'Approved', 'HR Approved'].include?(status) && leave_date.localtime.to_date > Date.today)
+    ['Pending', 'Approved', 'HR Approved'].include?(status) && leave_date.to_date > Date.today)
   end
 
   def with_time_entries?
+    #TODO: in the old implementation, AWOL time_entries are stored in DB
     init_leave_dates_req
     dates = @leave_dates.to_a - (@day_offs + @holidays)
     timesheet_by_dates = dates.map do |date|
@@ -410,8 +411,8 @@ class LeaveDetail < ActiveRecord::Base
         shift_schedule_detail = first_entry.shift_schedule_detail
         am_valid_timein = shift_schedule_detail.valid_time_in(first_entry.date)
         pm_valid_timein = shift_schedule_detail.valid_time_in(first_entry.date, false)
-        first_timein = first_entry.time_in_without_adjustment.localtime
-        last_timeout = last_entry.time_out.localtime rescue nil
+        first_timein = first_entry.time_in_without_adjustment
+        last_timeout = last_entry.time_out rescue nil
         pm_start = pm_valid_timein.first + shift_schedule_detail.pm_time_allowance.minutes
         @late = entries.sum(&:minutes_late)
         @undertime = entries.sum(&:minutes_undertime)
@@ -439,9 +440,9 @@ class LeaveDetail < ActiveRecord::Base
             end
             last_within_shift = within_shift_entries.last
             if last_within_shift
-              @undertime = last_within_shift.get_minutes_undertime(valid_timeout.utc)
+              @undertime = last_within_shift.get_minutes_undertime(valid_timeout)
             end
-            @excess = last_entry.get_minutes_excess(valid_timeout.utc, @undertime)
+            @excess = last_entry.get_minutes_excess(valid_timeout, @undertime)
           end
         elsif period == 2 && last_timeout  # 2nd Period Halfday Leave
           shift_total_time = shift_schedule_detail.shift_total_time
@@ -449,21 +450,21 @@ class LeaveDetail < ActiveRecord::Base
           valid_timeout = if @late > 0
             am_valid_timein.last + shift_total_time_half.minutes
           else
-            first_entry.time_in.localtime + shift_total_time_half.minutes
+            first_entry.time_in + shift_total_time_half.minutes
           end
           within_shift_entries = entries.select { |e| e.is_within_range?(nil, valid_timeout) }
           within_shift_entries.reverse_each do |e|
-            if e.time_out.localtime < pm_start && valid_timeout <= pm_start
+            if e.time_out < pm_start && valid_timeout <= pm_start
               within_shift_entries = [e]
               valid_timeout = valid_timeout - 1.hour
             else
-              next if e.time_in.localtime > valid_timeout
+              next if e.time_in > valid_timeout
             end
             break
           end
           last_within_shift = within_shift_entries.last
           if last_within_shift
-            @undertime = last_within_shift.get_minutes_undertime(valid_timeout.utc)
+            @undertime = last_within_shift.get_minutes_undertime(valid_timeout)
           end
           @excess = 0
         end
@@ -531,7 +532,7 @@ class LeaveDetail < ActiveRecord::Base
   def compute_unit
     @employee ||= employee
     @leave ||= leave
-    @leave_dates ||= (leave_date.localtime.to_date .. end_date.localtime.to_date)
+    @leave_dates ||= (leave_date.to_date .. end_date.to_date)
     non_working_days = (get_day_offs | get_holidays)
     @leave_dates.count - non_working_days.count
   end
@@ -557,8 +558,8 @@ private
 
   def validate_dates
     if valid_date?(:leave_date) && valid_date?(:end_date)
-      @leave_date_local = leave_date.localtime.to_date
-      @end_date_local = end_date.localtime.to_date
+      @leave_date_local = leave_date.to_date
+      @end_date_local = end_date.to_date
       if @leave_date_local > @end_date_local
         errors[:base] << "Leave date shouldn't be later than End date."
         return false
@@ -579,8 +580,8 @@ private
   end
 
   def valid_range
-    date_from = @leave.date_from.localtime.to_date
-    date_to = @leave.date_to.localtime.to_date
+    date_from = @leave.date_from.to_date
+    date_to = @leave.date_to.to_date
 
     case leave_type
     when "Vacation Leave", "Maternity Leave", "Magna Carta"
@@ -603,7 +604,7 @@ private
   end
 
   def validate_date_range(date_attr, range)
-    if range && !range.include?(self.send(date_attr).localtime.to_date)
+    if range && !range.include?(self.send(date_attr).to_date)
       errors[date_attr] << "is invalid. Should be within
                             #{range.first} and #{range.last}."
     end
@@ -715,7 +716,7 @@ private
   def get_holidays
     holidays = []
     emp_holidays = @employee.holidays_within(@leave.date_from .. @leave.date_to)
-    holiday_dates = emp_holidays.map { | h | h.date.localtime.to_date }
+    holiday_dates = emp_holidays.map { | h | h.date.to_date }
 
     @leave_dates.each do | date |
       if holiday_dates.include?(date)
@@ -744,7 +745,7 @@ private
   def init_leave_dates_req
     @employee ||= employee
     @leave ||= leave
-    @leave_dates ||= (leave_date.localtime.to_date .. end_date.localtime.to_date)
+    @leave_dates ||= (leave_date.to_date .. end_date.to_date)
     @day_offs ||= get_day_offs
     @holidays ||= get_holidays
   end

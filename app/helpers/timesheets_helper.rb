@@ -29,7 +29,7 @@ module TimesheetsHelper
     end
 
     tabs = []
-    current = active_time.localtime.monday
+    current = active_time.monday
     week_end = current.sunday
     nav = %Q{
       <ul class="nav nav-tabs" id="myTab">
@@ -60,7 +60,7 @@ module TimesheetsHelper
     if active_time.is_a?(Range)
       active_time = active_time.first
     end
-    current = active_time.localtime.monday
+    current = active_time.monday
     week_end = current.sunday
     [format_date(current), format_date(week_end)]
   end

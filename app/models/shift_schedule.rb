@@ -39,7 +39,7 @@ class ShiftSchedule < ActiveRecord::Base
     return nil if details.empty?
     details.detect do |detail|
       !detail.is_day_off? && detail.to_shift_range(timein).cover?(timein)
-    end || detail_by_day(timein.localtime.to_date.wday)
+    end || detail_by_day(timein.to_date.wday)
   end
 
   def detail_by_day(wday)

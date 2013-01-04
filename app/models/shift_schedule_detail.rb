@@ -24,12 +24,12 @@ class ShiftScheduleDetail < ActiveRecord::Base
   # Instance Methods
   # -------------------------------------------------------
   def am_time_start=(value)
-    value = begin (v=Time.parse(value)) + v.utc_offset rescue nil end
+    value = begin v=Time.parse(value) rescue nil end
     write_attribute(:am_time_start, value)
   end
 
   def pm_time_start=(value)
-    value = begin (v=Time.parse(value)) + v.utc_offset rescue nil end
+    value = begin v=Time.parse(value) rescue nil end
     if value && am_time_start && (value < am_time_start)
       #pm_time_start always greater than am_time_start, if it is lesser, then it means next day
       write_attribute(:pm_time_start, am_time_start + 1.day)
@@ -81,7 +81,7 @@ class ShiftScheduleDetail < ActiveRecord::Base
   end
 
   def get_shift_date(datetime)
-    t_date = datetime.localtime.to_date
+    t_date = datetime.to_date
     week_num = t_date.cweek
     d_week = (day_of_week == 0) ? 7 : day_of_week
     date = Date.commercial(t_date.year, week_num, d_week)
@@ -115,11 +115,12 @@ class ShiftScheduleDetail < ActiveRecord::Base
   end
 
   def valid_time_in(datetime=Time.now, am = true)
-    time_start, time_allowance = if am
-      [am_time_start, am_time_allowance]
+    if am
+      time_start, time_allowance = [am_time_start, am_time_allowance]
     else
-      [pm_time_start, pm_time_allowance]
+      time_start, time_allowance = [pm_time_start, pm_time_allowance]
     end
+
     date = get_shift_date(datetime)
     if is_day_off?
       date = date.to_time

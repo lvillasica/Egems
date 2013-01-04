@@ -45,15 +45,15 @@ class OvertimeAction < ActiveRecord::Base
   end
 
   def set_timestamps
-    self.created_at = Time.now.utc
-    self.updated_at = Time.parse('1970-01-01 08:00:00').utc
+    self.created_at = Time.now
+    self.updated_at = Time.parse('1970-01-01 08:00:00')
   end
 
   def set_default_responders
-    ot_date = overtime.date_of_overtime.localtime
+    ot_date = overtime.date_of_overtime
     self.responders = self.overtime.employee.responders_on(ot_date).compact.uniq
   end
-  
+
   def reset_responders(responders=[])
     self.responders = responders.compact.uniq
     self.responders.reset

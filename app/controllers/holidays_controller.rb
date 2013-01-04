@@ -61,7 +61,7 @@ class HolidaysController < ApplicationController
   def default_month_range(date=nil)
     date = Time.parse(date) if date
     date ||= Time.now
-    @range = Range.new(date.beginning_of_month.utc, date.end_of_month.utc)
+    @range = Range.new(date.beginning_of_month, date.end_of_month)
   end
 
   def get_employee
@@ -74,7 +74,7 @@ class HolidaysController < ApplicationController
       format.json { render :json => js_params.to_json }
     end
   end
-  
+
   def set_location(location = 'leaves')
     js_params[:current_location] = location
   end

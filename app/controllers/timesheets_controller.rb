@@ -55,7 +55,7 @@ class TimesheetsController < ApplicationController
     @timesheet = @employee.timesheets.new
     begin
       if @timesheet.manual_entry(params)
-        get_active_timesheets(@timesheet.date.localtime)
+        get_active_timesheets(@timesheet.date)
       else
         set_flash
       end
@@ -186,7 +186,7 @@ private
     @employee_timesheets_active = @employee.timesheets.by_date(active_time).asc
                                            .unemptize(@employee, active_time)
     js_params[:overtime] = @employee.overtimes
-                                    .find_by_date_of_overtime(active_time.utc)
+                                    .find_by_date_of_overtime(active_time)
   end
 
   def get_invalid_timesheet
@@ -261,7 +261,7 @@ private
     js_params[:flash_messages] = flash.to_hash
     flash.discard
   end
-  
+
   def set_location(location = 'timesheets')
     js_params[:current_location] = location
   end

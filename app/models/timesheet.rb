@@ -50,41 +50,27 @@ class Timesheet < ActiveRecord::Base
   # -------------------------------------------------------
   # Namescopes
   # -------------------------------------------------------
-  scope :no_timeout,  :conditions => ["time_in is not null and time_out is null"]
-  scope :desc, :order => 'time_in desc, created_on desc'
-  scope :asc, :order => 'time_in asc'
+  scope :no_timeout, where("time_in is not null and time_out is null")
+  scope :desc, order('time_in desc, created_on desc')
+  scope :asc,  order('time_in asc, created_on desc')
   scope :last_entries, lambda { |timesheet|
-    where("time_out < ? and Date(date) <= Date(?)",
-           timesheet.time_out.utc, timesheet.date.utc)
-  }
+    where("time_out < ? and date <= ?", timesheet.time_out, timesheet.date) }
   scope :later_entries, lambda { |timesheet|
-    where("time_in > ? and Date(date) >= Date(?)",
-           timesheet.time_in.utc, timesheet.date.utc)
-  }
+    where("time_in > ? and date >= ?", timesheet.time_in, timesheet.date) }
   scope :within, lambda { |range|
-    start_date, end_date = range
-    if start_date and end_date
-      asc
-      .includes(:shift_schedule_detail)
-      .where(["date between ? and ?",
-               start_date.utc, end_date.utc])
-    end
-  }
-
+    from, to = range
+    asc.includes(:shift_schedule_detail).where(["date between ? and ?", from, to]) }
   scope :response_by, lambda { |supervisor|
-    asc.includes(:responders)
-    .where(["#{TimesheetAction.table_name}.responder_id = ?", supervisor.id])
-  }
-
+    asc.includes(:responders).where(["#{TimesheetAction.table_name}.responder_id = ?", supervisor.id]) }
+  scope :by_date, lambda {|date|
+    where(["date = ?", date]) }
   scope :pending_manual,  includes(:responders).where(["#{TimesheetAction.table_name}.response = 'Pending'"])
   scope :approved_manual, includes(:responders).where(["#{TimesheetAction.table_name}.response = 'Approved'"])
   scope :rejected_manual, includes(:responders).where(["#{TimesheetAction.table_name}.response = 'Rejected'"])
 
   scope :editable_entries, lambda {
     ids = all.map { |t| t.id if t.actions.pending_or_rejected.any? }
-    where(:id => ids.compact)
-  }
-
+    where(:id => ids.compact) }
   scope :exclude, lambda { |timesheets|
     if timesheets.any?
       where('id not in (?)', timesheets.map(&:id))
@@ -99,24 +85,21 @@ class Timesheet < ActiveRecord::Base
   class << self
     def time_in!(employee)
       raise NoTimeoutError if employee.timesheets.no_timeout.present?
-      employee.timesheets.create!(:date => Time.now.beginning_of_day.utc,
-                                  :time_in => Time.now.utc)
+      employee.timesheets.create!(:date => Time.now.beginning_of_day,
+                                  :time_in => Time.now)
     end
 
     def time_out!(employee)
       t_latest = employee.timesheets.no_timeout
       raise NoTimeinError if t_latest.empty?
       timesheet = t_latest.asc.first
-      timesheet.time_out = Time.now.utc
+      timesheet.time_out = Time.now
       timesheet.save!
-    end
-
-    def by_date(date)
-      where("Date(date) = Date(?)", date.utc)
     end
 
     def latest(time = Time.now)
       ids = all.map do |t|
+        t.adjust_next_day_shift(t.date) if t.next_day_shift_schedule_detail.nil?
         if  time > t.shift_schedule_detail.valid_time_in(t.date).first and
            (time < t.next_day_shift_schedule_detail.valid_time_in(t.date).first or
             time < t.shift_schedule_detail.valid_time_out(t.date).last)
@@ -128,6 +111,7 @@ class Timesheet < ActiveRecord::Base
 
     def previous(time = Time.now)
       ids = all.map do |t|
+        t.adjust_next_day_shift(t.date) if t.next_day_shift_schedule_detail.nil?
         if time > t.next_day_shift_schedule_detail.valid_time_in(t.date).first and
            time > t.shift_schedule_detail.valid_time_out(t.date).last
           t.id
@@ -149,7 +133,7 @@ class Timesheet < ActiveRecord::Base
           end
         end
 
-        monday = time.first.localtime
+        monday = time.first
         (0...7).map do |w|
           weekday = monday + w.days
           unless tgroup[weekday.wday]
@@ -164,8 +148,8 @@ class Timesheet < ActiveRecord::Base
     end
 
     def empty_new(employee, time)
-      date_hired = employee.date_hired.localtime
-      unless time < (date_hired - date_hired.utc_offset)
+      date_hired = employee.date_hired
+      unless time < date_hired
         shift = employee.shift_schedule.detail(time)
         valid_time_out = shift.valid_time_out(time).last
         if Time.now > valid_time_out
@@ -185,7 +169,7 @@ class Timesheet < ActiveRecord::Base
   def time_in
     #return localtime of valid_time_in value based on shift
     begin
-      time_in_original = read_attribute(:time_in).localtime
+      time_in_original = read_attribute(:time_in)
       if shift_schedule_detail.present? && !is_holiday?(time_in_original)
         shift_min = shift_schedule_detail.valid_time_in(date).first
         time_in_original < shift_min ? shift_min : time_in_original
@@ -198,13 +182,13 @@ class Timesheet < ActiveRecord::Base
   end
 
   def time_in_without_adjustment
-    #returns utc format of time_in as is from database
+    #returns time_in as is from database
     read_attribute(:time_in)
   end
 
   def manual_update(attrs={})
     begin
-      t_date = attrs[:date] ? Time.parse(attrs[:date]) : date.localtime.to_date
+      t_date = attrs[:date] ? Time.parse(attrs[:date]) : date.to_date
       t_hour = Time.parse(attrs[:hour] + attrs[:meridian]).strftime("%H")
       t_min = attrs[:min]
       time = Time.local(t_date.year, t_date.month, t_date.day, t_hour, t_min)
@@ -217,7 +201,7 @@ class Timesheet < ActiveRecord::Base
       self.is_valid = 3     # manual time in
     else
       type = 'time_out'
-      t_date = date.localtime
+      t_date = date
       self.is_valid = 2     # manual time out
     end
 
@@ -296,7 +280,7 @@ class Timesheet < ActiveRecord::Base
       return false
     end
   end
-  
+
   def reset_responders(responders=[])
     self.responders = responders.compact.uniq
     self.responders.reset
@@ -308,7 +292,7 @@ class Timesheet < ActiveRecord::Base
 
   def validate_time_attrs(attrs)
     begin
-      t_date = attrs[:date] ? Time.parse(attrs[:date]) : date.localtime.to_date
+      t_date = attrs[:date] ? Time.parse(attrs[:date]) : date.to_date
       t_hour = Time.parse(attrs[:hour] + attrs[:meridian]).strftime("%H")
       t_min = attrs[:min]
       return Time.local(t_date.year, t_date.month, t_date.day, t_hour, t_min)
@@ -354,7 +338,7 @@ class Timesheet < ActiveRecord::Base
     actions.each do |action|
       action.response = 'Rejected'
       if action.save
-        timesheets_today = employee.timesheets.by_date(date.localtime).asc.reject{ |t| t.time_in > time_in }
+        timesheets_today = employee.timesheets.by_date(date).asc.reject{ |t| t.time_in > time_in }
         timesheets_today.each(&:zero_computations)
       end
     end
@@ -365,38 +349,39 @@ class Timesheet < ActiveRecord::Base
   end
 
   def invalid_entries
+    #TODO: refactor, ng todo-todo
     if time_in_without_adjustment && time_out
       t_i, t_o = format_short_time_with_sec(time_in_without_adjustment), format_short_time_with_sec(time_out)
       if time_in_without_adjustment > time_out
         errors[:base] << "Time in (#{t_i}) shouldn't be later than Time out (#{t_o})."
       end
 
-      if time_out > Time.now.utc
+      if time_out > Time.now
         errors[:base] << "Time out (#{t_o}) shouldn't be later than current time."
       end
 
       exclude_lst = []
       exclude_lst << self unless self.new_record?
       last_entries = employee.timesheets.exclude(exclude_lst.compact)
-                     .last_entries(self).desc
-      last_entry = last_entries.first
-      if last_entry && last_entry.time_out && time_in_without_adjustment < last_entry.time_out
-        errors[:base] << "Time in should be later than last entries."
-      end
+                     .last_entries(self).desc.first
+      #last_entry = last_entries.first
+      #if last_entry && last_entry.time_out && time_in_without_adjustment < last_entry.time_out
+      #  errors[:base] << "Time in should be later than last entries."
+      #end
 
-      exclude_lst = exclude_lst + last_entries
+      #exclude_lst = exclude_lst + last_entries
       later_entry = employee.timesheets.exclude(exclude_lst.compact)
                     .later_entries(self).asc.first
-      if later_entry && time_out > later_entry.time_in_without_adjustment
-        lti = format_short_time_with_sec(later_entry.time_in_without_adjustment)
-        errors[:base] << "Time out (#{t_o}) shouldn't be later than next entry's time in (#{lti})."
-      end
+      #if later_entry && time_out > later_entry.time_in_without_adjustment
+      #  lti = format_short_time_with_sec(later_entry.time_in_without_adjustment)
+      #  errors[:base] << "Time out (#{t_o}) shouldn't be later than next entry's time in (#{lti})."
+      #end
     end
   end
 
   def compute_minutes
     if time_out
-      timesheets_today = employee.timesheets.by_date(date.localtime).asc
+      timesheets_today = employee.timesheets.by_date(date).asc
       @timesheets_today = timesheets_today.reject{ |t| t.id == id || t.time_in > time_in }
       @first_timesheet = @timesheets_today.first || self
 
@@ -434,14 +419,14 @@ class Timesheet < ActiveRecord::Base
   end
 
   def put_remarks
-    @timesheets_today = employee.timesheets.by_date(date.localtime).asc
+    @timesheets_today = employee.timesheets.by_date(date).asc
     @first_timesheet = @timesheets_today.first || self
 
     @remarks = Array.new
     @remarks << 'Late'  if @first_timesheet.is_late?
     @remarks << 'Undertime' if is_undertime?
 
-    leaves = employee.leave_details.filed_for(date.localtime)
+    leaves = employee.leave_details.filed_for(date)
     if leaves.present?
       @remarks += remarks_leave_details(leaves)
     else
@@ -489,7 +474,7 @@ class Timesheet < ActiveRecord::Base
   def remarks_manual_update
     r = Array.new
     if [2, 3, 4].include?(is_valid)
-      @timesheets_today ||= employee.timesheets.by_date(date.localtime).asc
+      @timesheets_today ||= employee.timesheets.by_date(date).asc
       if @timesheets_today.pending_manual.present?
         r << 'For Verification'
       elsif @timesheets_today.rejected_manual.present?
@@ -502,7 +487,7 @@ class Timesheet < ActiveRecord::Base
   end
 
   def recompute_minutes_for_leaves
-    filed_leaves = employee.leave_details.filed_for(date.localtime)
+    filed_leaves = employee.leave_details.filed_for(date)
     if filed_leaves.present?
       filed_leaves.each do |fl|
         fl.recompute_timesheets
@@ -511,14 +496,13 @@ class Timesheet < ActiveRecord::Base
   end
 
   def is_awol?
-    ldate = date.localtime
-    shift = employee.shift_schedule.detail_by_day(ldate.wday)
-    valid_time_out = shift.valid_time_out(ldate).last
-    date_hired = employee.date_hired.localtime
+    shift = employee.shift_schedule.detail_by_day(date.wday)
+    valid_time_out = shift.valid_time_out(date).last
+    date_hired = employee.date_hired
 
     if new_record?
       is_past = Time.now > valid_time_out
-      is_after_hiring = date.localtime >= (date_hired - date_hired.utc_offset)
+      is_after_hiring = date >= date_hired
       return true if is_work_day? && is_past && is_after_hiring
     else
       return true if time_in_without_adjustment > valid_time_out
@@ -547,7 +531,7 @@ class Timesheet < ActiveRecord::Base
   end
 
   def is_changed?(type, time)
-    read_attribute(type.to_sym).localtime != time
+    read_attribute(type.to_sym) != time
   end
 
   def is_approved?
@@ -576,20 +560,18 @@ class Timesheet < ActiveRecord::Base
   end
 
   def put_shift_details
-    ldate = date.localtime
-    timein = time_in_without_adjustment.localtime
-    self.shift_schedule = employee.shift_schedule(ldate)
+    timein = time_in_without_adjustment
+    self.shift_schedule = employee.shift_schedule(date)
     self.shift_schedule_detail = shift_schedule.detail(timein)
-    self.date = shift_schedule_detail.get_shift_date(ldate)
+    self.date = shift_schedule_detail.get_shift_date(date)
 
-    ldate = date.localtime
-    if employee.schedule_range(shift_schedule).detect { |s| s.cover?(ldate) }.nil?
-      self.shift_schedule = employee.shift_schedule(ldate)
+    if employee.schedule_range(shift_schedule).detect { |s| s.cover?(date) }.nil?
+      self.shift_schedule = employee.shift_schedule(date)
       self.shift_schedule_detail = shift_schedule.detail(timein)
-      self.date = shift_schedule_detail.get_shift_date(ldate)
+      self.date = shift_schedule_detail.get_shift_date(date)
     end
 
-    next_date = date.localtime.to_time.tomorrow
+    next_date = date.to_time.tomorrow
     adjust_next_day_shift(next_date)
   end
 
@@ -602,35 +584,32 @@ class Timesheet < ActiveRecord::Base
 
   def update_shift_details
     if time_out
-      ldate = date.localtime
-      timein = time_in_without_adjustment.localtime
-      timeout = time_out.localtime
-      shift_range = shift_schedule_detail.to_shift_range(ldate)
+      timein = time_in_without_adjustment
+      shift_range = shift_schedule_detail.to_shift_range(date)
       shift_start = shift_range.first
 
       if !shift_range.cover?(timein) or (shift_range.cover?(timein) && !is_work_day?)
-        scheduled = employee.schedule_range(shift_schedule).detect { |s| s.cover?(ldate) }
+        scheduled = employee.schedule_range(shift_schedule).detect { |s| s.cover?(date) }
         if scheduled.nil?
-          shift = employee.shift_schedule(ldate)
+          shift = employee.shift_schedule(date)
           shift_detail = shift.detail_by_day(shift_schedule_detail.day_of_week)
-          shift_start = shift_detail.valid_time_in(ldate).first
+          shift_start = shift_detail.valid_time_in(date).first
         end
 
-        max_end = next_day_shift_schedule_detail.valid_time_in(ldate).first
+        max_end = next_day_shift_schedule_detail.valid_time_in(date).first
         diff = 0
         if shift_range.cover?(timein)
-          diff -= 1 if timein < shift_start && timeout < shift_start
+          diff -= 1 if timein < shift_start && time_out < shift_start
         else
-          diff += 1 if timein > shift_start && timeout > max_end
-          diff -= 1 if timein < shift_start && timeout < shift_start
+          diff += 1 if timein > shift_start && time_out > max_end
+          diff -= 1 if timein < shift_start && time_out < shift_start
         end
 
         if diff != 0
-          self.date = ldate + diff.day
-          ldate = date.localtime
-          self.shift_schedule = employee.shift_schedule(ldate)
-          self.shift_schedule_detail = shift_schedule.detail_by_day(ldate.to_date.wday)
-          next_date = ldate.tomorrow
+          self.date = date + diff.day
+          self.shift_schedule = employee.shift_schedule(date)
+          self.shift_schedule_detail = shift_schedule.detail_by_day(date.to_date.wday)
+          next_date = date.tomorrow
           adjust_next_day_shift(next_date)
         end
       end
@@ -641,13 +620,13 @@ class Timesheet < ActiveRecord::Base
     if minutes_late > 0
       shift_schedule_detail.valid_time_out(date).last
     else
-      time_in.localtime + shift_schedule_detail.shift_total_time.minutes
+      time_in + shift_schedule_detail.shift_total_time.minutes
     end
   end
 
   def is_within_shift?
     if is_work_day?
-      @timesheets_today ||= employee.timesheets.by_date(date.localtime)
+      @timesheets_today ||= employee.timesheets.by_date(date)
                                     .reject{ |t| t.id == id || t.time_in > time_in }
       @first_timesheet ||= @timesheets_today.first || self
       time_rendered = @timesheets_today.sum(&:duration)
@@ -659,13 +638,13 @@ class Timesheet < ActiveRecord::Base
       shift_end = shift_start + shift_schedule_detail.shift_total_time.minutes
 
       shift = Range.new(shift_start, shift_end)
-      shift.cover?(time_in.localtime)
+      shift.cover?(time_in)
     end
   end
 
   def is_within_range?(shift_start = nil, shift_end = nil)
     if is_work_day?
-      @timesheets_today ||= employee.timesheets.by_date(date.localtime).asc
+      @timesheets_today ||= employee.timesheets.by_date(date).asc
       @first_timesheet ||= @timesheets_today.first || self
 
       in_min, in_max = shift_schedule_detail.valid_time_in(@first_timesheet.date)
@@ -676,7 +655,7 @@ class Timesheet < ActiveRecord::Base
       shift_end ||= shift_start + shift_schedule_detail.shift_total_time.minutes
 
       shift = Range.new(shift_start, shift_end)
-      shift.cover?(time_in.localtime)
+      shift.cover?(time_in)
     end
   end
 
@@ -685,11 +664,11 @@ class Timesheet < ActiveRecord::Base
   end
 
   def is_holiday?(ldate=nil)
-    ldate ||= date.localtime
+    ldate ||= date
     !employee.branch.holidays.falls_on(ldate).first.nil?
   end
 
   def is_first_entry?
-    employee.timesheets.by_date(date.localtime).first.nil?
+    employee.timesheets.by_date(date).first.nil?
   end
 end

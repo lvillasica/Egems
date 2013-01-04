@@ -61,11 +61,11 @@ class EmployeeMapping < ActiveRecord::Base
   # Instance Methods
   # -------------------------------------------------------
   def from=(date)
-    self[:from] = Time.parse(date.to_s).utc rescue nil
+    self[:from] = Time.parse(date.to_s) rescue nil
   end
 
   def to=(date)
-    self[:to] = Time.parse(date.to_s).utc rescue nil
+    self[:to] = Time.parse(date.to_s) rescue nil
   end
 
   def update_if_changed(attrs)
@@ -83,14 +83,14 @@ class EmployeeMapping < ActiveRecord::Base
   end
 
   def reset_responders
-    @new_range = [from.localtime, to.localtime] rescue []
-    @old_range = [from_was.localtime, to_was.localtime] rescue []
+    @new_range = [from, to] rescue []
+    @old_range = [from_was, to_was] rescue []
     timesheets = objs_to_reset_responders(:timesheets)
     overtimes = objs_to_reset_responders(:overtimes)
     leave_details = objs_to_reset_responders(:leave_details)
 
     timesheets.each do |timesheet|
-      t_date = timesheet.date.localtime
+      t_date = timesheet.date
       timesheet.reset_responders(member.responders_on(t_date))
     end
     overtimes.each do |overtime|
@@ -98,7 +98,7 @@ class EmployeeMapping < ActiveRecord::Base
       overtime.action.reset_responders(member.responders_on(ot_date))
     end
     leave_details.each do |leave_detail|
-      ld_date = leave_detail.leave_date.localtime
+      ld_date = leave_detail.leave_date
       leave_detail.reset_responders(member.responders_on(ld_date))
     end
   end

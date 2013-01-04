@@ -49,7 +49,7 @@ class Employee < ActiveRecord::Base
   scope :mapped_on, lambda { | datetime |
     includes(:employee_mappings_as_member)
     .where('Date(?) between Date(employee_mappings.from) and Date(employee_mappings.to)',
-    datetime.beginning_of_day.utc)
+    datetime.beginning_of_day)
   }
   scope :regularized_on_year, lambda { | year |
     where('extract(year from date_regularized) = ?', year.to_i)
@@ -111,7 +111,7 @@ class Employee < ActiveRecord::Base
     date = date.beginning_of_day
     shift_schedules.where([
       "? between employee_shift_schedules.start_date and employee_shift_schedules.end_date",
-       (date + date.utc_offset).utc
+       date
     ]).first || ShiftSchedule.find_by_id(shift_schedule_id)
   end
 
@@ -134,7 +134,7 @@ class Employee < ActiveRecord::Base
     scheds = shift_schedules.select("employee_shift_schedules.*").where([
       "employee_shift_schedules.start_date >= ? and employee_shift_schedules.end_date <= ?
       or employee_shift_schedules.shift_schedule_id = ?",
-      date_range.first.localtime.utc, date_range.last.localtime.utc, shift_schedule_id
+      date_range.first, date_range.last, shift_schedule_id
     ])
 
     scheds.each do | sched |
@@ -172,8 +172,8 @@ class Employee < ActiveRecord::Base
 
   def is_qualified_for_leaves?(year = Time.now.year)
     is_regularized? and !is_resigned? and date_regularized.year <= year and
-    (is_early_regularized? and Time.now >= (date_hired.localtime + 6.months)) or
-    (is_intime_regularized? and Time.now >= (date_hired.localtime + 7.months))
+    (is_early_regularized? and Time.now >= (date_hired + 6.months)) or
+    (is_intime_regularized? and Time.now >= (date_hired + 7.months))
   end
 
   def is_early_regularized?
@@ -197,7 +197,7 @@ class Employee < ActiveRecord::Base
   end
 
   def grant_major_leaves!(year = Time.now.year)
-    local_date_hired = date_hired.localtime
+    local_date_hired = date_hired
     from = Time.local(year, 1, 1)
     from = local_date_hired if local_date_hired > from
     to = from.end_of_year
@@ -233,7 +233,7 @@ class Employee < ActiveRecord::Base
   end
 
   def years_from_hired
-    ((Time.now - date_hired.localtime) / 1.year).floor if date_hired
+    ((Time.now - date_hired) / 1.year).floor if date_hired
   end
 
 end

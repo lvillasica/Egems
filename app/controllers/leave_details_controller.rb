@@ -102,7 +102,7 @@ class LeaveDetailsController < ApplicationController
     leaves = LeaveDetail.find_all_by_id(params[:approved_ids])
     leaves.each do |leave|
       unless leave.approve!(@employee)
-        msg = "Can't approve leave dated <#{leave.leave_date.localtime.to_date}> of #{leave.employee.full_name}"
+        msg = "Can't approve leave dated <#{leave.leave_date.to_date}> of #{leave.employee.full_name}"
         errors[msg] = leave.errors.full_messages
       end
     end
@@ -116,7 +116,7 @@ class LeaveDetailsController < ApplicationController
     leaves = LeaveDetail.find_all_by_id(params[:rejected_ids])
     leaves.each do |leave|
       unless leave.reject!(@employee)
-        msg = "Can't reject leave dated <#{leave.leave_date.localtime.to_date}> of #{leave.employee.full_name}"
+        msg = "Can't reject leave dated <#{leave.leave_date.to_date}> of #{leave.employee.full_name}"
         errors[msg] = leave.errors.full_messages
       end
     end

@@ -27,7 +27,7 @@
       <tr>
         <% first_timesheet = timesheets.first %>
         <% last_timesheet = timesheets.last %>
-        <td class="day"><%= first_timesheet.date.localtime.strftime("%a") %></td>
+        <td class="day"><%= first_timesheet.date.strftime("%a") %></td>
         <td class="mins"><%= format_date first_timesheet.date %></td>
         <td><%= format_long_time first_timesheet.time_in_without_adjustment %></td>
         <td><%= format_long_time last_timesheet.time_out %></td>

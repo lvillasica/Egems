@@ -17,10 +17,10 @@ class Holiday < ActiveRecord::Base
   # -------------------------------------------------------
   # Namescopes
   # -------------------------------------------------------
-  scope :falls_on, lambda { |date| where(["Date(date) = Date(?)", (date.end_of_day).utc]) }
+  scope :falls_on, lambda { |date| where(["Date(date) = Date(?)", (date.end_of_day)]) }
   scope :within, lambda { |range|
-    from = range.first.localtime.beginning_of_day
-    to   = range.last.localtime.end_of_day
+    from = range.first.beginning_of_day
+    to   = range.last.end_of_day
     where(["date between ? and ?", from, to])
   }
 
@@ -67,7 +67,7 @@ class Holiday < ActiveRecord::Base
       if date_changed?
         #restore previously recomputed leaves
         changed_date = date_was.to_date.to_time
-        changed_leaves = LeaveDetail.filed_for(changed_date.localtime)
+        changed_leaves = LeaveDetail.filed_for(changed_date)
         changed_leaves.each do |detail|
           branch = detail.employee.branch
           if @branches_was.include?(branch)
