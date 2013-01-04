@@ -333,11 +333,15 @@ class LeaveDetail < ActiveRecord::Base
   end
 
   def with_time_entries?
-    #TODO: in the old implementation, AWOL time_entries are stored in DB
+    # in the old eGEMS implementation, AWOL time_entries are stored in DB
+    # in new eGEMS, temporary time entries are created for 'AWOL' days
+    # must consider nil time_in & time_out as void (cater old data)
+
     init_leave_dates_req
     dates = @leave_dates.to_a - (@day_offs + @holidays)
     timesheet_by_dates = dates.map do |date|
       @employee.timesheets.by_date(date.to_time).asc
+               .reject{ |t| t.time_in.nil? && t.time_out.nil? }
     end
     return timesheet_by_dates.flatten.compact.any?
   end
