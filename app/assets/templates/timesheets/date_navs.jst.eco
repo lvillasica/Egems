@@ -1,7 +1,7 @@
 
 <ul id="date-nav-tab" class="nav nav-tabs">
   <li class="input-append">
-    <input type="text" id="week-picker" class="span2 disabled" value="<%= @weekPickerVal %>" />
+    <input type="text" id="week-picker" class="input-medium disabled" value="<%= @weekPickerVal %>" />
   </li>
   <li class="week pull-right">
     <button id="week-tab-trigger" style="display: none;"></button>

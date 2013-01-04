@@ -9,26 +9,26 @@
         </select>
       </div>
     </div>
-    
+
     <% if @type is 'Member' :%>
     <div class="control-group">
       <label class="control-label"><%= l 'approver\'s_type' %></label>
       <div class="controls">
         <select name="employee_mapping[approver_type]">
-          <option value="Supervisor/TL">Suppervisor/TL</option>
+          <option value="Supervisor/TL">Supervisor/TL</option>
           <option value="Project Manager">Project Manager</option>
         </select>
       </div>
     </div>
     <% end %>
-    
+
     <div class="control-group">
       <label class="control-label"><%= l 'no_validity' %></label>
       <div class="controls" style="padding:3px 0">
         <input name="employee_mapping[no_validity]" type="checkbox" />
       </div>
     </div>
-    
+
     <div class="control-group">
       <label class="control-label"><%= l 'from' %></label>
       <div class="controls">
@@ -38,7 +38,7 @@
         </div>
       </div>
     </div>
-    
+
     <div class="control-group">
       <label class="control-label"><%= l 'to' %></label>
       <div class="controls">
