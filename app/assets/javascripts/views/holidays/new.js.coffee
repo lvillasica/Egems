@@ -3,8 +3,9 @@ class Egems.Views.NewHoliday extends Backbone.View
   template: JST['holidays/new']
 
   initialize: ->
+    @date   = this.options.defaultDate
     @model  = new Egems.Models.Holiday()
-    @form   = new Egems.Views.HolidayForm(model: @model, action: "create")
+    @form   = new Egems.Views.HolidayForm(model: @model, action: "create", date: @date)
 
   events: ->
     "click #holiday-form-actions button.submit" : "submitForm"

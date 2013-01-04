@@ -3,6 +3,7 @@ class Egems.Views.HolidayForm extends Backbone.View
   template: JST['holidays/form']
 
   initialize: ->
+    @defaultDate = this.options.date
     @action   = this.options.action
     @mixins   = _.extend(this, Egems.Mixins.Defaults, Egems.Mixins.Holidays)
     @branches = new Egems.Collections.Branches()
@@ -38,7 +39,10 @@ class Egems.Views.HolidayForm extends Backbone.View
     nextDay = new Date().addDays(1)
     @dateSelector(@dateFld, {minDate: nextDay})
     if @model.date() == undefined
-      @dateFld.val(@format_date nextDay)
+      if new Date(@defaultDate) <= new Date()
+        @dateFld.val(@format_date nextDay)
+      else
+        @dateFld.val(@format_date @defaultDate)
     else
       @dateFld.val(@format_date @model.date())
     @typeFld.val(@model.type())
@@ -98,14 +102,23 @@ class Egems.Views.HolidayForm extends Backbone.View
           @enableFormActions()
         else
           @exitForm()
-          holidays = new Egems.Routers.Holidays()
-          holidays.index()
+          @updateList()
           @flashMsg data.success
 
-  exitForm :->
+  exitForm: ->
     $('#apply-holiday-modal').remove()
     $('.modal-backdrop').remove()
     $('#loading-indicator').hide()
+
+  updateList: ->
+    #same as holiday-router#index, but with searchRange parameter for collection
+    collection_ = new Egems.Collections.Holidays()
+    collection_.fetch
+      async: false
+      data:  { searchRange: @dateFld.val() }
+
+    indexView = new Egems.Views.HolidaysIndex(collection: collection_)
+    $('#main-container').html(indexView.render().el)
 
   inModal: ->
     $('#holiday-form').parents('#apply-holiday-modal').length == 1

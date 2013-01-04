@@ -26,13 +26,15 @@ class Egems.Views.SearchHolidays extends Backbone.View
               .datepicker('setDate', @defaultDate)
 
   gotoSelection: ->
+    searchDate_ = @mixins.format_date @searchDate
     $.ajax
       url: '/hr/holidays'
       type: 'GET'
-      data: { 'searchRange' : @mixins.format_date @searchDate }
+      data: { 'searchRange' : searchDate_ }
       dataType: 'JSON'
       success: (data) =>
         @collection.reset(data.holidays)
+        @searchDiv.val(searchDate_)
 
   listHolidays: ->
     tbl = $("#holidays-tbl tbody")

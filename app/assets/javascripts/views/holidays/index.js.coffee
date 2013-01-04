@@ -21,7 +21,8 @@ class Egems.Views.HolidaysIndex extends Backbone.View
 
   addHoliday: (event) ->
     event.preventDefault()
-    view = new Egems.Views.NewHoliday(modal: true)
+    searchDate = $("#holiday-search").val()
+    view = new Egems.Views.NewHoliday(modal: true, defaultDate: searchDate)
 
     $('#main-container').append('<div id="apply-holiday-modal" class="modal hide fade" />')
     $('#apply-holiday-modal').append(view.render().el)
