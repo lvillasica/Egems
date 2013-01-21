@@ -142,6 +142,7 @@ GEM
     method_source (0.7.1)
     mime-types (1.18)
     multi_json (1.3.5)
+    mysql2 (0.3.11)
     net-ldap (0.2.2)
     net-scp (1.0.4)
       net-ssh (>= 1.99.1)
@@ -282,6 +283,7 @@ DEPENDENCIES
   launchy
   mailcatcher
   mailtrap
+  mysql2
   pg
   pry
   rails (= 3.2.3)
