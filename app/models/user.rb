@@ -39,7 +39,6 @@ class User < ActiveRecord::Base
   # -------------------------------------------------------
   # Instance Methods
   # -------------------------------------------------------
-
   def with_time_entries_today?
     today = Date.today.beginning_of_day
     entries_today = timesheets.where(:date => today)
@@ -48,5 +47,16 @@ class User < ActiveRecord::Base
 
   def set_user_email
     self.email = ("%s@%s" % [self.login, DEFAULT_EMAIL_DOMAIN])if self.email.blank?
+  end
+
+  def den_logs_status
+    require 'open-uri'
+    url = "#{DEN_URL}/users/check_time_entries?username=#{login}"
+    begin
+      result = JSON.parse(open(url).read)
+      result["complete"]
+    rescue => error
+      return [false, error]
+    end
   end
 end

@@ -1,5 +1,5 @@
 module ApplicationHelper
-  
+
   def email_logo
     '/public/images/logo.png'
   end
@@ -39,21 +39,25 @@ module ApplicationHelper
   end
 
   def format_short_time_with_sec(time)
-    time ? I18n.l(User.of_localtime(time), :format => :short_with_sec) : "--:--"
+    time ? I18n.l(User.of_localtime(time), :format => :short_with_sec) : "--:--:--"
+  end
+
+  def format_short_time(time)
+    time ? I18n.l(User.of_localtime(time), :format => :short) : "--:--"
   end
 
   def format_time_in_long_with_date(time)
     time ? I18n.l(User.of_localtime(time), :format => :long_with_date) : "mm-dd-yyyy --:--"
   end
-  
+
   def format_long_date_with_time(time)
     time ? I18n.l(User.of_localtime(time), :format => :long_date_with_time) : "mmm dd, yyyy --:--"
   end
-  
+
   def indifinitize(word)
     %w(a e i o u).include?(word[0].downcase) ? "an #{word}" : "a #{word}"
   end
-  
+
   def vars_to_js
     str = ""
     unless @js_params.blank?

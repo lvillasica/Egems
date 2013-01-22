@@ -9,6 +9,7 @@ class TimesheetsController < ApplicationController
 
   def index
     if user_signed_in?
+      flash_den_logs_status
       respond_with_json
     else
       redirect_to signin_url
@@ -264,6 +265,36 @@ private
 
   def set_location(location = 'timesheets')
     js_params[:current_location] = location
+  end
+
+  def flash_den_logs_status
+    status = current_user.den_logs_status
+    den_link = "<a href='#{DEN_URL}' target='_blank'>DEN</a>"
+
+    mon = Time.now.monday - 1.week
+    sun = mon + 6.days
+
+    if mon.mon == sun.mon
+      #if same month, format: jan 1 - 7
+      date_to_s = "#{mon.strftime("%b %e")} - #{sun.strftime("%e")}"
+    else
+      #else, format: jan 29 - feb 4
+      date_to_s = "#{mon.strftime("%b %e")} - #{sun.strftime("%b %e")}"
+    end
+
+    msg = if status.is_a? Array
+      "Cannot connect to #{den_link} at this time."
+    elsif status == false
+      %Q[
+        You have not logged all your activities last week (#{date_to_s}).<br>
+        Please go to #{den_link} to complete your logs.
+      ]
+    end
+
+    if msg
+      flash_message(:error, msg)
+      js_params[:den_message] = flash.to_hash
+    end
   end
 
 end

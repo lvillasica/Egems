@@ -4,7 +4,8 @@ class Egems.Routers.Timesheets extends Backbone.Router
 
   initializeCollection: ->
     @collection = new Egems.Collections.Timesheets()
-    @collection.fetch()
+    @collection.fetch
+      complete: @flashDenLogsStatus
     @collection.on('reset', @checkInvalid, this)
 
   checkInvalid: ->
@@ -19,3 +20,6 @@ class Egems.Routers.Timesheets extends Backbone.Router
     index = new Egems.Views.TimesheetsIndex(collection: @collection)
     $('#main-container').html(index.render().el)
     index.updateDateTabs()
+
+  flashDenLogsStatus: =>
+    $("#main-container").prepend(Egems.Mixins.Defaults.flash_messages(@collection.den_message))
