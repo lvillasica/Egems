@@ -9,7 +9,7 @@ class TimesheetsController < ApplicationController
 
   def index
     if user_signed_in?
-      flash_den_logs_status
+      flash_den_logs_status if @employee.is_engineering?
       respond_with_json
     else
       redirect_to signin_url

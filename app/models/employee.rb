@@ -11,6 +11,7 @@ class Employee < ActiveRecord::Base
   has_many :employee_shift_schedules
   has_many :shift_schedules, :through => :employee_shift_schedules
   belongs_to :branch
+  belongs_to :department, :foreign_key => 'current_department_id'
   has_many :leaves, :class_name => 'Leave'
   has_many :leave_details
   has_many :overtimes
@@ -164,6 +165,11 @@ class Employee < ActiveRecord::Base
 
   def is_supervisor_hr?
     current_department_id == 4 && current_job_position_id == 61
+  end
+
+  def is_engineering?
+    eng_depts = Department.find_all_by_code(["ENG", "QA", "RND", "TS"])
+    eng_depts.include?(department)
   end
 
   def can_action_leaves?
