@@ -101,12 +101,19 @@ class LeaveDetailsController < ApplicationController
     errors = Hash.new
     leaves = LeaveDetail.find_all_by_id(params[:approved_ids])
     leaves.each do |leave|
-      unless leave.approve!(@employee)
-        msg = "Can't approve leave dated <#{leave.leave_date.to_date}> of #{leave.employee.full_name}"
+      if leave.approve!(@employee)
+        if leave.send_to_den!
+          js_params[:success] = { success: "Leave/s successfully approved. Time for approved leaves were logged in DEN." }
+        else
+          js_params[:success] = { success: "Leaves/s successfully approved." }
+          msg = "Den can't log time for the leave of #{leave.employee.full_name}"
+          errors[msg] = leave.errors.full_messages
+        end
+      else
+        msg = "Can't approve leave of #{leave.employee.full_name} dated { #{leave.leave_date.to_date} }"
         errors[msg] = leave.errors.full_messages
       end
     end
-    js_params[:success] = { success: "Leave/s successfully approved." } if errors.empty?
     js_params[:errors] = errors unless errors.empty?
     leave_requests
   end
@@ -116,7 +123,7 @@ class LeaveDetailsController < ApplicationController
     leaves = LeaveDetail.find_all_by_id(params[:rejected_ids])
     leaves.each do |leave|
       unless leave.reject!(@employee)
-        msg = "Can't reject leave dated <#{leave.leave_date.to_date}> of #{leave.employee.full_name}"
+        msg = "Can't reject leave of #{leave.employee.full_name} dated { #{leave.leave_date.to_date} }"
         errors[msg] = leave.errors.full_messages
       end
     end

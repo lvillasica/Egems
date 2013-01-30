@@ -55,11 +55,13 @@ class Egems.Views.LeaveRequestsIndex extends Backbone.View
         data: { approved_ids: ids }
         success: (data) =>
           @listLeaves(data)
-          if data.errors != undefined
-            @showErrors(data.errors)
-          else
-            @showSuccessMsg(data.success)
+          msgContainer = $("#flash_messages")
+          msgContainer.empty()
+          if data.success != undefined
+            @showSuccessMsg(data.success, msgContainer)
             @check_mailing_job_status("leave_request")
+          if data.errors != undefined
+            @showErrors(data.errors, msgContainer)
     else
       @noCheckedBox()
 
@@ -75,7 +77,13 @@ class Egems.Views.LeaveRequestsIndex extends Backbone.View
         data: { rejected_ids: ids }
         success: (data) =>
           @listLeaves(data)
-          @check_mailing_job_status("leave_request")
+          msgContainer = $("#flash_messages")
+          msgContainer.empty()
+          if data.success != undefined
+            @showSuccessMsg(data.success, msgContainer)
+            @check_mailing_job_status("leave_request")
+          else
+            @showErrors(data.errors, msgContainer)
     else
       @noCheckedBox()
 
@@ -88,12 +96,11 @@ class Egems.Views.LeaveRequestsIndex extends Backbone.View
     $('#flash_messages').html @mixins.flash_messages
       error: 'No selected leave request.'
 
-  showErrors: (errors) ->
-    msg = @mixins.listMessageHash(errors)
-    $('#flash_messages').html @mixins.flash_messages({error: msg})
+  showErrors: (errors, container) ->
+    container.append(@flash_messages({error: @listMessageHash(errors)}, "multiple"))
 
-  showSuccessMsg: (msg) ->
-    $("#flash_messages").html @mixins.flash_messages(msg)
+  showSuccessMsg: (msg, container) ->
+    container.append(@flash_messages(msg, "multiple"))
 
   getCheckedIds: ->
     _.map $("#leaves-approval-form input[type='checkbox']:checked"), (box) ->

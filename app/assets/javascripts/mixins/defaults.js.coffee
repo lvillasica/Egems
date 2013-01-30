@@ -48,7 +48,7 @@ Egems.Mixins.Defaults =
     if type is 'email'
       $('div.alert.email').remove()
     else
-      $('div.alert').remove()
+      $('div.alert').remove() unless type is 'multiple'
     alert_classes =
       alert: "error"
       error: "error"

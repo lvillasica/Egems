@@ -260,9 +260,41 @@ class LeaveDetail < ActiveRecord::Base
         end
       end
     else
-      errors[:base] << 'Cannot approve own leave.' if employee == supervisor
+      if employee == supervisor
+        errors[:base] << "Cannot approve own leave."
+      else
+        errors[:base] << "You are not authorized to approve this leave."
+      end
     end
     return false
+  end
+
+  def send_to_den!
+    if is_approved? && employee.is_engineering?
+      require 'open-uri'
+
+      is_half_day = is_half_day? ? 1 : 0
+      username    = begin employee.user.login rescue nil end
+      date_from   = format_date(leave_date)
+      date_to     = format_date(end_date || leave_date)
+
+      params = "access_token=#{DEN_AUTH_TOKEN}&half_day=#{is_half_day}&username=#{username}&date_from=#{date_from}&date_to=#{date_to}"
+      params = URI::encode(params)
+
+      url = "#{DEN_URL}/leaves/save_leaves?#{params}"
+      begin
+        result = JSON.parse(open(url).read)
+        unless result["success"]
+          den_error = result["error"]
+          errors[:base] << "There was an error logging time for approved leave. #{den_error}"
+          return false
+        end
+      rescue
+        errors[:base] << "Unable to connect to DEN. Time for the approved leave was not logged."
+        return false
+      end
+      true
+    end
   end
 
   def reject!(supervisor)
@@ -281,7 +313,11 @@ class LeaveDetail < ActiveRecord::Base
         return true
       end
     else
-      errors[:base] << 'Cannot reject own leave. Cancel you leave instead.' if employee == supervisor
+      if employee == supervisor
+        errors[:base] << "Cannot reject own leave. Cancel you leave instead."
+      else
+        errors[:base] << "You are not authorized to reject this leave."
+      end
     end
     return false
   end
