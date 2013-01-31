@@ -286,7 +286,7 @@ class LeaveDetail < ActiveRecord::Base
         result = JSON.parse(open(url).read)
         unless result["success"]
           den_error = result["error"]
-          errors[:base] << "There was an error logging time for approved leave. #{den_error}"
+          errors[:base] << "There was an error logging time for approved leave. #{den_error.join(' ')}"
           return false
         end
       rescue
