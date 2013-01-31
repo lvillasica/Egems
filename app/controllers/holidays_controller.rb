@@ -21,20 +21,32 @@ class HolidaysController < ApplicationController
   def create
     holiday = Holiday.new(params[:holiday])
     holiday.branches = Branch.find_all_by_id(params[:branch_ids])
-    errors = holiday.errors unless holiday.save
-
-    js_params[:errors]  = { error: errors.full_messages.join('<br>') } if errors
-    js_params[:success] = { success: "Holiday was created successfully." } unless errors
+    if holiday.save
+      if holiday.send_to_den!
+        js_params[:success] = { success: "Holiday was created & reflected in DEN successfully." }
+      else
+        js_params[:success] = { success: "Holiday was created successfully." }
+        js_params[:errors]  = { error: holiday.errors.full_messages.join("<br>") }
+      end
+    else
+      js_params[:errors]  = { error: holiday.errors.full_messages.join("<br>") }
+    end
     respond_js_params
   end
 
   def update
     holiday = Holiday.find_by_id(params[:id])
     branches = Branch.find_all_by_id(params[:branch_ids])
-    errors = holiday.errors unless holiday.update_attrs_with_branches(params[:holiday], branches)
-
-    js_params[:errors]  = { error: holiday.errors.full_messages.join('<br>') } if errors
-    js_params[:success] = { success: "Holiday was updated successfully." } unless errors
+    if holiday.update_attrs_with_branches(params[:holiday], branches)
+      if holiday.send_to_den!
+        js_params[:success] = { success: "Holiday was updated & reflected in DEN successfully." }
+      else
+        js_params[:success] = { success: "Holiday was updated successfully." }
+        js_params[:errors]  = { error: holiday.errors.full_messages.join("<br>") }
+      end
+    else
+      js_params[:errors] = { error: holiday.errors.full_messages.join("<br>") }
+    end
     respond_js_params
   end
 

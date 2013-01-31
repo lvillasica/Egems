@@ -97,13 +97,17 @@ class Egems.Views.HolidayForm extends Backbone.View
       beforeSend: (jqXHR, settings) =>
         @disableFormActions()
       success: (data) =>
-        if data.errors != undefined
-          @modalFlashMsg data.errors
-          @enableFormActions()
-        else
+        if data.success != undefined
           @exitForm()
           @updateList()
-          @flashMsg data.success
+          msgMain = $("#flash_messages")
+          msgMain.empty()
+          @flashMsg(data.success, msgMain)
+          if data.errors != undefined
+            @flashMsg(data.errors, msgMain)
+        else
+          @modalFlashMsg data.errors
+          @enableFormActions()
 
   exitForm: ->
     $('#apply-holiday-modal').remove()
@@ -134,5 +138,5 @@ class Egems.Views.HolidayForm extends Backbone.View
   modalFlashMsg: (msg) ->
     $("#holiday-form > #flash_messages").html @mixins.flash_messages(msg)
 
-  flashMsg: (msg) ->
-    $("#flash_messages").html @mixins.flash_messages(msg)
+  flashMsg: (msg, container) ->
+    container.append(@mixins.flash_messages(msg, "multiple"))

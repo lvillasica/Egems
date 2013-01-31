@@ -62,11 +62,11 @@ class Holiday < ActiveRecord::Base
   end
 
   def recompute_leaves
-    day = date.to_date.to_time
+    day = date
     if day > Time.now.beginning_of_day
-      if date_changed?
+      if date_changed? && date_was
         #restore previously recomputed leaves
-        changed_date = date_was.to_date.to_time
+        changed_date = date_was
         changed_leaves = LeaveDetail.filed_for(changed_date)
         changed_leaves.each do |detail|
           branch = detail.employee.branch
@@ -115,6 +115,46 @@ class Holiday < ActiveRecord::Base
     end
   end
 
+  def send_to_den!
+    require 'open-uri'
+    location = Branch.get_den_location_equivalent(branches)
+    pdate    = date.strftime("%Y-%m-%d")
+    params   = "?access_token=#{DEN_AUTH_TOKEN}&date=#{pdate}&title=#{name}&description=#{description}&location=#{location}"
+    params = URI::encode(params)
+
+    if den_holiday_id && den_holiday_id != 0
+      action  = "update"
+      params += "&holiday_id=#{den_holiday_id}"
+      url     = "#{DEN_URL}/holidays/update_holidays#{params}"
+    else
+      action  = "create"
+      url     = "#{DEN_URL}/holidays/save_holidays#{params}"
+    end
+
+    begin
+      result = JSON.parse(open(url).read)
+      case action
+      when "create"
+        if result["save_complete"]
+          #expecting DEN web service to return id of holiday in DEN
+          self.update_column(:den_holiday_id, result["holiday_id"])
+        else
+          errors[:base] << "There was an error adding the holiday in DEN."
+          return false
+        end
+      when "update"
+        unless result["save_complete"]
+          errors[:base] << "There was an error updating the holiday in DEN."
+          return false
+        end
+      end
+    rescue => error
+      puts "<< DEN connection error -----", error
+      errors[:base] << "There was an error connecting to DEN."
+      return false
+    end
+    true
+  end
 
   def keep_branches_record
     @branches_was = self.branches.clone()
