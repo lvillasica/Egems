@@ -1,4 +1,7 @@
 class User < ActiveRecord::Base
+
+  require Rails.root.join('lib', 'devise', 'encryptors', 'cipher')
+
   # -------------------------------------------------------
   # Constants
   # -------------------------------------------------------
@@ -7,7 +10,7 @@ class User < ActiveRecord::Base
   # Include default devise modules. Others available are:
   # :token_authenticatable, :encryptable, :confirmable, :lockable, :timeoutable, :validatable and :omniauthable
   devise :database_authenticatable, :registerable,
-         :recoverable, :rememberable, :trackable
+         :recoverable, :rememberable, :trackable, :encryptable
 
   # -------------------------------------------------------
   # Relationships / Associations
