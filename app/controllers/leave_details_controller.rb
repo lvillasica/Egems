@@ -34,7 +34,7 @@ class LeaveDetailsController < ApplicationController
   def create
     @leave_detail = @employee.leave_details.new(params[:leave_detail])
     if @leave_detail.save
-      flash_message(:notice, "#{@leave_detail.leave_type} dated on #{@leave_detail.dated_on} was successfully created.")
+      flash_message(:success, "#{@leave_detail.leave_type} dated on #{@leave_detail.dated_on} was successfully created.")
       flash_message(:warning, @leave_detail.errors.full_messages) if @leave_detail.errors.any?
     else
       flash_message(:error, @leave_detail.errors.full_messages) if @leave_detail.errors.any?
@@ -53,7 +53,7 @@ class LeaveDetailsController < ApplicationController
     @leaves = [@leave_detail.leave]
     params[:leave_detail][:leave_type] = @leave_detail.leave_type
     if @leave_detail.update_attributes_and_reset_status(params[:leave_detail])
-      flash_message(:notice, "#{@leave_detail.leave_type} dated on #{@leave_detail.dated_on} was successfully updated.")
+      flash_message(:success, "#{@leave_detail.leave_type} dated on #{@leave_detail.dated_on} was successfully updated.")
       flash_message(:warning, @leave_detail.errors.full_messages) if @leave_detail.errors.any?
     else
       flash_message(:error, @leave_detail.errors.full_messages) if @leave_detail.errors.any?
@@ -65,7 +65,7 @@ class LeaveDetailsController < ApplicationController
   def cancel
     @leaves = [@leave_detail.leave]
     if @leave_detail.cancel!
-      flash_message(:notice, "#{@leave_detail.leave_type} dated on #{@leave_detail.dated_on} was successfully canceled.")
+      flash_message(:success, "#{@leave_detail.leave_type} dated on #{@leave_detail.dated_on} was successfully canceled.")
       flash_message(:warning, @leave_detail.errors.full_messages) if @leave_detail.errors.any?
     else
       flash_message(:error, @leave_detail.errors.full_messages) if @leave_detail.errors.any?
