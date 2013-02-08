@@ -4,3 +4,5 @@ en:
       leave_detail:
         leave_unit: 'No. of Days'
         period: 'Half Day'
+        details: 'Reason'
+        leave_date: 'Start Date'
